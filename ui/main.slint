@@ -1,0 +1,29 @@
+
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: MIT
+
+import { CheckBox, StandardListView, StyleMetrics } from "std-widgets.slint";
+import { AboutPage, UserList} from "ui/pages/pages.slint";
+import { GallerySettings } from "ui/gallery_settings.slint";
+import { SideBar } from "ui/side_bar.slint";
+
+// export { TableViewPageAdapter }
+
+export component App inherits Window {
+    preferred-width: 1280px;
+    preferred-height: 720px;
+    title: @tr("Slint Widgets Gallery");
+    icon: @image-url("../../logo/slint-logo-small-light.png");
+
+    HorizontalLayout {
+        side-bar := SideBar {
+            title: @tr("Slint Widgets Gallery");
+            model: [
+            @tr("Menu" => "Users"),
+            @tr("Menu" => "About")];
+        }
+
+        if(side-bar.current-item == 0) : AboutPage {}
+        if(side-bar.current-item == 1) : UserList {}
+    }
+}

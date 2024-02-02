@@ -1,0 +1,22 @@
+
+import { AboutSlint,StandardTableView } from "std-widgets.slint";
+import { GallerySettings } from "../gallery_settings.slint";
+import { Page } from "page.slint";
+
+export component UserList inherits Page {
+    title: "About";
+    show-enable-switch: false;
+    StandardTableView {
+        columns:[
+                {title: "primeira"},
+                {title: "segundo"}
+            ];
+        rows:[
+            [{text:"1a"},{text:"21"}],
+            [{text:"1b"},{text:"22"}],
+            [{text:"1c"},{text:"23"}],
+            ];
+    
+
+    }       
+}   
