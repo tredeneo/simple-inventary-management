@@ -2,14 +2,12 @@
 // Copyright © SixtyFPS GmbH <info@slint.dev>
 // SPDX-License-Identifier: MIT
 
-import { AboutSlint } from "std-widgets.slint";
-import { GallerySettings } from "../gallery_settings.slint";
-import { Page } from "page.slint";
+import { AboutSlint,VerticalBox } from "std-widgets.slint";
 
-export component AboutPage inherits Page {
-    title: "About";
-    show-enable-switch: false;
-    description: "Are you curious now? Check out the docs and getting starteds from the Github repository and the website https://slint.dev and try it yourself.";
+export component AboutPage inherits VerticalBox {
+    // title: "About";
+    // show-enable-switch: false;
+    // description: "Are you curious now? Check out the docs and getting starteds from the Github repository and the website https://slint.dev and try it yourself.";
 
     AboutSlint {}
 }

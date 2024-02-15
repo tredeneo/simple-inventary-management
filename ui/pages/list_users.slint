@@ -1,21 +1,22 @@
 
-import { AboutSlint,StandardTableView } from "std-widgets.slint";
-import { GallerySettings } from "../gallery_settings.slint";
-import { Page } from "page.slint";
+import { AboutSlint,StandardTableView, VerticalBox } from "std-widgets.slint";
 
-export component UserList inherits Page {
-    title: "About";
-    show-enable-switch: false;
+
+export global Users {
+    in property <[[StandardListViewItem]]> row_data : [
+            [{text:"daniel.inacio"},{text:"ti"}],
+            [{text:"gustavo.bustos"},{text:"comprovante"}],
+            [{text:"aliane.santos"},{text:"qualidade"}],
+            ];
+}
+
+export component UserList inherits VerticalBox {
     StandardTableView {
         columns:[
-                {title: "primeira"},
-                {title: "segundo"}
+                {title: "usuario"},
+                {title: "setor"}
             ];
-        rows:[
-            [{text:"1a"},{text:"21"}],
-            [{text:"1b"},{text:"22"}],
-            [{text:"1c"},{text:"23"}],
-            ];
+        rows: Users.row-data;
     
 
     }       
