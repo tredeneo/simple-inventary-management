@@ -1,0 +1,12 @@
+import { AboutSlint,StandardTableView, VerticalBox , Button} from "std-widgets.slint";
+import { Users} from "./list_users.slint"
+
+export component User inherits VerticalBox {
+    in-out property <string> name;
+
+    VerticalLayout {
+    HorizontalLayout {alignment: LayoutAlignment.end; Button {text: "voltar"; clicked=> Users.selected_user=false};}
+    Text{text:root.name;}
+    }
+    
+}
