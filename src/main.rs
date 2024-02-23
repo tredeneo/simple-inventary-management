@@ -1,49 +1,84 @@
 slint::include_modules!();
-use slint::{Model, SharedString, StandardListViewItem, VecModel};
-use sqlx::{sqlite::SqlitePool, Row};
+use slint::{ComponentHandle, StandardListViewItem, VecModel};
+use sqlx::sqlite::SqlitePool;
 use std::rc::Rc;
 
-#[derive(sqlx::FromRow, Debug, Default)]
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
 struct DbUser {
     name: String,
     login: String,
-    setor: String,
+    email: String,
 }
 async fn pegar_computador() -> anyhow::Result<Vec<DbUser>> {
     let pool = SqlitePool::connect("banco.sqlite3").await?;
     let recs = sqlx::query_as::<_, DbUser>(
         r#"
-            select name,login,setores.setor from users
+            select name,login,email --setores.setor 
+            from users
             join setores on setores.id  = users.setor 
 
         "#,
     )
     .fetch_all(&pool)
     .await?;
-    // dbg!(recs);
-    // let mut itens = Vec::new();
-    // for rec in recs {
-    //     let model = rec.try_get("name").unwrap_or_default();
-    //     itens.push(model);
-    // }
-    // Ok(itens)
     Ok(recs)
 }
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let myapp = App::new().unwrap();
+
+async fn update_user(user: DbUser) -> anyhow::Result<()> {
+    let poll = SqlitePool::connect("banco.sqlite3").await?;
+    dbg!(&user);
+    let recs = sqlx::query(
+        r#"
+            update users
+            set name=?1, email=?2 
+            where login=?3
+        "#,
+    )
+    .bind(user.name)
+    .bind(user.email)
+    .bind(user.login)
+    .execute(&poll)
+    .await?
+    .rows_affected();
+    dbg!(recs);
+    Ok(())
+}
+
+async fn ui_user_list(app: App) -> anyhow::Result<()> {
     let row_data: Rc<VecModel<slint::ModelRc<StandardListViewItem>>> = Rc::new(VecModel::default());
     let tmp = pegar_computador().await?;
     for i in tmp {
         let items = Rc::new(VecModel::default());
         items.push(slint::format!("{0}", i.name).into());
         items.push(slint::format!("{}", i.login).into());
-        items.push(slint::format!("{}", i.setor).into());
+        items.push(slint::format!("{}", i.email).into());
         row_data.push(items.into());
     }
-    myapp
-        .global::<Users>()
-        .set_row_data(row_data.clone().into());
+
+    app.global::<Users>().set_row_data(row_data.clone().into());
+    Ok(())
+}
+
+async fn ui_user_detail_update(app: App) {
+    let myapp = app.clone_strong();
+    app.global::<UserDetail>().on_save(move || {
+        let detail = myapp.global::<UserDetail>();
+        let user = DbUser {
+            name: detail.get_name().to_string(),
+            login: detail.get_login().to_string(),
+            email: detail.get_email().to_string(),
+        };
+        let tmp = user.clone();
+        let _ = slint::spawn_local(async move {
+            let _ = update_user(tmp).await;
+        });
+    });
+}
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let myapp = App::new().unwrap();
+    let _ = ui_user_list(myapp.clone_strong()).await;
+    let _ = ui_user_detail_update(myapp.clone_strong()).await;
 
     myapp.run().unwrap();
     Ok(())
