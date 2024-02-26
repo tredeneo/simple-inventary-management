@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 import { CheckBox, StandardListView, StyleMetrics } from "std-widgets.slint";
-import { AboutPage, UserList, Users, UserDetail} from "pages/pages.slint";
+import {  UserList, Users, UserDetail} from "pages/pages.slint";
+import { ComputerList,Computers,ComputerDetail } from "pages/pages.slint";
 import { SideBar } from "side_bar.slint";
 
 export {Users,UserDetail}
@@ -17,10 +18,10 @@ export component App inherits Window {
             title: @tr("Slint Widgets Gallery");
             model: [
             @tr("Menu" => "Users"),
-            @tr("Menu" => "About")];
+            @tr("Menu" => "Computers")];
         }
 
         if(side-bar.current-item == 0) : UserList {}
-        if(side-bar.current-item == 1) : AboutPage {}
+        if(side-bar.current-item == 1) : ComputerList{}
     }
     }

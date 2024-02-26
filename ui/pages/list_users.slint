@@ -30,50 +30,55 @@ component User inherits VerticalBox {
         alignment: LayoutAlignment.space-between;
         HorizontalLayout {
             Button {
-                    text:"salvar";
-                    clicked => {
-                        UserDetail.save();
-                    }
+                text:"salvar";
+                clicked => {
+                    UserDetail.save();
+                }
             }
         HorizontalLayout {
-                alignment: LayoutAlignment.end;
-                Button {text: "voltar"; 
-                        height: 50px;
-                        clicked=> {Users.selected_user=false;}
+            alignment: LayoutAlignment.end;
+            Button {
+                text: "voltar"; 
+                height: 50px;
+                clicked=> {
+                    Users.selected_user=false;
+                    }
                 }
             }
     
         }
 
-                GridLayout {
-                Text {text:"name";}
-                LineEdit {text: UserDetail.name;
-                    edited (str)=> {
-                        UserDetail.name=str
-                }}
-                Text {text: "login";row: 1; }
-                LineEdit {text:UserDetail.login;enabled: false;}
+        GridLayout {
+            Text {text:"name";}
+            LineEdit {
+                text: UserDetail.name;
+                edited (str)=> {
+                    UserDetail.name=str
+                    }
+                }
+            Text {text: "login";row: 1; }
+            LineEdit {text:UserDetail.login;enabled: false;}
 
-                Text {text: "login";row: 2;}
-                LineEdit {text:UserDetail.email;}
-        }
-                spacing: 30px;
-                StandardTableView {
-                    columns: [{title:"serialn"},
-                            {title:"brand"},
-                            {title:"model"},
-                            {title:"initial date"},
-                            {title:"final date"}];
-                    rows: UserDetail.row-data;
-        }
-        }
+            Text {text: "login";row: 2;}
+            LineEdit {text:UserDetail.email;}
+            }
+            spacing: 30px;
+            StandardTableView {
+                columns: [{title:"serialn"},
+                    {title:"brand"},
+                    {title:"model"},
+                    {title:"initial date"},
+                    {title:"final date"}];
+                rows: UserDetail.row-data;
+                }
+    }
 }
 export component UserList inherits VerticalBox {
 if !Users.selected_user: StandardTableView {
     columns:[
             {title: "name"},
             {title: "login"},
-            {title: "setor"}
+            {title: "email"}
         ];
     rows: Users.row-data;
     row-pointer-event(index,event,_)=>{

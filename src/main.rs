@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 slint::include_modules!();
 use slint::{ComponentHandle, StandardListViewItem, VecModel};
 use sqlx::sqlite::SqlitePool;
@@ -26,8 +28,7 @@ async fn pegar_computador() -> anyhow::Result<Vec<DbUser>> {
 
 async fn update_user(user: DbUser) -> anyhow::Result<()> {
     let poll = SqlitePool::connect("banco.sqlite3").await?;
-    dbg!(&user);
-    let recs = sqlx::query(
+    let _ = sqlx::query(
         r#"
             update users
             set name=?1, email=?2 
@@ -40,11 +41,10 @@ async fn update_user(user: DbUser) -> anyhow::Result<()> {
     .execute(&poll)
     .await?
     .rows_affected();
-    dbg!(recs);
     Ok(())
 }
 
-async fn ui_user_list(app: App) -> anyhow::Result<()> {
+async fn ui_user_list(app: &App) -> anyhow::Result<()> {
     let row_data: Rc<VecModel<slint::ModelRc<StandardListViewItem>>> = Rc::new(VecModel::default());
     let tmp = pegar_computador().await?;
     for i in tmp {
@@ -59,9 +59,10 @@ async fn ui_user_list(app: App) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn ui_user_detail_update(app: App) {
+async fn ui_user_detail_update(app: &App) {
     let myapp = app.clone_strong();
     app.global::<UserDetail>().on_save(move || {
+        let local_app = myapp.clone_strong();
         let detail = myapp.global::<UserDetail>();
         let user = DbUser {
             name: detail.get_name().to_string(),
@@ -71,14 +72,16 @@ async fn ui_user_detail_update(app: App) {
         let tmp = user.clone();
         let _ = slint::spawn_local(async move {
             let _ = update_user(tmp).await;
+            let _ = ui_user_list(&local_app).await;
         });
     });
 }
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let myapp = App::new().unwrap();
-    let _ = ui_user_list(myapp.clone_strong()).await;
-    let _ = ui_user_detail_update(myapp.clone_strong()).await;
+    let _ = ui_user_list(&myapp).await;
+    let _ = ui_user_detail_update(&myapp).await;
 
     myapp.run().unwrap();
     Ok(())

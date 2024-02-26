@@ -1,0 +1,96 @@
+
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit} from "std-widgets.slint";
+export global Computers {
+    in property <[[StandardListViewItem]]> row_data : [
+        [{text:"11"},{text:"12"},{text:"13"},{text:"14"}],
+        [{text:"21"},{text:"22"},{text:"23"},{text:"24"}],
+        [{text:"31"},{text:"32"},{text:"33"},{text:"34"}],
+    ];
+    in property <bool> selected_computer: false;
+    in property <string> current_computer;
+    callback update_computers_list();
+}
+export global ComputerDetail {
+    in property <[[StandardListViewItem]]> row_data:[
+        [{text:"daniel"},{text:"daniel.inacio"},{text:"ti@integrabrasil.com"},{text:"2023-12-31"},{text:""}],
+        [{text:"alex marin"},{text:"alex.marin"},{text:"alex.marin@integrabrasil.com"},{text:"2023-11-31"},{text:""}],
+        [{text:"alyson"},{text:"alyson.santos"},{text:"alyson.santos@integrabrasil.com"},{text:"2023-10-31"},{text:""}],
+    ] ;
+    in property <string> branch;
+    in property <string> model;
+    in property <string> serial_number;
+
+    callback save();
+}
+
+component Computer inherits VerticalBox 
+{
+    in-out property <string> serialnumber;
+    VerticalLayout 
+    {
+        alignment: LayoutAlignment.space-between;
+        HorizontalLayout 
+        {
+            Button 
+            {
+                text:"salvar";
+                clicked => 
+                {
+                        ComputerDetail.save()
+                }
+            }
+            HorizontalLayout 
+            {
+                alignment: LayoutAlignment.end;
+                Button 
+                {
+                    text: "voltar";
+                    height: 50px;
+                    clicked => {
+                        Computers.selected_computer=false;
+                    }
+                }
+            }
+        }
+
+        GridLayout {
+            Text{text:"model";}
+            LineEdit 
+            {
+                text: ComputerDetail.model;
+            }
+        }
+        StandardTableView {
+            columns: [
+                {title:"name"},
+                {title:"login"},
+                {title:"email"},
+                {title:"initial date"}
+            ];
+            rows: ComputerDetail.row_data;
+        }
+    }
+       
+}
+export component ComputerList inherits VerticalBox {
+    if !Computers.selected_computer: StandardTableView {
+        columns: [
+            {title:"serialnumber"},
+            {title: "branch"},
+            {title:"actual user"},
+            {title:"model"}
+        ];
+        rows:Computers.row_data;
+        row-pointer-event(index,event,_)=>{
+            if event.button == PointerEventButton.left {
+                Computers.current_computer = Computers.row_data[index][0].text;
+                ComputerDetail.model = Computers.row_data[index][0].text;
+                ComputerDetail.branch= Computers.row_data[index][1].text;
+                ComputerDetail.serial_number = Computers.row_data[index][2].text;
+                Computers.selected_computer = true;
+        }
+        }
+    }
+    if Computers.selected_computer: Computer{}
+}
+
