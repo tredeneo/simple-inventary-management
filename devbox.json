@@ -1,0 +1,22 @@
+{
+  "packages": [
+    "rustup@latest",
+    "wayland@latest",
+    "libxkbcommon@latest",
+    "libGL@latest",
+    "xorg.libX11@latest",
+    "xorg.libXcursor@latest",
+    "xorg.libXrandr@latest",
+    "xorg.libXi@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
