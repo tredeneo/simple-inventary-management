@@ -1,5 +1,7 @@
 
 import { StandardTableView, VerticalBox ,Button, Palette, LineEdit} from "std-widgets.slint";
+import { ChangeUserEquipament } from "./change_user_equipament.slint";
+
 export global Computers {
     in property <[[StandardListViewItem]]> row_data : [
         [{text:"11"},{text:"12"},{text:"13"},{text:"14"}],
@@ -25,18 +27,26 @@ export global ComputerDetail {
 
 component Computer inherits VerticalBox 
 {
+
+    property <bool> change_equipament:false;
     in-out property <string> serialnumber;
-    VerticalLayout 
-    {
+    if !change_equipament: VerticalLayout {
         alignment: LayoutAlignment.space-between;
         HorizontalLayout 
         {
+            alignment: LayoutAlignment.space-around;
             Button 
             {
-                text:"salvar";
+                text:@tr("update");
                 clicked => 
                 {
                         ComputerDetail.save()
+                }
+            }
+            Button {
+                text: ("change user");
+                clicked => {
+                    change_equipament = true;
                 }
             }
             HorizontalLayout 
@@ -70,6 +80,8 @@ component Computer inherits VerticalBox
             rows: ComputerDetail.row_data;
         }
     }
+    if change_equipament: ChangeUserEquipament{}
+
        
 }
 export component ComputerList inherits VerticalBox {
@@ -92,5 +104,6 @@ export component ComputerList inherits VerticalBox {
         }
     }
     if Computers.selected_computer: Computer{}
+
 }
 

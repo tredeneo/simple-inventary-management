@@ -1,0 +1,31 @@
+import { VerticalBox, StandardListView, Button, LineEdit, HorizontalBox } from "std-widgets.slint";
+export global ChangeEquipament {
+    in property <string> search;
+    in property <string> user;
+    in property <[StandardListViewItem]> users: 
+    [{text:"daniel"},{text:"alex marin"}];
+    callback filter_users(); 
+    callback change_user();
+    
+}
+export component ChangeUserEquipament inherits VerticalBox {
+
+
+    HorizontalBox {
+     Button {text: "save";
+    clicked => {
+            ChangeEquipament.change_user()
+        }
+    }   
+
+    }
+    
+    LineEdit {
+        accepted => {
+            ChangeEquipament.filter_users()
+        }
+    }
+    StandardListView {
+        model: ChangeEquipament.users;
+    }
+}
