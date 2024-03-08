@@ -2,6 +2,7 @@ import { VerticalBox, StandardListView, Button, LineEdit, HorizontalBox } from "
 export global ChangeEquipament {
     in property <string> search;
     in property <string> user;
+    in property <string> future_user;
     in property <[StandardListViewItem]> users: 
     [{text:"daniel"},{text:"alex marin"}];
     callback filter_users(); 
@@ -12,7 +13,7 @@ export component ChangeUserEquipament inherits VerticalBox {
 
 
     HorizontalBox {
-     Button {text: "save";
+    Button {text: "save";
     clicked => {
             ChangeEquipament.change_user()
         }
@@ -27,5 +28,9 @@ export component ChangeUserEquipament inherits VerticalBox {
     }
     StandardListView {
         model: ChangeEquipament.users;
+        current-item-changed(index) => {
+
+            ChangeEquipament.future_user = ChangeEquipament.users[index].text;            
+        }
     }
 }

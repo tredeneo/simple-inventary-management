@@ -7,7 +7,8 @@
     "xorg.libX11@latest",
     "xorg.libXcursor@latest",
     "xorg.libXrandr@latest",
-    "xorg.libXi@latest"
+    "xorg.libXi@latest",
+    "lldb@latest"
   ],
   "shell": {
     "init_hook": [

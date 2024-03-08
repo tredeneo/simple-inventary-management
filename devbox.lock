@@ -35,6 +35,26 @@
         }
       }
     },
+    "lldb@latest": {
+      "last_modified": "2024-03-02T05:21:12Z",
+      "resolved": "github:NixOS/nixpkgs/458b097d81f90275b3fdf03796f0563844926708#lldb",
+      "source": "devbox-search",
+      "version": "16.0.6",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/zvm3yri5ps8jppih3lj1sw1nj09b9axf-lldb-16.0.6"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/cgbmbis4rkn83v9y0amq1k37bc4j94js-lldb-16.0.6"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/zmfncyhia9vpnkzfrn8bay3h2dlvfwck-lldb-16.0.6"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/brswvn3jrjmvdnk3b8hq33zkf16xli2z-lldb-16.0.6"
+        }
+      }
+    },
     "rustup@latest": {
       "last_modified": "2024-02-25T07:54:35Z",
       "plugin_version": "0.0.1",
