@@ -57,11 +57,19 @@ async fn get_users() -> anyhow::Result<Vec<DbUser>> {
 async fn get_computers(db: &actual_database) -> anyhow::Result<Vec<DbComputer>> {
     let recs = sqlx::query_as::<_, DbComputer>(
         r#"
-            select  serialnumber ,brands.name as brand, model, login as actual_user
-            from computer 
-            join brands on computer.brand  = brands.id 
-            left join has on has.computer_id = computer.id 
-            left join users on users.id = has.user_id         
+
+        select serialnumber ,brands.name as brand, model, login as actual_user
+        from computer 
+        join brands on computer.brand  = brands.id 
+        --left join has on has.computer_id = computer.id 
+        left join (
+        	select *
+        	from has
+        	ORDER by date_begin
+        	desc
+        	LIMIT 1
+        ) as last_user on last_user.computer_id = computer.id
+        left join users on users.id = last_user.user_id   
         "#,
     )
     .fetch_all(db)
@@ -164,12 +172,12 @@ async fn update_user_equipament(
         r#"
             update has
             set date_end=?1 
-            where computer_id=(    
+            where user_id=(    
                         select id 
                     	from users u 
                     	WHERE u.login =?2        
                         )
-            and user_id=(
+            and computer_id=(
                      	SELECT id 
                     	from computer c 
                     	WHERE c.serialnumber = ?3
@@ -177,20 +185,29 @@ async fn update_user_equipament(
             and date_end is NULL
         "#,
     )
-    .bind(today)
-    .bind(actual_user)
-    .bind(equipament)
+    .bind(&today)
+    .bind(&actual_user)
+    .bind(&equipament)
+    .execute(&poll)
+    .await
+    .map_err(|e| dbg!(e));
+    // dbg!(recs);
+    let recs = sqlx::query(
+        r#"
+        insert into has (computer_id, user_id, date_begin)
+        values (
+        (select id from computer WHERE serialnumber = ?1),
+        ?2,
+        ?3
+        )   
+        "#,
+    )
+    .bind(&equipament)
+    .bind(&future_user)
+    .bind(&today)
     .execute(&poll)
     .await?;
-
     dbg!(recs);
-    // let recs = sqlx::query(
-    //     r#"
-
-    //     "#,
-    // )
-    // .execute(&poll)
-    // .await?;
 
     // .rows_affected();
     Ok(())
@@ -231,7 +248,9 @@ async fn main() -> anyhow::Result<()> {
     let _ = ui_user_list(&myapp).await;
     let _ = ui_user_detail_update(&myapp).await;
     let _ = ui_change_equipament(&myapp).await;
-    let _ = ui_equipament_list(&myapp, &poll).await;
+    let _ = ui_equipament_list(&myapp, &poll)
+        .await
+        .map_err(|e| println!("{}", e));
     //     Ok(_) => {}
     //     Err(e) => {
     //         println!("{}", e)
