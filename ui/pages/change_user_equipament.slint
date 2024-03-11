@@ -1,10 +1,13 @@
-import { VerticalBox, StandardListView, Button, LineEdit, HorizontalBox } from "std-widgets.slint";
+import { VerticalBox, StandardListView, Button, LineEdit, HorizontalBox, StandardTableView } from "std-widgets.slint";
 export global ChangeEquipament {
     in property <string> search;
     in property <string> user;
     in property <string> future_user;
-    in property <[StandardListViewItem]> users: 
-    [{text:"daniel"},{text:"alex marin"}];
+    in property <string> furure_login;
+    in property <[[StandardListViewItem]]> users: [
+    [{text:"aa"},{text:"ab"},{text:"ac"},{text:"ad"}],
+    [{text:"ba"},{text:"bb"},{text:"bc"},{text:"bd"}]
+    ];
     callback filter_users(); 
     callback change_user();
     
@@ -26,11 +29,11 @@ export component ChangeUserEquipament inherits VerticalBox {
             ChangeEquipament.filter_users()
         }
     }
-    StandardListView {
-        model: ChangeEquipament.users;
-        current-item-changed(index) => {
+    StandardTableView{
+        rows: ChangeEquipament.users;
+        current-row-changed(index) => {
 
-            ChangeEquipament.future_user = ChangeEquipament.users[index].text;            
+            ChangeEquipament.future_user = ChangeEquipament.users[index][3].text;            
         }
     }
 }
