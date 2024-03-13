@@ -1,13 +1,13 @@
 #![windows_subsystem = "windows"]
 
 slint::include_modules!();
-use anyhow::anyhow;
+
 use chrono;
 use slint::{ComponentHandle, StandardListViewItem, VecModel};
 use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
-type actual_database = Pool<Sqlite>;
+type ActualDatabase = Pool<Sqlite>;
 #[derive(sqlx::FromRow, Debug, Default, Clone)]
 struct DbUser {
     name: String,
@@ -54,7 +54,7 @@ async fn get_users() -> anyhow::Result<Vec<DbUser>> {
 //     Ok(recs)
 // }
 
-async fn get_computers(db: &actual_database) -> anyhow::Result<Vec<DbComputer>> {
+async fn get_computers(db: &ActualDatabase) -> anyhow::Result<Vec<DbComputer>> {
     let recs = sqlx::query_as::<_, DbComputer>(
         r#"
 
@@ -136,9 +136,10 @@ async fn ui_user_detail_update(app: &App) {
     });
 }
 
-async fn ui_equipament_list(app: &App, db: &Pool<Sqlite>) -> anyhow::Result<()> {
+async fn ui_equipament_list(app: &App, db: Arc<String>) -> anyhow::Result<()> {
+    let poll = SqlitePool::connect(&*db).await?;
     let row_data: Rc<VecModel<slint::ModelRc<StandardListViewItem>>> = Rc::new(VecModel::default());
-    let tmp = get_computers(db).await?;
+    let tmp = get_computers(&poll).await?;
     for i in tmp {
         let items = Rc::new(VecModel::default());
         items.push(slint::format!("{0}", i.serialnumber).into());
@@ -168,7 +169,7 @@ async fn update_user_equipament(
     let poll = SqlitePool::connect("banco.sqlite3").await?;
     let today = chrono::Local::now().date_naive().to_string();
     dbg!(&equipament, &actual_user, &future_user, &today);
-    let recs = sqlx::query(
+    let _ = sqlx::query(
         r#"
             update has
             set date_end=?1 
@@ -212,7 +213,7 @@ async fn update_user_equipament(
     // .rows_affected();
     Ok(())
 }
-async fn ui_change_equipament(app: &App) -> anyhow::Result<()> {
+async fn ui_change_equipament(app: &App, db_path: Arc<String>) -> anyhow::Result<()> {
     let myapp = app.clone_strong();
 
     let row_data = get_user_list().await?;
@@ -221,14 +222,15 @@ async fn ui_change_equipament(app: &App) -> anyhow::Result<()> {
 
     app.global::<ChangeEquipament>().on_change_user(move || {
         let local_app = myapp.clone_strong();
-        // let user = myapp.global::<UserDetail>().get_login();
         let computer = myapp.global::<ComputerDetail>();
         let serial = computer.get_serial_number();
 
         // let brand = computer.get_brand();
         let actual_user = computer.get_actual_user();
         let future_user = local_app.global::<ChangeEquipament>().get_future_user();
+        let db_path_clone = Arc::clone(&db_path);
 
+        // let db = Arc::clone(&db_path);
         let _ = slint::spawn_local(async move {
             let _ = update_user_equipament(
                 actual_user.to_string(),
@@ -236,6 +238,8 @@ async fn ui_change_equipament(app: &App) -> anyhow::Result<()> {
                 serial.to_string(),
             )
             .await;
+            let db_path_clone = db_path_clone.clone();
+            let _ = ui_equipament_list(&local_app, db_path_clone).await;
         });
     });
     Ok(())
@@ -243,12 +247,14 @@ async fn ui_change_equipament(app: &App) -> anyhow::Result<()> {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let poll = SqlitePool::connect("banco.sqlite3").await?;
+    // let poll = SqlitePool::connect("banco.sqlite3").await?;
+    let db_path = Arc::new("banco.sqlite3".to_string());
     let myapp = App::new().unwrap();
     let _ = ui_user_list(&myapp).await;
     let _ = ui_user_detail_update(&myapp).await;
-    let _ = ui_change_equipament(&myapp).await;
-    let _ = ui_equipament_list(&myapp, &poll)
+    let tmp = db_path.clone();
+    let _ = ui_change_equipament(&myapp, tmp).await;
+    let _ = ui_equipament_list(&myapp, db_path)
         .await
         .map_err(|e| println!("{}", e));
     //     Ok(_) => {}
