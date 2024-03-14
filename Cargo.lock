@@ -2315,18 +2315,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "inventario_slint"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "slint",
- "slint-build",
- "sqlx",
- "tokio",
-]
-
-[[package]]
 name = "io-lifetimes"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3643,6 +3631,18 @@ name = "simd-adler32"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
+
+[[package]]
+name = "simple_inventary"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "slint",
+ "slint-build",
+ "sqlx",
+ "tokio",
+]
 
 [[package]]
 name = "simplecss"
