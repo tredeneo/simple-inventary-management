@@ -1,13 +1,28 @@
+use std::{path::Path, sync::Arc};
+
 use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
 
 mod query;
 use query as query_select;
 pub mod model;
 
-type ActualDatabase = Pool<Sqlite>;
+fn data_base_directory() -> Arc<String> {
+    use std::env;
+    match env::var("SIMPLE_INVENTARY_DATABASE_PATH") {
+        Ok(path) => Arc::new(path),
+        _ => {
+            let path = Path::new("./").join("database.sqlite3");
+            dbg!(&path);
+            if path.exists() {
+                return Arc::new(path.to_string_lossy().to_string());
+            }
+            Arc::new(path.to_string_lossy().to_string()) // TODO: use XDG path
+        }
+    }
+}
 
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
-    let pool = SqlitePool::connect("banco.sqlite3").await?;
+    let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
         .fetch_all(&pool)
         .await?;
@@ -16,7 +31,7 @@ pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
 }
 
 pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
-    let poll = SqlitePool::connect("banco.sqlite3").await?;
+    let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
         .bind(user.name)
         .bind(user.email)
@@ -27,11 +42,16 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn get_computers(db: &ActualDatabase) -> anyhow::Result<Vec<model::DbComputer>> {
+async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
+    Ok(SqlitePool::connect(&data_base_directory()).await?)
+}
+
+pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
+    let poll = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbComputer>(
         query_select::SELECT_COMPUTER_INFORMATION_WITH_LAST_USER,
     )
-    .fetch_all(db)
+    .fetch_all(&poll)
     .await?;
     Ok(recs)
 }
@@ -40,7 +60,7 @@ pub async fn update_user_equipament(
     future_user: String,
     equipament: String,
 ) -> anyhow::Result<()> {
-    let poll = SqlitePool::connect("banco.sqlite3").await?;
+    let poll = get_sql_pool().await?;
     let today = chrono::Local::now().date_naive().to_string();
     dbg!(&equipament, &actual_user, &future_user, &today);
     let _ = sqlx::query(query_select::UPDATE_LAST_USER_COMPUTER)

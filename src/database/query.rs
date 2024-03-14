@@ -1,46 +1,51 @@
 pub const SELECT_USER_INFOMATION: &str = r#"
-            select name,login,email,id
-            from users
+            SELECT name,login,email,id
+            FROM users
         "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
-            update users
-            set name=?1, email=?2 
-            where login=?3
+            UPDATE users
+            SET name=?1, email=?2 
+            WHERE login=?3
         "#;
+
 pub const SELECT_COMPUTER_INFORMATION_WITH_LAST_USER: &str = r#"
-        select serialnumber ,brands.name as brand, model, login as actual_user
-        from computer 
-        join brands on computer.brand  = brands.id 
-        --left join has on has.computer_id = computer.id 
-        left join (
-        	select *
-        	from has
-        	ORDER by date_begin
-        	desc
-        	LIMIT 1
-        ) as last_user on last_user.computer_id = computer.id
-        left join users on users.id = last_user.user_id   
-                "#;
+SELECT * FROM (
+    SELECT 
+        computer.serialnumber,
+        brands.name AS brand,
+        computer.model,
+        login AS actual_user,
+        ROW_NUMBER() OVER (PARTITION BY computer.id ORDER BY has.date_begin DESC) AS rn
+    FROM 
+        computer
+    JOIN brands ON computer.brand = brands.id
+    LEFT JOIN has ON has.computer_id = computer.id
+    LEFT JOIN users ON users.id = has.user_id
+    WHERE 
+        has.date_end IS NULL
+) AS sub
+WHERE 
+    sub.rn = 1;"#;
 
 pub const UPDATE_LAST_USER_COMPUTER: &str = r#"
             update has
             set date_end=?1 
             where user_id=(    
-                        select id 
-                    	from users u 
+                        SELECT id 
+                    	FROM users u 
                     	WHERE u.login =?2        
                         )
             and computer_id=(
                      	SELECT id 
-                    	from computer c 
+                    	FROM computer c 
                     	WHERE c.serialnumber = ?3
                         )
-            and date_end is NULL
+            AND date_end IS NULL
         "#;
 pub const INSERT_NEW_USER_COMPUTER: &str = r#"
-        insert into has (computer_id, user_id, date_begin)
-        values (
-        (select id from computer WHERE serialnumber = ?1),
+        INSERT INTO has (computer_id, user_id, date_begin)
+        VALUES (
+        (SELECT id FROM computer WHERE serialnumber = ?1),
         ?2,
         ?3
         )   
