@@ -1,0 +1,54 @@
+import { StandardTableView } from "std-widgets.slint";
+export global ChangeEquipament {
+    in property <bool> change_equipament:false;
+    in property <string> search;
+    in property <string> user;
+    in property <string> future_user;
+    in property <string> furure_login;
+    in property <[[StandardListViewItem]]> users: [
+        [{ text:"aa" }, { text:"ab" }, { text:"ac" }, { text:"ad" }],
+        [{ text:"ba" }, { text:"bb" }, { text:"bc" }, { text:"bd" }]
+    ];
+    callback filter_users();
+    callback change_user();
+}
+
+export global Computers {
+    in property <[[StandardListViewItem]]> row_data: [
+        [
+            { text:"serialnumber 1" },
+            { text:"brand 1" },
+            { text:"actual user 1" },
+            { text:"model 1" }
+        ],
+        [
+            { text:"serialnumber 2" },
+            { text:"brand 2" },
+            { text:"actual user 2" },
+            { text:"model 2" }
+        ],
+        [
+            { text:"serialnumber 3" },
+            { text:"brand 3" },
+            { text:"actual user 3" },
+            { text:"model 3" }
+        ],
+    ];
+    in property <bool> selected_computer: false;
+    in property <string> current_computer;
+    in property <bool> create_computer:false;
+    callback update_computers_list();
+}
+
+export global ComputerDetail {
+    in property <[[StandardListViewItem]]> row_data:[
+        [{ text:"name 1" }, { text:"login 1" }, { text:"email 1" }, { text:"2023-12-31" }],
+        [{ text:"name 2" }, { text:"login 2" }, { text:"email 2" }, { text:"2023-12-31" }],
+        [{ text:"name 3" }, { text:"login 3" }, { text:"email 3" }, { text:"2023-12-31" }],
+    ];
+    in property <string> brand;
+    in property <string> model;
+    in property <string> actual_user;
+    in property <string> serial_number;
+    callback save();
+}

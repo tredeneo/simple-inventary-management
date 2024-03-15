@@ -1,111 +1,112 @@
-
 import { StandardTableView, VerticalBox ,Button, Palette, LineEdit} from "std-widgets.slint";
 import { ChangeUserEquipament } from "./change_user_equipament.slint";
+import { ComputerDetail,Computers,ChangeEquipament} from "../globals/computer.slint";
 
-export global Computers {
-    in property <[[StandardListViewItem]]> row_data : [
-        [{text:"11"},{text:"12"},{text:"13"},{text:"14"}],
-        [{text:"21"},{text:"22"},{text:"23"},{text:"24"}],
-        [{text:"31"},{text:"32"},{text:"33"},{text:"34"}],
-    ];
-    in property <bool> selected_computer: false;
-    in property <string> current_computer;
-    callback update_computers_list();
-}
-export global ComputerDetail {
-    in property <[[StandardListViewItem]]> row_data:[
-        [{text:"daniel"},{text:"daniel.inacio"},{text:"ti@integrabrasil.com"},{text:"2023-12-31"},{text:""}],
-        [{text:"alex marin"},{text:"alex.marin"},{text:"alex.marin@integrabrasil.com"},{text:"2023-11-31"},{text:""}],
-        [{text:"alyson"},{text:"alyson.santos"},{text:"alyson.santos@integrabrasil.com"},{text:"2023-10-31"},{text:""}],
-    ] ;
-    in property <string> brand;
-    in property <string> model;
-    in property <string> actual_user;
-    in property <string> serial_number;
 
-    callback save();
-}
 
-component Computer inherits VerticalBox 
-{
-
-    property <bool> change_equipament:false;
-    in-out property <string> serialnumber;
-    if !change_equipament: VerticalLayout {
+component ChangeComputer inherits VerticalBox {
+    VerticalLayout {
         alignment: LayoutAlignment.space-between;
-        HorizontalLayout 
-        {
+        HorizontalLayout {
             alignment: LayoutAlignment.space-around;
-            Button 
-            {
-                text:@tr("update");
-                clicked => 
-                {
-                        ComputerDetail.save()
-                }
-            }
             Button {
-                text: ("change user");
+                text: @tr("update");
                 clicked => {
-                    change_equipament = true;
+                    ComputerDetail.save()
                 }
             }
-            HorizontalLayout 
-            {
+
+            Button {
+                text: @tr("change user");
+                clicked => {
+                    ChangeEquipament.change_equipament = true;
+                }
+            }
+
+            HorizontalLayout {
                 alignment: LayoutAlignment.end;
-                Button 
-                {
-                    text: "voltar";
+                Button {
+                    text: @tr("back");
                     height: 50px;
                     clicked => {
-                        Computers.selected_computer=false;
+                        Computers.selected_computer = false;
                     }
                 }
             }
         }
 
         GridLayout {
-            Text{text:"model";}
-            LineEdit 
-            {
+            Text {
+                text: "model";
+            }
+
+            LineEdit {
                 text: ComputerDetail.model;
             }
         }
+
         StandardTableView {
-            columns: [
-                {title:"name"},
-                {title:"login"},
-                {title:"email"},
-                {title:"initial date"}
-            ];
+            columns: [{ title:"name" }, { title:"login" }, { title:"email" }, { title:"initial date" }];
             rows: ComputerDetail.row_data;
         }
     }
-    if change_equipament: ChangeUserEquipament{}
-
-       
 }
-export component ComputerList inherits VerticalBox {
-    if !Computers.selected_computer: StandardTableView {
-        columns: [
-            {title:"serialnumber"},
-            {title: "brand"},
-            {title:"actual user"},
-            {title:"model"}
-        ];
-        rows:Computers.row_data;
-        row-pointer-event(index,event,_)=>{
-            if event.button == PointerEventButton.left {
-                Computers.current_computer = Computers.row_data[index][0].text;
-                ComputerDetail.serial_number = Computers.row_data[index][0].text;
-                ComputerDetail.brand= Computers.row_data[index][1].text;
-                ComputerDetail.actual_user = Computers.row_data[index][2].text;
-                ComputerDetail.model = Computers.row_data[index][3].text;
-                Computers.selected_computer = true;
+
+component CreateComputer inherits VerticalBox {
+    VerticalLayout {
+        Button {
+            height: 50px;
+            text: "save";
+            clicked => {
+                Computers.create_computer = false;
+            }
         }
+
+        LineEdit { }
+    }
+}
+
+component ShowComputers inherits VerticalBox {
+    VerticalLayout {
+        HorizontalLayout {
+            Button {
+                text: "create computer";
+                clicked => {
+                    Computers.create_computer = true;
+                }
+            }
+        }
+
+        StandardTableView {
+            columns: [
+                { title:"serialnumber" },
+                { title: "brand" },
+                { title:"actual user" },
+                { title:"model" }
+            ];
+            rows: Computers.row_data;
+            row-pointer-event(index, event, _) => {
+                if event.button == PointerEventButton.left {
+                    Computers.current_computer = Computers.row_data[index][0].text;
+                    ComputerDetail.serial_number = Computers.row_data[index][0].text;
+                    ComputerDetail.brand = Computers.row_data[index][1].text;
+                    ComputerDetail.actual_user = Computers.row_data[index][2].text;
+                    ComputerDetail.model = Computers.row_data[index][3].text;
+                    Computers.selected_computer = true;
+                }
+            }
         }
     }
-    if Computers.selected_computer: Computer{}
-
 }
 
+component Computer inherits VerticalBox {
+    in-out property <string> serialnumber;
+    if !ChangeEquipament.change_equipament:ChangeComputer { }
+    if ChangeEquipament.change_equipament: ChangeUserEquipament { }
+}
+
+export component ComputerList inherits VerticalBox {
+    if !Computers.selected_computer && !Computers.create_computer:ShowComputers { }
+    if !Computers.selected_computer && Computers.create_computer: CreateComputer { }
+    if Computers.selected_computer: Computer { }
+}

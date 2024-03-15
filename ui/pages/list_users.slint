@@ -1,97 +1,122 @@
 import { StandardTableView, VerticalBox ,Button, Palette, LineEdit} from "std-widgets.slint";
+import {Users, UserDetail} from "../globals/users.slint";
 
 
-export global Users {
-    in property <[[StandardListViewItem]]> row_data : [
-        [{text:"11"},{text:"12"},{text:"13"}],
-        [{text:"21"},{text:"22"},{text:"23"}],
-        [{text:"31"},{text:"32"},{text:"33"}],
-    ];
-    in property <bool> selected_user: false;
-    in property <string> current_user;
-}
+component CreateUser inherits VerticalBox {
+    VerticalBox {
+        Button {
+            height: 50px;
+            text: "save";
+            clicked => {
+                Users.create_user = false;
+            }
+        }
 
-export global UserDetail {
-    in property <[[StandardListViewItem]]> row_data:[
-        [{text:"dlsajdl"},{text:"dell"},{text:"inspiron"},{text:"2023-12-31"},{text:""}],
-        [{text:"djslajdl"},{text:"asus"},{text:"vivobook"},{text:"2023-11-31"},{text:""}],
-        [{text:"ldsjald"},{text:"samsung"},{text:"book 3"},{text:"2023-10-31"},{text:""}],
-    ] ;
-    in property <string> name ;
-    in property <string> login;
-    in property <string> email;
-    in property <int> id;
-    callback save();
+        LineEdit { }
+    }
 }
 
 component User inherits VerticalBox {
     in-out property <string> name;
-
     VerticalLayout {
         alignment: LayoutAlignment.space-between;
         HorizontalLayout {
             Button {
-                text:"salvar";
+                text: "salvar";
                 clicked => {
                     UserDetail.save();
                 }
             }
-        HorizontalLayout {
-            alignment: LayoutAlignment.end;
-            Button {
-                text: "voltar"; 
-                height: 50px;
-                clicked=> {
-                    Users.selected_user=false;
+
+            HorizontalLayout {
+                alignment: LayoutAlignment.end;
+                Button {
+                    text: "voltar";
+                    height: 50px;
+                    clicked => {
+                        Users.selected_user = false;
                     }
                 }
             }
-    
         }
 
         GridLayout {
-            Text {text:"name";}
+            Text {
+                text: "name";
+            }
+
             LineEdit {
                 text: UserDetail.name;
-                edited (str)=> {
-                    UserDetail.name=str
-                    }
+                edited(str) => {
+                    UserDetail.name = str
                 }
-            Text {text: "login";row: 1; }
-            LineEdit {text:UserDetail.login;enabled: false;}
-
-            Text {text: "login";row: 2;}
-            LineEdit {text:UserDetail.email;}
             }
-            spacing: 30px;
-            StandardTableView {
-                columns: [{title:"serialn"},
-                    {title:"brand"},
-                    {title:"model"},
-                    {title:"initial date"},
-                    {title:"final date"}];
-                rows: UserDetail.row-data;
-                }
+
+            Text {
+                text: "login";
+                row: 1;
+            }
+
+            LineEdit {
+                text: UserDetail.login;
+                enabled: false;
+            }
+
+            Text {
+                text: "login";
+                row: 2;
+            }
+
+            LineEdit {
+                text: UserDetail.email;
+            }
+        }
+
+        spacing: 30px;
+        StandardTableView {
+            columns: [
+                { title:"serialn" },
+                { title:"brand" },
+                { title:"model" },
+                { title:"initial date" },
+                { title:"final date" }
+            ];
+            rows: UserDetail.row-data;
+        }
     }
 }
-export component UserList inherits VerticalBox {
-if !Users.selected_user: StandardTableView {
-    columns:[
-            {title: "name"},
-            {title: "login"},
-            {title: "email"}
-        ];
-    rows: Users.row-data;
-    row-pointer-event(index,event,_)=>{
-        if event.button == PointerEventButton.left {
-            Users.current_user = Users.row_data[index][0].text;
-            UserDetail.name= Users.row_data[index][0].text;
-            UserDetail.login = Users.row_data[index][1].text;
-            UserDetail.email = Users.row_data[index][2].text;
-            Users.selected_user = true;
-    }
-    }
 
-}       
-if Users.selected_user: User{name: Users.current_user;}
-}   
+component ShowUser inherits VerticalBox {
+    VerticalLayout {
+        HorizontalLayout {
+            Button {
+                text: "create user";
+                clicked => {
+                    Users.create_user = true;
+                }
+            }
+        }
+
+        StandardTableView {
+            columns: [{ title: "name" }, { title: "login" }, { title: "email" }];
+            rows: Users.row-data;
+            row-pointer-event(index, event, _) => {
+                if event.button == PointerEventButton.left {
+                    Users.current_user = Users.row_data[index][0].text;
+                    UserDetail.name = Users.row_data[index][0].text;
+                    UserDetail.login = Users.row_data[index][1].text;
+                    UserDetail.email = Users.row_data[index][2].text;
+                    Users.selected_user = true;
+                }
+            }
+        }
+    }
+}
+
+export component UserList inherits VerticalBox {
+    if !Users.selected_user && !Users.create_user: ShowUser { }
+    if !Users.selected_user && Users.create_user: CreateUser { }
+    if Users.selected_user: User {
+        name: Users.current_user;
+    }
+}

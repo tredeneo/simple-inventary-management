@@ -8,12 +8,12 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.79"
 chrono = "0.4.34"
-slint = "1.4.1"
+slint = "1.5"
 sqlx = { version = "0.7.3", features = ["sqlite", "runtime-tokio"] }
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "rt", "macros"] }
 
 [build-dependencies]
-slint-build = "1.4.1"
+slint-build = "1.5"
 
 [profile.release]
 strip=true
