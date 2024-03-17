@@ -1,4 +1,4 @@
-import { StandardTableView, VerticalBox ,Button, Palette, LineEdit} from "std-widgets.slint";
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox} from "std-widgets.slint";
 import {Users, UserDetail} from "../globals/users.slint";
 
 
@@ -61,10 +61,18 @@ component User inherits VerticalBox {
                 text: UserDetail.login;
                 enabled: false;
             }
-
+            
+            Text{
+                text:"department";
+                row:2;
+            }
+            ComboBox {
+                model: UserDetail.departments;
+                current-value: UserDetail.department;
+            }
             Text {
-                text: "login";
-                row: 2;
+                text: "email";
+                row: 3;
             }
 
             LineEdit {

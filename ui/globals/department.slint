@@ -1,0 +1,8 @@
+
+export global GlobalDepartment{
+    in-out property <[StandardListViewItem]> row_data:[
+        {text:"frota"},{text:"comercial"},{text:"monitoramento"}
+    ] ;    
+    callback delete_item(StandardListViewItem);
+    callback add_item(string);
+}

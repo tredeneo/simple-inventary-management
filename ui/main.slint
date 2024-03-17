@@ -5,15 +5,21 @@ import { CheckBox, StandardListView, StyleMetrics } from "std-widgets.slint";
 import {  UserList } from "pages/pages.slint";
 import { ComputerList} from "pages/pages.slint";
 import { SideBar } from "side_bar.slint";
-import {GlobalCPU, ChangeEquipament,Users,UserDetail,Computers,ComputerDetail,GlobalBrand} from "globals/globals.slint";
+import {GlobalCPU, ChangeEquipament,Users,
+UserDetail,Computers,ComputerDetail,GlobalBrand,
+GlobalDepartment} from "globals/globals.slint";
 import { Brand} from "pages/brand.slint";
+import {Department} from "pages/department.slint";
 
 import {CPU} from "pages/cpu.slint";
 
 
 
 
-export {Users,UserDetail,ChangeEquipament,ComputerDetail,Computers,GlobalBrand,GlobalCPU}
+export {Users,UserDetail,ChangeEquipament,
+    ComputerDetail,Computers,GlobalBrand,
+    GlobalCPU,GlobalDepartment
+}
 
 
 export component App inherits Window {
@@ -23,12 +29,19 @@ export component App inherits Window {
     HorizontalLayout {
         side-bar := SideBar {
             title: @tr("Slint Widgets Gallery");
-            model: [@tr("Menu" => "Users"), @tr("Menu" => "Computers"), @tr("Menu" => "Brand"),@tr("Menu"=> "CPU")];
+            model: [
+            @tr("Menu" => "Users"), 
+            @tr("Menu" => "Computers"), 
+            @tr("Menu" => "Brand"),
+            @tr("Menu"=> "CPU"),
+            @tr("Menu" => "Department")
+            ];
         }
 
         if(side-bar.current-item == 0): UserList { }
         if(side-bar.current-item == 1): ComputerList { }
         if(side-bar.current-item == 2): Brand{}
         if(side-bar.current-item == 3): CPU{}
+        if(side-bar.current-item == 4): Department{}
     }
 }
