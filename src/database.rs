@@ -12,7 +12,6 @@ fn data_base_directory() -> Arc<String> {
         Ok(path) => Arc::new(path),
         _ => {
             let path = Path::new("./").join("database.sqlite3");
-            dbg!(&path);
             if path.exists() {
                 return Arc::new(path.to_string_lossy().to_string());
             }
@@ -33,10 +32,7 @@ pub async fn get_cpus() -> anyhow::Result<Vec<model::DbCPU>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbCPU>(query_select::SELECT_CPU)
         .fetch_all(&pool)
-        .await
-        .inspect_err(|e| {
-            dbg!(&e);
-        })?;
+        .await?;
 
     Ok(recs)
 }
@@ -52,15 +48,11 @@ pub async fn delete_cpu(name: String) -> anyhow::Result<()> {
 
 pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
-    dbg!(&name, &brand);
     let _ = sqlx::query(query_select::INSERT_CPU)
         .bind(name)
         .bind(brand)
         .execute(&poll)
-        .await
-        .inspect_err(|e| {
-            dbg!(&e);
-        })?;
+        .await?;
     Ok(())
 }
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
@@ -84,6 +76,34 @@ pub async fn delete_brand(name: String) -> anyhow::Result<()> {
 pub async fn insert_brand(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_BRAND)
+        .bind(name)
+        .execute(&poll)
+        .await?;
+    Ok(())
+}
+
+pub async fn get_department() -> anyhow::Result<Vec<model::DbDepartment>> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbDepartment>(query_select::SELECT_DEPARTMENT)
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(recs)
+}
+
+pub async fn delete_department(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::DELETE_DEPARTMENT)
+        .bind(name)
+        .execute(&poll)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn insert_department(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::INSERT_DEPARTMENT)
         .bind(name)
         .execute(&poll)
         .await?;
@@ -121,23 +141,17 @@ pub async fn update_user_equipament(
 ) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let today = chrono::Local::now().date_naive().to_string();
-    dbg!(&equipament, &actual_user, &future_user, &today);
     let _ = sqlx::query(query_select::UPDATE_LAST_USER_COMPUTER)
         .bind(&today)
         .bind(&actual_user)
         .bind(&equipament)
         .execute(&poll)
-        .await
-        .map_err(|e| dbg!(e));
-    // dbg!(recs);
-    let recs = sqlx::query(query_select::INSERT_NEW_USER_COMPUTER)
+        .await?;
+    let _ = sqlx::query(query_select::INSERT_NEW_USER_COMPUTER)
         .bind(&equipament)
         .bind(&future_user)
         .bind(&today)
         .execute(&poll)
         .await?;
-    dbg!(recs);
-
-    // .rows_affected();
     Ok(())
 }

@@ -14,12 +14,47 @@ async fn get_user_list() -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardLi
         items.push(slint::format!("{0}", i.name).into());
         items.push(slint::format!("{}", i.login).into());
         items.push(slint::format!("{}", i.email).into());
-        items.push(slint::format!("{}", i.id).into());
         row_data.push(items.into());
     }
     Ok(row_data)
 }
 
+async fn get_department_list() -> anyhow::Result<Rc<VecModel<StandardListViewItem>>> {
+    let row_data = Rc::new(VecModel::default());
+    let tmp = database::get_department().await?;
+    for i in tmp {
+        let item: StandardListViewItem = slint::format!("{}", i.name).into();
+        row_data.push(item);
+    }
+    Ok(row_data)
+}
+pub async fn department(app: &App) -> anyhow::Result<()> {
+    async fn update(app: &App) -> anyhow::Result<()> {
+        let row_data = get_department_list().await?;
+        app.global::<GlobalDepartment>()
+            .set_row_data(row_data.clone().into());
+        Ok(())
+    }
+    let myapp = app.clone_strong();
+    update(&myapp).await?;
+    app.global::<GlobalDepartment>().on_add_item(move |value| {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move {
+            let _ = database::insert_department(value.to_string()).await;
+            let _ = update(&local_app).await;
+        });
+    });
+    let myapp = app.clone_strong();
+    app.global::<GlobalDepartment>()
+        .on_delete_item(move |value| {
+            let local_app = myapp.clone_strong();
+            let _ = slint::spawn_local(async move {
+                let _ = database::delete_department(value.text.to_string()).await;
+                let _ = update(&local_app).await;
+            });
+        });
+    Ok(())
+}
 async fn ui_user_list(app: &App) -> anyhow::Result<()> {
     let row_data = get_user_list().await?;
 
@@ -90,10 +125,9 @@ async fn ui_change_equipament(app: &App) -> anyhow::Result<()> {
     });
     Ok(())
 }
-
 async fn get_brand_list() -> anyhow::Result<Rc<VecModel<StandardListViewItem>>> {
     let row_data = Rc::new(VecModel::default());
-    let tmp = get_brands().await?;
+    let tmp = database::get_brands().await?;
 
     for i in tmp {
         let item: StandardListViewItem = slint::format!("{}", i.name).into();
@@ -185,6 +219,7 @@ async fn main() -> anyhow::Result<()> {
     let _ = ui_equipament_list(&myapp).await;
     let _ = ui_brand(&myapp).await;
     let _ = ui_cpu(&myapp).await;
+    let _ = department(&myapp).await;
 
     myapp.run().unwrap();
     Ok(())

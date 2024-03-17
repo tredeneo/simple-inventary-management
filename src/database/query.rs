@@ -66,6 +66,21 @@ pub const DELETE_BRAND: &str = r#"
     where name = ?1 
 "#;
 
+pub const SELECT_DEPARTMENT: &str = r#"
+    SELECT id,name
+    FROM departments
+"#;
+
+pub const INSERT_DEPARTMENT: &str = r#"
+   INSERT INTO departments (name) 
+    VALUES (?1)
+"#;
+
+pub const DELETE_DEPARTMENT: &str = r#"
+   DELETE from departments
+    where name = ?1 
+"#;
+
 pub const SELECT_CPU: &str = r#"
     SELECT cpu.name,brands.name as brand
     FROM cpu

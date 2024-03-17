@@ -19,6 +19,11 @@ pub struct DbBrand {
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbDepartment {
+    pub name: String,
+}
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
 pub struct DbCPU {
     pub name: String,
     pub brand: String,
