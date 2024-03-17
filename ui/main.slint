@@ -5,9 +5,14 @@ import { CheckBox, StandardListView, StyleMetrics } from "std-widgets.slint";
 import {  UserList } from "pages/pages.slint";
 import { ComputerList} from "pages/pages.slint";
 import { SideBar } from "side_bar.slint";
-import { ChangeEquipament,Users,UserDetail,Computers,ComputerDetail} from "globals/globals.slint";
+import { ChangeEquipament,Users,UserDetail,Computers,ComputerDetail,GlobalBrand} from "globals/globals.slint";
+import { Brand} from "pages/brand.slint";
 
-export {Users,UserDetail,ChangeEquipament,ComputerDetail,Computers}
+
+
+
+export {Users,UserDetail,ChangeEquipament,ComputerDetail,Computers,GlobalBrand}
+
 
 export component App inherits Window {
     preferred-width: 1280px;
@@ -16,10 +21,11 @@ export component App inherits Window {
     HorizontalLayout {
         side-bar := SideBar {
             title: @tr("Slint Widgets Gallery");
-            model: [@tr("Menu" => "Users"), @tr("Menu" => "Computers")];
+            model: [@tr("Menu" => "Users"), @tr("Menu" => "Computers"), @tr("Menu" => "Brand")];
         }
 
         if(side-bar.current-item == 0): UserList { }
         if(side-bar.current-item == 1): ComputerList { }
+        if(side-bar.current-item == 2): Brand{}
     }
 }

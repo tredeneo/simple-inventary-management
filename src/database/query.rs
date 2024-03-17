@@ -50,3 +50,18 @@ pub const INSERT_NEW_USER_COMPUTER: &str = r#"
         ?3
         )   
         "#;
+
+pub const SELECT_BRAND: &str = r#"
+    SELECT id,name
+    FROM brands 
+"#;
+
+pub const INSERT_BRAND: &str = r#"
+   INSERT INTO brands (name) 
+    VALUES (?1)
+"#;
+
+pub const DELETE_BRAND: &str = r#"
+   DELETE from brands
+    where name = ?1 
+"#;

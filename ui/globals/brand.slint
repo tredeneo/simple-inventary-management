@@ -1,0 +1,8 @@
+export global GlobalBrand {
+    in-out property <[StandardListViewItem]> row_data:[
+        {text:"intel"},{text:"amd"},{text:"nvidia"}
+    ] ;    
+    callback delete_item(StandardListViewItem);
+    callback add_item(string);
+}
+

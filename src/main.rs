@@ -2,7 +2,7 @@
 
 slint::include_modules!();
 
-use simple_inventary::database;
+use simple_inventary::database::{self, get_brands};
 use slint::{ComponentHandle, StandardListViewItem, VecModel};
 use std::rc::Rc;
 
@@ -91,20 +91,50 @@ async fn ui_change_equipament(app: &App) -> anyhow::Result<()> {
     Ok(())
 }
 
+async fn get_brand_list() -> anyhow::Result<Rc<VecModel<StandardListViewItem>>> {
+    let row_data = Rc::new(VecModel::default());
+    let tmp = get_brands().await?;
+
+    for i in tmp {
+        let item: StandardListViewItem = slint::format!("{}", i.name).into();
+        row_data.push(item);
+    }
+    Ok(row_data)
+}
+async fn ui_brand(app: &App) -> anyhow::Result<()> {
+    async fn ui_update(app: &App) -> anyhow::Result<()> {
+        let row_data = get_brand_list().await?;
+        app.global::<GlobalBrand>()
+            .set_row_data(row_data.clone().into());
+        Ok(())
+    }
+    let myapp = app.clone_strong();
+    ui_update(&myapp).await?;
+    app.global::<GlobalBrand>().on_add_item(move |value| {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move {
+            let _ = database::insert_brand(value.to_string()).await;
+            let _ = ui_update(&local_app).await;
+        });
+    });
+    let myapp = app.clone_strong();
+    app.global::<GlobalBrand>().on_delete_item(move |value| {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move {
+            let _ = database::delete_brand(value.text.to_string()).await;
+            let _ = ui_update(&local_app).await;
+        });
+    });
+    Ok(())
+}
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let myapp = App::new().unwrap();
     let _ = ui_user_list(&myapp).await;
     let _ = ui_user_detail_update(&myapp).await;
     let _ = ui_change_equipament(&myapp).await;
-    let _ = ui_equipament_list(&myapp)
-        .await
-        .map_err(|e| println!("{}", e));
-    //     Ok(_) => {}
-    //     Err(e) => {
-    //         println!("{}", e)
-    //     }
-    // };
+    let _ = ui_equipament_list(&myapp).await;
+    let _ = ui_brand(&myapp).await;
 
     myapp.run().unwrap();
     Ok(())

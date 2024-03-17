@@ -21,6 +21,14 @@ fn data_base_directory() -> Arc<String> {
     }
 }
 
+pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_BRAND)
+        .fetch_all(&pool)
+        .await?;
+    Ok(recs)
+}
+
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
@@ -30,6 +38,31 @@ pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     Ok(recs)
 }
 
+pub async fn delete_brand(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    dbg!(&name);
+    let recs = sqlx::query(query_select::DELETE_BRAND)
+        .bind(name)
+        .execute(&poll)
+        .await;
+    match recs {
+        Ok(_) => {}
+        Err(e) => {
+            dbg!(&e);
+        }
+    }
+    Ok(())
+}
+
+pub async fn insert_brand(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    dbg!(&name);
+    let _ = sqlx::query(query_select::INSERT_BRAND)
+        .bind(name)
+        .execute(&poll)
+        .await?;
+    Ok(())
+}
 pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
