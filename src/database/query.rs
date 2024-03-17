@@ -65,3 +65,24 @@ pub const DELETE_BRAND: &str = r#"
    DELETE from brands
     where name = ?1 
 "#;
+
+pub const SELECT_CPU: &str = r#"
+    SELECT cpu.name,brands.name as brand
+    FROM cpu
+    JOIN brands ON cpu.brand = brands.id
+"#;
+
+pub const INSERT_CPU: &str = r#"
+   INSERT INTO cpu (name,brand) 
+    VALUES (
+    ?1,
+        (SELECT id
+        FROM brands
+        WHERE name = ?2)
+)
+"#;
+
+pub const DELETE_CPU: &str = r#"
+   DELETE from cpu
+    where name = ?1 
+"#;

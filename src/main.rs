@@ -2,8 +2,8 @@
 
 slint::include_modules!();
 
-use simple_inventary::database::{self, get_brands};
-use slint::{ComponentHandle, StandardListViewItem, VecModel};
+use simple_inventary::database::{self, get_brands, get_cpus};
+use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 use std::rc::Rc;
 
 async fn get_user_list() -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardListViewItem>>>> {
@@ -127,6 +127,55 @@ async fn ui_brand(app: &App) -> anyhow::Result<()> {
     });
     Ok(())
 }
+
+async fn get_cpu_list() -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardListViewItem>>>> {
+    let row_data = Rc::new(VecModel::default());
+    let tmp = get_cpus().await?;
+
+    for i in tmp {
+        let items = Rc::new(VecModel::default());
+        items.push(slint::format!("{}", i.name).into());
+        items.push(slint::format!("{}", i.brand).into());
+        row_data.push(items.into());
+    }
+    Ok(row_data)
+}
+
+async fn ui_cpu(app: &App) -> anyhow::Result<()> {
+    async fn ui_update(app: &App) -> anyhow::Result<()> {
+        let row_data = get_cpu_list().await?;
+        app.global::<GlobalCPU>()
+            .set_row_data(row_data.clone().into());
+
+        let brands = get_brands().await?;
+        let mut row_data = Vec::default();
+        for i in brands {
+            let item: SharedString = slint::format!("{}", i.name).into();
+            row_data.push(item)
+        }
+        app.global::<GlobalCPU>()
+            .set_brands(ModelRc::from(row_data.as_slice()));
+        Ok(())
+    }
+    let myapp = app.clone_strong();
+    ui_update(&myapp).await?;
+    app.global::<GlobalCPU>().on_add_item(move |name, brand| {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move {
+            let _ = database::insert_cpu(name.to_string(), brand.to_string()).await;
+            let _ = ui_update(&local_app).await;
+        });
+    });
+    let myapp = app.clone_strong();
+    app.global::<GlobalCPU>().on_delete_item(move |value| {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move {
+            let _ = database::delete_cpu(value.text.to_string()).await;
+            let _ = ui_update(&local_app).await;
+        });
+    });
+    Ok(())
+}
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let myapp = App::new().unwrap();
@@ -135,6 +184,7 @@ async fn main() -> anyhow::Result<()> {
     let _ = ui_change_equipament(&myapp).await;
     let _ = ui_equipament_list(&myapp).await;
     let _ = ui_brand(&myapp).await;
+    let _ = ui_cpu(&myapp).await;
 
     myapp.run().unwrap();
     Ok(())

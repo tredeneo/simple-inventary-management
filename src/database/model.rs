@@ -17,3 +17,15 @@ pub struct DbComputer {
 pub struct DbBrand {
     pub name: String,
 }
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbCPU {
+    pub name: String,
+    pub brand: String,
+}
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbGPU {
+    pub name: String,
+    pub brand: String,
+}

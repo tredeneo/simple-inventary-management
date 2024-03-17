@@ -1,0 +1,12 @@
+
+export global GlobalCPU {
+    in-out property <[string]> brands:["amd","intel"];
+    in-out property <[[StandardListViewItem]]> row_data:[
+        [{text:"ryzen 7 5700"},{text:"amd"}],
+        [{text:"core i5 10400k"},{text:"intel"}]
+    ];
+    in-out property <string> name;
+    in-out property <string> actual_brand;
+    callback delete_item(StandardListViewItem);
+    callback add_item(string,string);
+}

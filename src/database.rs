@@ -8,7 +8,7 @@ pub mod model;
 
 fn data_base_directory() -> Arc<String> {
     use std::env;
-    match env::var("SIMPLE_INVENTARY_DATABASE_PATH") {
+    let dir = match env::var("SIMPLE_INVENTARY_DATABASE_PATH") {
         Ok(path) => Arc::new(path),
         _ => {
             let path = Path::new("./").join("database.sqlite3");
@@ -18,7 +18,8 @@ fn data_base_directory() -> Arc<String> {
             }
             Arc::new(path.to_string_lossy().to_string()) // TODO: use XDG path
         }
-    }
+    };
+    dir //TODO: check if database already exist, create if not
 }
 
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
@@ -28,35 +29,60 @@ pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
         .await?;
     Ok(recs)
 }
+pub async fn get_cpus() -> anyhow::Result<Vec<model::DbCPU>> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbCPU>(query_select::SELECT_CPU)
+        .fetch_all(&pool)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?;
 
+    Ok(recs)
+}
+
+pub async fn delete_cpu(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::DELETE_CPU)
+        .bind(name)
+        .execute(&poll)
+        .await;
+    Ok(())
+}
+
+pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    dbg!(&name, &brand);
+    let _ = sqlx::query(query_select::INSERT_CPU)
+        .bind(name)
+        .bind(brand)
+        .execute(&poll)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?;
+    Ok(())
+}
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
         .fetch_all(&pool)
         .await?;
-
     Ok(recs)
 }
 
 pub async fn delete_brand(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
-    dbg!(&name);
-    let recs = sqlx::query(query_select::DELETE_BRAND)
+    let _ = sqlx::query(query_select::DELETE_BRAND)
         .bind(name)
         .execute(&poll)
-        .await;
-    match recs {
-        Ok(_) => {}
-        Err(e) => {
-            dbg!(&e);
-        }
-    }
+        .await?;
+
     Ok(())
 }
 
 pub async fn insert_brand(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
-    dbg!(&name);
     let _ = sqlx::query(query_select::INSERT_BRAND)
         .bind(name)
         .execute(&poll)
