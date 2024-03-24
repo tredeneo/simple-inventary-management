@@ -1,37 +1,57 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "libGL@latest": {
-      "last_modified": "2024-02-26T19:46:43Z",
-      "resolved": "github:NixOS/nixpkgs/548a86b335d7ecd8b57ec617781f5e652ab0c38e#libGL",
+    "gcc@latest": {
+      "last_modified": "2024-03-08T13:51:52Z",
+      "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#gcc",
       "source": "devbox-search",
-      "version": "24.0.1",
+      "version": "13.2.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/9divh7vqxqjbf0rxsjm1mgiqqz7b86az-libGL-24.0.1"
+          "store_path": "/nix/store/pv08w38nrfp2ybbfxssdij2jfi55r6ld-gcc-wrapper-13.2.0"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/44di4gvw6lydf0hm9105palmlsdyvq5w-gcc-wrapper-13.2.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/jgkzhwgrz6gxzzdxf6w32xr1h23kb2n3-libGL-24.0.1"
+          "store_path": "/nix/store/va7xgq34096yl5lhr677s919dnqaz45h-gcc-wrapper-13.2.0"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/qhpw32pz39y6i30b3vrbw5fw6zv5549f-gcc-wrapper-13.2.0"
+        }
+      }
+    },
+    "libGL@latest": {
+      "last_modified": "2024-03-08T13:51:52Z",
+      "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#libGL",
+      "source": "devbox-search",
+      "version": "24.0.2",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/rp0f656jwdw0zcsidis25sghvp3a80hk-libGL-24.0.2"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/74bs6s7hjb8508zfqslmkjgv1l2vwr78-libGL-24.0.2"
         }
       }
     },
     "libxkbcommon@latest": {
-      "last_modified": "2024-02-26T19:46:43Z",
-      "resolved": "github:NixOS/nixpkgs/548a86b335d7ecd8b57ec617781f5e652ab0c38e#libxkbcommon",
+      "last_modified": "2024-03-14T09:34:31Z",
+      "resolved": "github:NixOS/nixpkgs/bd5ddf2c6bfafff031edf80221e1ee94e86ca10a#libxkbcommon",
       "source": "devbox-search",
       "version": "1.5.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/1r148xar71qachsg3w614lgh8whyd5fx-libxkbcommon-1.5.0"
+          "store_path": "/nix/store/03xg0yvssmradvrz4h75d2wm8f2c6azh-libxkbcommon-1.5.0"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/64bwqj7xv7pvcdjhx055v417f2wcmnjq-libxkbcommon-1.5.0"
+          "store_path": "/nix/store/hdb5payxdjwdz9g69h1j3dsvhzvxbfq6-libxkbcommon-1.5.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/jc7l8y73s6i7w17nlipx34bcp5glayvb-libxkbcommon-1.5.0"
+          "store_path": "/nix/store/r14v925x85mxw3dm2dy5cm4l3kvhpk47-libxkbcommon-1.5.0"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/w9vx36lxhz4p9z3dj3i3496l2rmfddl0-libxkbcommon-1.5.0"
+          "store_path": "/nix/store/nvjylhp4ihsw1njffcmfna7gqmkrs6si-libxkbcommon-1.5.0"
         }
       }
     },
@@ -42,13 +62,13 @@
       "version": "16.0.6",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/zvm3yri5ps8jppih3lj1sw1nj09b9axf-lldb-16.0.6"
+          "store_path": "/nix/store/qpy9prbgzxr25pdmgwmg7k6pmblyj3vw-lldb-16.0.6"
         },
         "aarch64-linux": {
           "store_path": "/nix/store/cgbmbis4rkn83v9y0amq1k37bc4j94js-lldb-16.0.6"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/zmfncyhia9vpnkzfrn8bay3h2dlvfwck-lldb-16.0.6"
+          "store_path": "/nix/store/36wdi8x8d97my9vnhdsl4dj3wzix9ss9-lldb-16.0.6"
         },
         "x86_64-linux": {
           "store_path": "/nix/store/brswvn3jrjmvdnk3b8hq33zkf16xli2z-lldb-16.0.6"
@@ -56,23 +76,23 @@
       }
     },
     "rustup@latest": {
-      "last_modified": "2024-02-25T07:54:35Z",
+      "last_modified": "2024-03-08T13:51:52Z",
       "plugin_version": "0.0.1",
-      "resolved": "github:NixOS/nixpkgs/2a34566b67bef34c551f204063faeecc444ae9da#rustup",
+      "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#rustup",
       "source": "devbox-search",
       "version": "1.26.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/aq1krqfcib3811f8n9y7cv4ybqymdj80-rustup-1.26.0"
+          "store_path": "/nix/store/hgzyfdwvy68mp3xpbniwavizcpd67s2y-rustup-1.26.0"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/4yjhm4n7l81vqxlymanngflpyhwwjrbk-rustup-1.26.0"
+          "store_path": "/nix/store/2pn6r28vj0lf62shzwj3i8r3mg2njdvh-rustup-1.26.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/623yx50y1bswv71d0r4ss5fkhsh8vylf-rustup-1.26.0"
+          "store_path": "/nix/store/xwf6zn2y28655864c3m5453m02ig9id4-rustup-1.26.0"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/rs66y4kzwh1n8cz2ia0qw5m4fhahqwia-rustup-1.26.0"
+          "store_path": "/nix/store/49kaqs594l0i29b0dgzm3mvjz9blsdlj-rustup-1.26.0"
         }
       }
     },
@@ -97,82 +117,82 @@
       }
     },
     "xorg.libX11@latest": {
-      "last_modified": "2024-02-26T19:46:43Z",
-      "resolved": "github:NixOS/nixpkgs/548a86b335d7ecd8b57ec617781f5e652ab0c38e#xorg.libX11",
+      "last_modified": "2024-03-08T13:51:52Z",
+      "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#xorg.libX11",
       "source": "devbox-search",
       "version": "1.8.7",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/yh1sgmk1j39p39x13kqp5gmyfqcsqb0c-libX11-1.8.7"
+          "store_path": "/nix/store/2px7q1sk2lwl1ix7sfvlkfs5pvd8kj9h-libX11-1.8.7"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/8qxn02iwijf1xi3bl226sgzd7wwn4msn-libX11-1.8.7"
+          "store_path": "/nix/store/d3kwnl0sf9j2fgjlix2pk02dpgfgkjzk-libX11-1.8.7"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/z1chc3i22fkcpqkkmbm1vh4is7iqanz8-libX11-1.8.7"
+          "store_path": "/nix/store/nsxhyi9vl9f8x3gab1w48pm552jnfv1b-libX11-1.8.7"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/zdvnf6b6w5sdgxbzg7v6yrlijml8y4yq-libX11-1.8.7"
+          "store_path": "/nix/store/a3fhvy76y01zs6dpjcpp4iwpfg4pb4h4-libX11-1.8.7"
         }
       }
     },
     "xorg.libXcursor@latest": {
-      "last_modified": "2024-02-26T19:46:43Z",
-      "resolved": "github:NixOS/nixpkgs/548a86b335d7ecd8b57ec617781f5e652ab0c38e#xorg.libXcursor",
+      "last_modified": "2024-03-08T13:51:52Z",
+      "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#xorg.libXcursor",
       "source": "devbox-search",
       "version": "1.2.1",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/a0jjz46fsy1i05wp52fdajrgp0zbh3ms-libXcursor-1.2.1"
+          "store_path": "/nix/store/cj8k0xp4i4h7sfbsn0ipwgif3846wh7g-libXcursor-1.2.1"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/vdp4w2yi3cna7r5l4cxn7v2zc120k5ib-libXcursor-1.2.1"
+          "store_path": "/nix/store/vcjrkvwi1jja5shvwcasp7d10i8w0qmw-libXcursor-1.2.1"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/cxpkm3gyl69gv6ag91cagvaawryfn3ch-libXcursor-1.2.1"
+          "store_path": "/nix/store/ls90m7k44mqsnz1k2xzl77wyqrk4khj1-libXcursor-1.2.1"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/cyzz4amsa0494fw8m8vir942phx4j8c2-libXcursor-1.2.1"
+          "store_path": "/nix/store/8v89lvkybzdgiwya8vznc26lwd40b50a-libXcursor-1.2.1"
         }
       }
     },
     "xorg.libXi@latest": {
-      "last_modified": "2024-02-26T19:46:43Z",
-      "resolved": "github:NixOS/nixpkgs/548a86b335d7ecd8b57ec617781f5e652ab0c38e#xorg.libXi",
+      "last_modified": "2024-03-15T02:36:27Z",
+      "resolved": "github:NixOS/nixpkgs/f242fc768bdfcf91d9094a8a8f66551324bf1a47#xorg.libXi",
       "source": "devbox-search",
       "version": "1.8.1",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/dh8z983imhxrw9hy0dbwdjrnkvdqj869-libXi-1.8.1"
+          "store_path": "/nix/store/arlp0nn80ijjjkldjxlj7qinf9nlb5fj-libXi-1.8.1"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/qm8p2di4hq55s1mfxb8ffa1rljwpvmkj-libXi-1.8.1"
+          "store_path": "/nix/store/16mcsa5bxsbpfyarf1n3s86aaaah79x2-libXi-1.8.1"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/dpqmb4n2c28dxhrg2acycbs9zdi5bnpz-libXi-1.8.1"
+          "store_path": "/nix/store/i1n4vjk5zclhpkdscw2g3vh2vnzr9d4b-libXi-1.8.1"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/5l428kln1f73p6l9940nnb10xjrczq0h-libXi-1.8.1"
+          "store_path": "/nix/store/w3dpqajbk6y7q42j27gdnb1vp8szbp98-libXi-1.8.1"
         }
       }
     },
     "xorg.libXrandr@latest": {
-      "last_modified": "2024-02-26T19:46:43Z",
-      "resolved": "github:NixOS/nixpkgs/548a86b335d7ecd8b57ec617781f5e652ab0c38e#xorg.libXrandr",
+      "last_modified": "2024-03-08T13:51:52Z",
+      "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#xorg.libXrandr",
       "source": "devbox-search",
       "version": "1.5.4",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/ckp34x573dsgsiwgyd3a3bpf7lvwq0hm-libXrandr-1.5.4"
+          "store_path": "/nix/store/h5abvn7dr9lsijwfvfzas12f3h7dlxh2-libXrandr-1.5.4"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/5m2nifc9nfyb184par0lji0h1f6n7890-libXrandr-1.5.4"
+          "store_path": "/nix/store/h8f920f78la77vbkikcr68flhzy6q33s-libXrandr-1.5.4"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/4da7qq2haij4m2pidxrkj6xwzvj165cn-libXrandr-1.5.4"
+          "store_path": "/nix/store/3im4vnas779f0hgj0hyy7721s22nn32c-libXrandr-1.5.4"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/xc853d005nwnwngz2fh9alsay280i5rr-libXrandr-1.5.4"
+          "store_path": "/nix/store/gay3l80n8v764d52dk3zc4lrlsj8xdbw-libXrandr-1.5.4"
         }
       }
     }
