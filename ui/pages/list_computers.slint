@@ -1,4 +1,4 @@
-import { StandardTableView, VerticalBox ,Button, Palette, LineEdit} from "std-widgets.slint";
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ScrollView, ComboBox} from "std-widgets.slint";
 import { ChangeUserEquipament } from "./change_user_equipament.slint";
 import { ComputerDetail,Computers,ChangeEquipament} from "../globals/computer.slint";
 
@@ -53,17 +53,92 @@ component ChangeComputer inherits VerticalBox {
 }
 
 component CreateComputer inherits VerticalBox {
-    VerticalLayout {
-        Button {
-            height: 50px;
-            text: "save";
-            clicked => {
-                Computers.create_computer = false;
-            }
-        }
+    // VerticalBox {
+    //     Button {
+    //         height: 50px;
+    //         text: "save";
+    //         clicked => {
+    //             ComputerDetail.create_computer();
+    //             Computers.create_computer = false;
+    //         }
+    //     }
 
-        LineEdit { }
-    }
+    //     ScrollView {
+    //         GridLayout {
+
+    //             Text {
+    //                 text: "serialnumber";
+    //             }
+
+    //             LineEdit {
+    //                 edited(str) => {
+    //                     ComputerDetail.serial_number = str
+    //                 }
+    //                 height: 50px;
+    //             }
+
+    //             Text {
+    //                 text: "brand";
+    //                 row: 1;
+    //             }
+
+    //             ComboBox {
+    //                 model: UserDetail.departments;
+    //                 selected(str) => {
+    //                     ComputerDetail.brand= str;
+    //                 }
+    //             }
+
+    //             Text {
+    //                 text: "cpu";
+    //                 row: 2;
+    //             }
+
+    //             ComboBox{
+    //                 selected(str) => {
+    //                     ComputerDetail.cpu = str
+    //                 }
+    //                 height: 50px;
+    //             }
+
+    //             Text {
+    //                 text: "email";
+    //                 row: 3;
+    //             }
+
+    //             LineEdit {
+    //                 edited(str) => {
+    //                     UserDetail.email = str
+    //                 }
+    //                 height: 50px;
+    //             }
+
+    //             Text {
+    //                 text: "login";
+    //                 row: 4;
+    //             }
+
+    //             LineEdit {
+    //                 edited(str) => {
+    //                     UserDetail.login = str
+    //                 }
+    //                 height: 50px;
+    //             }
+
+    //             Text {
+    //                 text: "role";
+    //                 row: 5;
+    //             }
+
+    //             ComboBox {
+    //                 model: UserDetail.roles;
+    //                 selected(str) => {
+    //                     UserDetail.role = str
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 component ShowComputers inherits VerticalBox {

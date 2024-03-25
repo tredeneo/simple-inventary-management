@@ -13,8 +13,14 @@ pub struct DbUser {
 pub struct DbComputer {
     pub serialnumber: String,
     pub brand: String,
-    pub actual_user: String,
+    pub cpu: String,
+    pub storage: i32,
+    pub memory: i32,
     pub model: String,
+    pub type_equipament: String,
+    pub gpu: String,
+    pub observation: String,
+    pub actual_user: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]

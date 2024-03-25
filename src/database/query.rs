@@ -36,8 +36,24 @@ SELECT * FROM (
         has.date_end IS NULL
 ) AS sub
 WHERE 
-    sub.rn = 1;"#;
+    sub.rn = 1;
+"#;
 
+pub const INSERT_COMPUTER: &str = r#"
+   INSERT INTO computer (serialnumber,brand,cpu,storage,memory,model,type_equipament,gpu,observation) 
+    VALUES (
+    ?1,
+    (SELECT id FROM brands WHERE name = ?2),
+    (SELECT id FROM cpus WHERE name = ?3),
+    ?4,
+    ?5,
+    (SELECT id FROM models WHERE name = ?6),
+    (SELECT id FROM type WHERE name = ?7),
+    (SELECT id FROM gpu WHERE name = ?8),
+    ?9
+)
+
+"#;
 pub const UPDATE_LAST_USER_COMPUTER: &str = r#"
             update has
             set date_end=?1 

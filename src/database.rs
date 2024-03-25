@@ -164,6 +164,25 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
         });
     Ok(())
 }
+
+pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::INSERT_COMPUTER)
+        .bind(computer.serialnumber)
+        .bind(computer.brand)
+        .bind(computer.cpu)
+        .bind(computer.storage)
+        .bind(computer.memory)
+        .bind(computer.model)
+        .bind(computer.type_equipament)
+        .bind(computer.observation)
+        .execute(&poll)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        });
+    Ok(())
+}
 async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
     Ok(SqlitePool::connect(&data_base_directory()).await?)
 }

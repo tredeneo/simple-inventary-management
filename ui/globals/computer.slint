@@ -46,9 +46,17 @@ export global ComputerDetail {
         [{ text:"name 2" }, { text:"login 2" }, { text:"email 2" }, { text:"2023-12-31" }],
         [{ text:"name 3" }, { text:"login 3" }, { text:"email 3" }, { text:"2023-12-31" }],
     ];
+    in property <string> serial_number;
     in property <string> brand;
     in property <string> model;
+    in property <string> cpu;
+    in property <int> storage;
+    in property <int> memory;
+    in property <string> model_equipament;
+    in property <string> type_equipament;
+    in property <string> observation;
+
     in property <string> actual_user;
-    in property <string> serial_number;
     callback save();
+    callback create_computer();
 }
