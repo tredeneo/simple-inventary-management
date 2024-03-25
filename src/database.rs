@@ -45,7 +45,6 @@ pub async fn delete_cpu(name: String) -> anyhow::Result<()> {
         .await;
     Ok(())
 }
-
 pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_CPU)
@@ -109,6 +108,34 @@ pub async fn insert_department(name: String) -> anyhow::Result<()> {
         .await?;
     Ok(())
 }
+
+pub async fn get_role() -> anyhow::Result<Vec<model::DbRole>> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbRole>(query_select::SELECT_ROLE)
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(recs)
+}
+
+pub async fn delete_role(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::DELETE_ROLE)
+        .bind(name)
+        .execute(&poll)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn insert_role(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::INSERT_ROLE)
+        .bind(name)
+        .execute(&poll)
+        .await?;
+    Ok(())
+}
 pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
@@ -121,6 +148,22 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::INSERT_USER_INFORMATION)
+        .bind(user.name)
+        .bind(user.department)
+        .bind(user.document)
+        .bind(user.email)
+        .bind(user.login)
+        .bind(user.role)
+        .execute(&poll)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        });
+    Ok(())
+}
 async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
     Ok(SqlitePool::connect(&data_base_directory()).await?)
 }

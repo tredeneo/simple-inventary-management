@@ -1,5 +1,5 @@
 pub const SELECT_USER_INFOMATION: &str = r#"
-            SELECT name,login,email,id
+            SELECT name,login,email,id,role,document,department
             FROM users
         "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
@@ -8,6 +8,17 @@ pub const UPDADE_USER_INFORMATION: &str = r#"
             WHERE login=?3
         "#;
 
+pub const INSERT_USER_INFORMATION: &str = r#"
+    insert into users (name,department,document,email,login,role)
+    VALUES (
+            ?1,
+            (select id from departments where name = ?2),
+            ?3,
+            ?4,
+            ?5,
+            (select id from roles where name = ?6)
+    )    
+"#;
 pub const SELECT_COMPUTER_INFORMATION_WITH_LAST_USER: &str = r#"
 SELECT * FROM (
     SELECT 
@@ -78,6 +89,21 @@ pub const INSERT_DEPARTMENT: &str = r#"
 
 pub const DELETE_DEPARTMENT: &str = r#"
    DELETE from departments
+    where name = ?1 
+"#;
+
+pub const SELECT_ROLE: &str = r#"
+    SELECT id,name
+    FROM roles
+"#;
+
+pub const INSERT_ROLE: &str = r#"
+   INSERT INTO roles (name) 
+    VALUES (?1)
+"#;
+
+pub const DELETE_ROLE: &str = r#"
+   DELETE from roles
     where name = ?1 
 "#;
 

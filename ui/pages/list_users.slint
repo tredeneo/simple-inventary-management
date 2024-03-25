@@ -1,4 +1,4 @@
-import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox} from "std-widgets.slint";
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView} from "std-widgets.slint";
 import {Users, UserDetail} from "../globals/users.slint";
 
 
@@ -8,11 +8,86 @@ component CreateUser inherits VerticalBox {
             height: 50px;
             text: "save";
             clicked => {
+                UserDetail.create();
                 Users.create_user = false;
             }
         }
 
-        LineEdit { }
+        ScrollView {
+            GridLayout {
+
+                Text {
+                    text: "name";
+                }
+
+                LineEdit {
+                    edited(str) => {
+                        UserDetail.name = str
+                    }
+                    height: 50px;
+                }
+
+                Text {
+                    text: "department";
+                    row: 1;
+                }
+
+                ComboBox {
+                    model: UserDetail.departments;
+                    selected(str) => {
+                        UserDetail.department = str;
+                    }
+                }
+
+                Text {
+                    text: "document";
+                    row: 2;
+                }
+
+                LineEdit {
+                    edited(str) => {
+                        UserDetail.document = str
+                    }
+                    height: 50px;
+                }
+
+                Text {
+                    text: "email";
+                    row: 3;
+                }
+
+                LineEdit {
+                    edited(str) => {
+                        UserDetail.email = str
+                    }
+                    height: 50px;
+                }
+
+                Text {
+                    text: "login";
+                    row: 4;
+                }
+
+                LineEdit {
+                    edited(str) => {
+                        UserDetail.login = str
+                    }
+                    height: 50px;
+                }
+
+                Text {
+                    text: "role";
+                    row: 5;
+                }
+
+                ComboBox {
+                    model: UserDetail.roles;
+                    selected(str) => {
+                        UserDetail.role = str
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -61,15 +136,17 @@ component User inherits VerticalBox {
                 text: UserDetail.login;
                 enabled: false;
             }
-            
-            Text{
-                text:"department";
-                row:2;
+
+            Text {
+                text: "department";
+                row: 2;
             }
+
             ComboBox {
                 model: UserDetail.departments;
                 current-value: UserDetail.department;
             }
+
             Text {
                 text: "email";
                 row: 3;

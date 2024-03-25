@@ -1,0 +1,40 @@
+
+
+import { StandardListView, VerticalBox ,Button, Palette, LineEdit, ListView} from "std-widgets.slint";
+import {GlobalRole} from "../globals/role.slint";
+
+
+export component Role inherits VerticalBox {
+    private property <int> current;
+    private property <string> text;
+    VerticalLayout {
+        HorizontalLayout {
+            LineEdit {
+                edited(actual) => {
+                    root.text = actual;
+                }
+            }
+
+            Button {
+                text: @tr("add");
+                clicked => {
+                    GlobalRole.add_item(root.text)
+                }
+            }
+
+            Button {
+                text: @tr("delete");
+                clicked => {
+                    GlobalRole.delete_item(GlobalRole.row_data[root.current])
+                }
+            }
+        }
+
+        StandardListView {
+            model: GlobalRole.row_data;
+            current-item-changed(actual) => {
+                root.current = actual;
+            }
+        }
+    }
+}

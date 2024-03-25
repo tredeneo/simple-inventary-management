@@ -1,10 +1,10 @@
 use std::rc::Rc;
 
 use crate::database;
-use slint::{ComponentHandle, StandardListViewItem, VecModel};
+use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 use crate::{App, UserDetail, Users};
-pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardListViewItem>>>> {
+pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
     let row_data = Rc::new(VecModel::default());
     let tmp = database::get_users().await?;
     for i in tmp {
@@ -16,14 +16,56 @@ pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<slint::ModelRc<Standa
     }
     Ok(row_data)
 }
+
+async fn get_departs() -> anyhow::Result<ModelRc<SharedString>> {
+    let depart = database::get_department().await?;
+    let mut row_data = Vec::default();
+    for i in depart {
+        let item = slint::format!("{}", i.name);
+        row_data.push(item);
+    }
+    Ok(ModelRc::from(row_data.as_slice()))
+}
+
+async fn get_roles() -> anyhow::Result<ModelRc<SharedString>> {
+    let depart = database::get_role().await?;
+    let mut row_data = Vec::default();
+    for i in depart {
+        let item = slint::format!("{}", i.name);
+        row_data.push(item);
+    }
+    Ok(ModelRc::from(row_data.as_slice()))
+}
 pub async fn user_list(app: &App) -> anyhow::Result<()> {
     let row_data = get_user_list().await?;
-
     app.global::<Users>().set_row_data(row_data.clone().into());
+    app.global::<UserDetail>()
+        .set_departments(get_departs().await?);
+    app.global::<UserDetail>().set_roles(get_roles().await?);
     Ok(())
 }
 
-pub async fn user_detail_update(app: &App) {
+pub async fn user_detail(app: &App) {
+    let myapp = app.clone_strong();
+
+    app.global::<UserDetail>().on_create(move || {
+        let local_app = myapp.clone_strong();
+        let detail = myapp.global::<UserDetail>();
+        let user = database::model::DbUser {
+            name: detail.get_name().to_string(),
+            login: detail.get_login().to_string(),
+            email: detail.get_email().to_string(),
+            department: detail.get_department().to_string(),
+            role: detail.get_role().to_string(),
+            document: detail.get_document().to_string(),
+            id: detail.get_id(),
+        };
+        let tmp = user.clone();
+        let _ = slint::spawn_local(async move {
+            let _ = database::create_user(tmp).await;
+            let _ = user_list(&local_app).await;
+        });
+    });
     let myapp = app.clone_strong();
     app.global::<UserDetail>().on_save(move || {
         let local_app = myapp.clone_strong();
@@ -32,7 +74,10 @@ pub async fn user_detail_update(app: &App) {
             name: detail.get_name().to_string(),
             login: detail.get_login().to_string(),
             email: detail.get_email().to_string(),
-            id: detail.get_id(),
+            id: i32::default(),
+            document: String::default(),
+            role: String::default(),
+            department: String::default(),
         };
         let tmp = user.clone();
         let _ = slint::spawn_local(async move {
