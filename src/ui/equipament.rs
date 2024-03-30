@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::database;
 use crate::{App, ChangeEquipament, ComputerDetail, Computers};
-use slint::{ComponentHandle, StandardListViewItem, VecModel};
+use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
     let row_data: Rc<VecModel<slint::ModelRc<StandardListViewItem>>> = Rc::new(VecModel::default());
@@ -21,6 +21,15 @@ pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
     Ok(())
 }
 
+async fn get_brands() -> anyhow::Result<ModelRc<SharedString>> {
+    let brands = database::get_brands().await?;
+    let mut row_data = Vec::default();
+    for i in brands {
+        row_data.push(slint::format!("{}", i.name));
+    }
+    Ok(ModelRc::from(row_data.as_slice()))
+}
+
 pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
     use crate::ui::user::get_user_list;
     let myapp = app.clone_strong();
@@ -28,6 +37,9 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
     let row_data = get_user_list().await?;
     app.global::<ChangeEquipament>()
         .set_users(row_data.clone().into());
+
+    app.global::<ComputerDetail>()
+        .set_brands(get_brands().await?);
 
     app.global::<ChangeEquipament>().on_change_user(move || {
         let local_app = myapp.clone_strong();
