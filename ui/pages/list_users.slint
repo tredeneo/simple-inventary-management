@@ -1,5 +1,6 @@
 import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView} from "std-widgets.slint";
 import {Users, UserDetail} from "../globals/users.slint";
+import {MenuSelect} from "../menu.slint";
 
 
 component CreateUser inherits VerticalBox {
@@ -32,10 +33,12 @@ component CreateUser inherits VerticalBox {
                     row: 1;
                 }
 
-                ComboBox {
+                MenuSelect {
+                    text: "escolha";
                     model: UserDetail.departments;
-                    selected(str) => {
-                        UserDetail.department = str;
+                    height: 100px;
+                    changed(value) => {
+                        UserDetail.department = value
                     }
                 }
 
@@ -80,12 +83,15 @@ component CreateUser inherits VerticalBox {
                     row: 5;
                 }
 
-                ComboBox {
+                MenuSelect {
+                    text:"escolha";
                     model: UserDetail.roles;
-                    selected(str) => {
-                        UserDetail.role = str
+                    height: 100px;
+                    changed(value) => {
+                        UserDetail.role=value
                     }
                 }
+
             }
         }
     }
@@ -100,6 +106,7 @@ component User inherits VerticalBox {
                 text: "salvar";
                 clicked => {
                     UserDetail.save();
+                    UserDetail.update();
                 }
             }
 
@@ -142,9 +149,13 @@ component User inherits VerticalBox {
                 row: 2;
             }
 
-            ComboBox {
+            MenuSelect {
+                text:UserDetail.department;
                 model: UserDetail.departments;
-                current-value: UserDetail.department;
+                height: 100px;
+                changed(value) => {
+                    UserDetail.department=value
+                }
             }
 
             Text {

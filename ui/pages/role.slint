@@ -3,7 +3,6 @@
 import { StandardListView, VerticalBox ,Button, Palette, LineEdit, ListView} from "std-widgets.slint";
 import {GlobalRole} from "../globals/role.slint";
 
-
 export component Role inherits VerticalBox {
     private property <int> current;
     private property <string> text;
@@ -19,6 +18,7 @@ export component Role inherits VerticalBox {
                 text: @tr("add");
                 clicked => {
                     GlobalRole.add_item(root.text)
+                    UserDetail.
                 }
             }
 

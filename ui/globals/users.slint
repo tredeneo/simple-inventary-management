@@ -36,15 +36,16 @@ export global UserDetail {
             { text:"" }
         ],
     ];
-    in-out property <[string]> departments:["frota","ti","rh"] ;
+    in-out property <[StandardListViewItem]> departments:[{text:"frota"},{text:"ti"},{text:"rh"}] ;
     in property <string> department:"" ;
     in property <string> name;
     in property <string> login;
     in property <string> email;
     in property <string> document;
-    in-out property <[string]> roles:["assistente de TI","Analista de Frota"];
+    in-out property <[StandardListViewItem]> roles:[{text:"assistente de TI"},{text:"Analista de Frota"}];
     in property <string> role: "";
     in property <int> id;
     callback save();
     callback create();
+    callback update();
 }

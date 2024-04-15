@@ -150,6 +150,7 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
 
 pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
+    dbg!(&user);
     let _ = sqlx::query(query_select::INSERT_USER_INFORMATION)
         .bind(user.name)
         .bind(user.department)

@@ -17,21 +17,23 @@ pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListV
     Ok(row_data)
 }
 
-async fn get_departs() -> anyhow::Result<ModelRc<SharedString>> {
+async fn get_departs() -> anyhow::Result<ModelRc<StandardListViewItem>> {
     let depart = database::get_department().await?;
     let mut row_data = Vec::default();
     for i in depart {
-        let item = slint::format!("{}", i.name);
+        let mut item = StandardListViewItem::default();
+        item.text = slint::format!("{}", i.name);
         row_data.push(item);
     }
     Ok(ModelRc::from(row_data.as_slice()))
 }
 
-async fn get_roles() -> anyhow::Result<ModelRc<SharedString>> {
+async fn get_roles() -> anyhow::Result<ModelRc<StandardListViewItem>> {
     let depart = database::get_role().await?;
     let mut row_data = Vec::default();
     for i in depart {
-        let item = slint::format!("{}", i.name);
+        let mut item = StandardListViewItem::default();
+        item.text = slint::format!("{}", i.name);
         row_data.push(item);
     }
     Ok(ModelRc::from(row_data.as_slice()))
@@ -48,6 +50,11 @@ pub async fn user_list(app: &App) -> anyhow::Result<()> {
 pub async fn user_detail(app: &App) {
     let myapp = app.clone_strong();
 
+    app.global::<UserDetail>().on_update(move || {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move { user_list(&local_app).await.unwrap() });
+    });
+    let myapp = app.clone_strong();
     app.global::<UserDetail>().on_create(move || {
         let local_app = myapp.clone_strong();
         let detail = myapp.global::<UserDetail>();
