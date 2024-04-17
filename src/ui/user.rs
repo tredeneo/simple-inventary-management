@@ -28,22 +28,11 @@ async fn get_departs() -> anyhow::Result<ModelRc<StandardListViewItem>> {
     Ok(ModelRc::from(row_data.as_slice()))
 }
 
-async fn get_roles() -> anyhow::Result<ModelRc<StandardListViewItem>> {
-    let depart = database::get_role().await?;
-    let mut row_data = Vec::default();
-    for i in depart {
-        let mut item = StandardListViewItem::default();
-        item.text = slint::format!("{}", i.name);
-        row_data.push(item);
-    }
-    Ok(ModelRc::from(row_data.as_slice()))
-}
 pub async fn user_list(app: &App) -> anyhow::Result<()> {
     let row_data = get_user_list().await?;
     app.global::<Users>().set_row_data(row_data.clone().into());
     app.global::<UserDetail>()
         .set_departments(get_departs().await?);
-    app.global::<UserDetail>().set_roles(get_roles().await?);
     Ok(())
 }
 
@@ -63,9 +52,9 @@ pub async fn user_detail(app: &App) {
             login: detail.get_login().to_string(),
             email: detail.get_email().to_string(),
             department: detail.get_department().to_string(),
-            role: detail.get_role().to_string(),
             document: detail.get_document().to_string(),
             id: detail.get_id(),
+            extension: detail.get_extension().to_string(),
         };
         let tmp = user.clone();
         let _ = slint::spawn_local(async move {
@@ -83,9 +72,10 @@ pub async fn user_detail(app: &App) {
             email: detail.get_email().to_string(),
             id: i32::default(),
             document: String::default(),
-            role: String::default(),
             department: String::default(),
+            extension: detail.get_extension().to_string(),
         };
+
         let tmp = user.clone();
         let _ = slint::spawn_local(async move {
             let _ = database::update_user(tmp).await;

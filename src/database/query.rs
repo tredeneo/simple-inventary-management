@@ -9,14 +9,15 @@ pub const UPDADE_USER_INFORMATION: &str = r#"
         "#;
 
 pub const INSERT_USER_INFORMATION: &str = r#"
-    insert into users (name,department,document,email,login,role)
+    insert into users (name,department,document,email,login,extension)
     VALUES (
             ?1,
             (select id from departments where name = ?2),
             ?3,
             ?4,
             ?5,
-            (select id from roles where name = ?6)
+            ?6
+            
     )    
 "#;
 pub const SELECT_COMPUTER_INFORMATION_WITH_LAST_USER: &str = r#"

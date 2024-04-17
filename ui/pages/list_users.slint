@@ -77,20 +77,18 @@ component CreateUser inherits VerticalBox {
                     }
                     height: 50px;
                 }
-
                 Text {
-                    text: "role";
-                    row: 5;
+                    text: "extension";
+                    row: 4;
                 }
 
-                MenuSelect {
-                    text:"escolha";
-                    model: UserDetail.roles;
-                    height: 100px;
-                    changed(value) => {
-                        UserDetail.role=value
+                LineEdit {
+                    edited(str) => {
+                        UserDetail.extension= str
                     }
+                    height: 50px;
                 }
+
 
             }
         }

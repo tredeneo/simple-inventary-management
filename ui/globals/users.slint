@@ -42,9 +42,8 @@ export global UserDetail {
     in property <string> login;
     in property <string> email;
     in property <string> document;
-    in-out property <[StandardListViewItem]> roles:[{text:"assistente de TI"},{text:"Analista de Frota"}];
-    in property <string> role: "";
     in property <int> id;
+    in property <string> extension;
     callback save();
     callback create();
     callback update();

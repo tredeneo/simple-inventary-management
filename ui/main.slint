@@ -13,7 +13,6 @@ import {Department} from "pages/department.slint";
 
 import {CPU} from "pages/cpu.slint";
 
-import {Role} from "pages/role.slint";
 
 
 
@@ -37,7 +36,6 @@ export component App inherits Window {
                 @tr("Menu" => "Brand"),
                 @tr("Menu"=> "CPU"),
                 @tr("Menu" => "Department"),
-                @tr("Menu"=> "Role")
             ];
         }
 
@@ -46,6 +44,5 @@ export component App inherits Window {
         if(side-bar.current-item == 2): Brand { }
         if(side-bar.current-item == 3): CPU { }
         if(side-bar.current-item == 4): Department { }
-        if(side-bar.current-item == 5): Role { }
     }
 }

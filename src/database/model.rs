@@ -5,8 +5,8 @@ pub struct DbUser {
     pub email: String,
     pub id: i32,
     pub department: String,
-    pub role: String,
     pub document: String,
+    pub extension: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]

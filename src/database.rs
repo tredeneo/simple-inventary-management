@@ -109,33 +109,6 @@ pub async fn insert_department(name: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn get_role() -> anyhow::Result<Vec<model::DbRole>> {
-    let pool = get_sql_pool().await?;
-    let recs = sqlx::query_as::<_, model::DbRole>(query_select::SELECT_ROLE)
-        .fetch_all(&pool)
-        .await?;
-
-    Ok(recs)
-}
-
-pub async fn delete_role(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
-    let _ = sqlx::query(query_select::DELETE_ROLE)
-        .bind(name)
-        .execute(&poll)
-        .await?;
-
-    Ok(())
-}
-
-pub async fn insert_role(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
-    let _ = sqlx::query(query_select::INSERT_ROLE)
-        .bind(name)
-        .execute(&poll)
-        .await?;
-    Ok(())
-}
 pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
@@ -157,7 +130,7 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
         .bind(user.document)
         .bind(user.email)
         .bind(user.login)
-        .bind(user.role)
+        .bind(user.extension)
         .execute(&poll)
         .await
         .inspect_err(|e| {

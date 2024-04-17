@@ -13,7 +13,6 @@ async fn main() -> anyhow::Result<()> {
     let _ = ui::brand::brand(&myapp).await;
     let _ = ui::cpu::cpu(&myapp).await;
     let _ = ui::department::department(&myapp).await;
-    let _ = ui::role::role(&myapp).await;
 
     myapp.run().unwrap();
     Ok(())
