@@ -7,6 +7,7 @@ pub struct DbUser {
     pub department: String,
     pub document: String,
     pub extension: String,
+    pub phone_number: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]

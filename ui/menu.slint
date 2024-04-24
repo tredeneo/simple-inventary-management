@@ -1,45 +1,38 @@
-import { StandardListView, VerticalBox ,Button } from "std-widgets.slint";
-
+import { StandardListView, VerticalBox ,Button, LineEdit } from "std-widgets.slint";
 
 // temporary companent while combox box not has scroll
 export component MenuSelect inherits Window {
-    private property <float> button_opacity : 1;
+    private property <float> button_opacity: 1;
     in-out property <StandardListViewItem> current-item;
     in-out property <[StandardListViewItem]> model;
+    private property <bool> active:false;
     in-out property <string> text;
     callback changed(string);
-    pop := PopupWindow {
-        height: 500px;
-        width: root.width;
+    callback filter_list(string);
+    if !active: Button {
+        text: root.text;
+        opacity: root.button_opacity;
+        clicked => {
+            root.button_opacity = 0;
+            root.active = true;
+        }
+    }
+    if active: VerticalLayout {
+        LineEdit {
+            edited(str) => {
+                root.filter_list(str)
+            }
+        }
+
         StandardListView {
             model: root.model;
             current-item-changed(value) => {
                 root.current-item = model[value];
                 root.text = root.current-item.text;
                 root.changed(root.text);
+                root.active = false;
                 root.button_opacity = 1;
             }
         }
     }
-
-    Button {
-        text: root.text;
-        opacity: root.button_opacity ;
-        clicked => {
-            root.button_opacity= 0;
-            pop.show()
-        }
-    }
-
-    // if active: StandardListView {
-        //     model: root.model;
-        //     current-item-changed(value) => {
-        //         root.current-item = model[value];
-        //         root.text = root.current-item.text;
-        //         root.changed(root.text);
-        //         root.active = false;
-        //     }
-        // }
-    }
-
-
+}

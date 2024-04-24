@@ -44,6 +44,8 @@ export global UserDetail {
     in property <string> document;
     in property <int> id;
     in property <string> extension;
+    in property <string> phone_number;
+    callback filter_departments(string);
     callback save();
     callback create();
     callback update();

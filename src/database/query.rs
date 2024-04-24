@@ -1,5 +1,5 @@
 pub const SELECT_USER_INFOMATION: &str = r#"
-            SELECT name,login,email,id,role,document,department
+            SELECT name,login,email,id,document,department,phone_number,extension
             FROM users
         "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
@@ -9,14 +9,15 @@ pub const UPDADE_USER_INFORMATION: &str = r#"
         "#;
 
 pub const INSERT_USER_INFORMATION: &str = r#"
-    insert into users (name,department,document,email,login,extension)
+    insert into users (name,department,document,email,login,extension,phone_number)
     VALUES (
             ?1,
             (select id from departments where name = ?2),
             ?3,
             ?4,
             ?5,
-            ?6
+            ?6,
+            ?7
             
     )    
 "#;

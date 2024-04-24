@@ -5,6 +5,7 @@ import {MenuSelect} from "../menu.slint";
 
 component CreateUser inherits VerticalBox {
     VerticalBox {
+        HorizontalLayout {
         Button {
             height: 50px;
             text: "save";
@@ -12,6 +13,14 @@ component CreateUser inherits VerticalBox {
                 UserDetail.create();
                 Users.create_user = false;
             }
+        }
+        Button {
+            height: 50px;
+            text: "back";
+            clicked => {
+                Users.create_user=false
+            }
+        }
         }
 
         ScrollView {
@@ -39,6 +48,10 @@ component CreateUser inherits VerticalBox {
                     height: 100px;
                     changed(value) => {
                         UserDetail.department = value
+                        
+                    }
+                    filter_list(str) => {
+                        UserDetail.filter_departments(str)
                     }
                 }
 
@@ -79,12 +92,23 @@ component CreateUser inherits VerticalBox {
                 }
                 Text {
                     text: "extension";
-                    row: 4;
+                    row: 5;
                 }
 
                 LineEdit {
                     edited(str) => {
                         UserDetail.extension= str
+                    }
+                    height: 50px;
+                }
+                Text {
+                    text: @tr("phone_number");
+                    row: 6;
+                }
+
+                LineEdit {
+                    edited(str) => {
+                        UserDetail.phone_number= str
                     }
                     height: 50px;
                 }

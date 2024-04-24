@@ -123,7 +123,6 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
 
 pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
-    dbg!(&user);
     let _ = sqlx::query(query_select::INSERT_USER_INFORMATION)
         .bind(user.name)
         .bind(user.department)
@@ -131,6 +130,7 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
         .bind(user.email)
         .bind(user.login)
         .bind(user.extension)
+        .bind(user.phone_number)
         .execute(&poll)
         .await
         .inspect_err(|e| {
