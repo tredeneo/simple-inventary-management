@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::database;
-use slint::{ComponentHandle, Model, ModelExt, ModelRc, StandardListViewItem, VecModel};
+use slint::{ComponentHandle, Model, ModelRc, StandardListViewItem, VecModel};
 
 use crate::{App, UserDetail, Users};
 pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
@@ -18,19 +18,34 @@ pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListV
     Ok(row_data)
 }
 
+fn update_departments(app: &App) {
+    let myapp = app.clone_strong();
+    let _ = slint::spawn_local(async move {
+        myapp
+            .global::<UserDetail>()
+            .set_departments(get_departs().await.unwrap_or_default());
+    });
+}
+
 async fn filter_department(app: &App) {
     let myapp = app.clone_strong();
+
     app.global::<UserDetail>()
         .on_filter_departments(move |text| {
-            dbg!("cheguei");
             let local_app = myapp.clone_strong();
-            let tmp = local_app.global::<UserDetail>();
-            let department_list = tmp.get_departments();
-            let filted = department_list
-                .filter(move |x| x.text.to_string().contains(&text.clone().as_str()))
-                .source_model()
-                .to_owned();
-            tmp.set_departments(filted);
+            update_departments(&local_app);
+            let filted: Vec<StandardListViewItem> = local_app
+                .global::<UserDetail>()
+                .get_departments()
+                .iter()
+                .filter(|arg| {
+                    arg.text
+                        .to_lowercase()
+                        .contains(&text.clone().to_lowercase().as_str())
+                })
+                .collect();
+            let tmp = Rc::new(VecModel::from(filted)).into();
+            local_app.global::<UserDetail>().set_departments(tmp)
         });
 }
 async fn get_departs() -> anyhow::Result<ModelRc<StandardListViewItem>> {
@@ -49,17 +64,14 @@ pub async fn user_list(app: &App) -> anyhow::Result<()> {
 
     app.global::<Users>().set_row_data(row_data.clone().into());
 
-    app.global::<UserDetail>()
-        .set_departments(get_departs().await?);
+    update_departments(&app);
     Ok(())
 }
 
 pub async fn user_detail(app: &App) {
     let myapp = app.clone_strong();
 
-    let _ = filter_department(&app);
-    // let local_app = myapp.clone_strong();
-    // let _ = user_list(&local_app).await.unwrap();
+    let _ = filter_department(&app).await;
     app.global::<UserDetail>().on_update(move || {
         let local_app = myapp.clone_strong();
         let _ = slint::spawn_local(async move { user_list(&local_app).await.unwrap() });

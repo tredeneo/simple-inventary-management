@@ -51,7 +51,8 @@ component CreateUser inherits VerticalBox {
                         
                     }
                     filter_list(str) => {
-                        UserDetail.filter_departments(str)
+                        UserDetail.filter_departments(str);
+                        self.model= UserDetail.departments
                     }
                 }
 

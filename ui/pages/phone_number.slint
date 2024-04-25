@@ -1,8 +1,9 @@
+
 import { StandardListView, VerticalBox ,Button, Palette, LineEdit, ListView} from "std-widgets.slint";
-import {GlobalBrand } from "../globals/brand.slint";
+import {GlobalPhone} from "../globals/phone_number.slint";
 
 
-export component Brand inherits VerticalBox {
+export component PhoneNumbers inherits VerticalBox {
     private property <int> current;
     private property <string> text;
     VerticalLayout {
@@ -16,20 +17,20 @@ export component Brand inherits VerticalBox {
             Button {
                 text: @tr("add");
                 clicked => {
-                    GlobalBrand.add_item(root.text)
+                    GlobalPhone.add_item(root.text)
                 }
             }
 
             Button {
                 text: @tr("delete");
                 clicked => {
-                    GlobalBrand.delete_item(GlobalBrand.row_data[root.current])
+                    GlobalPhone.delete_item(GlobalPhone.row_data[root.current])
                 }
             }
         }
 
         StandardListView {
-            model: GlobalBrand.row_data;
+            model: GlobalPhone.row_data;
             current-item-changed(actual) => {
                 root.current = actual;
             }
