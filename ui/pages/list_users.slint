@@ -1,31 +1,33 @@
-import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView} from "std-widgets.slint";
-import {Users, UserDetail} from "../globals/users.slint";
-import {MenuSelect} from "../menu.slint";
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView, HorizontalBox} from "std-widgets.slint";
+import { Users,  UserDetail } from "../globals/users.slint";
+import { MenuSelect } from "../menu.slint";
 
 
 component CreateUser inherits VerticalBox {
+    private property <length> height_itens:50px;
+    private property <length> width_itens:100px;
     VerticalBox {
         HorizontalLayout {
-        Button {
-            height: 50px;
-            text: "save";
-            clicked => {
-                UserDetail.create();
-                Users.create_user = false;
+            Button {
+                height: 50px;
+                text: "save";
+                clicked => {
+                    UserDetail.create();
+                    Users.create_user = false;
+                }
             }
-        }
-        Button {
-            height: 50px;
-            text: "back";
-            clicked => {
-                Users.create_user=false
+
+            Button {
+                height: 50px;
+                text: "back";
+                clicked => {
+                    Users.create_user = false
+                }
             }
-        }
         }
 
         ScrollView {
             GridLayout {
-
                 Text {
                     text: "name";
                 }
@@ -34,10 +36,11 @@ component CreateUser inherits VerticalBox {
                     edited(str) => {
                         UserDetail.name = str
                     }
-                    height: 50px;
+                    height: root.height_itens;
                 }
 
                 Text {
+                    width: root.width_itens;
                     text: "department";
                     row: 1;
                 }
@@ -48,11 +51,10 @@ component CreateUser inherits VerticalBox {
                     height: 100px;
                     changed(value) => {
                         UserDetail.department = value
-                        
                     }
                     filter_list(str) => {
                         UserDetail.filter_departments(str);
-                        self.model= UserDetail.departments
+                        self.model = UserDetail.departments
                     }
                 }
 
@@ -65,7 +67,7 @@ component CreateUser inherits VerticalBox {
                     edited(str) => {
                         UserDetail.document = str
                     }
-                    height: 50px;
+                    height: root.height_itens;
                 }
 
                 Text {
@@ -77,7 +79,7 @@ component CreateUser inherits VerticalBox {
                     edited(str) => {
                         UserDetail.email = str
                     }
-                    height: 50px;
+                    height: root.height_itens;
                 }
 
                 Text {
@@ -91,6 +93,7 @@ component CreateUser inherits VerticalBox {
                     }
                     height: 50px;
                 }
+
                 Text {
                     text: "extension";
                     row: 5;
@@ -98,10 +101,11 @@ component CreateUser inherits VerticalBox {
 
                 LineEdit {
                     edited(str) => {
-                        UserDetail.extension= str
+                        UserDetail.extension = str
                     }
-                    height: 50px;
+                    height: root.height_itens;
                 }
+
                 Text {
                     text: @tr("phone_number");
                     row: 6;
@@ -109,12 +113,10 @@ component CreateUser inherits VerticalBox {
 
                 LineEdit {
                     edited(str) => {
-                        UserDetail.phone_number= str
+                        UserDetail.phone_number = str
                     }
-                    height: 50px;
+                    height: root.height_itens;
                 }
-
-
             }
         }
     }
@@ -173,11 +175,11 @@ component User inherits VerticalBox {
             }
 
             MenuSelect {
-                text:UserDetail.department;
+                text: UserDetail.department;
                 model: UserDetail.departments;
                 height: 100px;
                 changed(value) => {
-                    UserDetail.department=value
+                    UserDetail.department = value
                 }
             }
 

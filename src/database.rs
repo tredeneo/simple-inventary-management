@@ -58,8 +58,8 @@ pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
         .fetch_all(&pool)
-        .await?;
-    Ok(recs)
+        .await;
+    Ok(recs?)
 }
 
 pub async fn delete_brand(name: String) -> anyhow::Result<()> {

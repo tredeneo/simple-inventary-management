@@ -8,6 +8,7 @@ pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListV
     let row_data = Rc::new(VecModel::default());
     let tmp = database::get_users().await?;
     for i in tmp {
+        dbg!(&i);
         let items = Rc::new(VecModel::default());
         items.push(slint::format!("{0}", i.name).into());
         items.push(slint::format!("{}", i.login).into());
@@ -62,6 +63,7 @@ async fn get_departs() -> anyhow::Result<ModelRc<StandardListViewItem>> {
 pub async fn user_list(app: &App) -> anyhow::Result<()> {
     let row_data = get_user_list().await?;
 
+    dbg!("Oi");
     app.global::<Users>().set_row_data(row_data.clone().into());
 
     update_departments(&app);

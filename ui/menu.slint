@@ -17,8 +17,10 @@ export component MenuSelect inherits Window {
             root.active = true;
         }
     }
-    if active: VerticalLayout {
+    if active: HorizontalLayout {
         LineEdit {
+            height: root.height / 3;
+            width: root.width / 3;
             edited(str) => {
                 root.filter_list(str)
             }
