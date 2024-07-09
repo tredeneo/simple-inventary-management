@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 
 use simple_inventary::ui;
 use slint::ComponentHandle;

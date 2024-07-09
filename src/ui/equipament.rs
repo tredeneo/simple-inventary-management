@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::database;
+use crate::database::{self};
 use crate::{App, ChangeEquipament, ComputerDetail, Computers};
 use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
@@ -30,6 +30,23 @@ async fn get_brands() -> anyhow::Result<ModelRc<SharedString>> {
     Ok(ModelRc::from(row_data.as_slice()))
 }
 
+async fn get_cpus() -> anyhow::Result<ModelRc<SharedString>> {
+    let cpus = database::get_cpus().await?;
+    let mut row_data = Vec::default();
+    for i in cpus {
+        row_data.push(slint::format!("{}", i.name));
+    }
+    Ok(ModelRc::from(row_data.as_slice()))
+}
+
+async fn get_gpus() -> anyhow::Result<ModelRc<SharedString>> {
+    let gpus = database::get_gpus().await?;
+    let mut row_data = Vec::default();
+    for i in gpus {
+        row_data.push(slint::format!("{}", i.name));
+    }
+    Ok(ModelRc::from(row_data.as_slice()))
+}
 pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
     use crate::ui::user::get_user_list;
     let myapp = app.clone_strong();
@@ -41,6 +58,12 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
     app.global::<ComputerDetail>()
         .set_brands(get_brands().await?);
 
+    app.global::<ComputerDetail>()
+        .set_cpus(get_cpus().await?);
+    
+    app.global::<ComputerDetail>()
+        .set_gpus(get_gpus().await?);
+    
     app.global::<ChangeEquipament>().on_change_user(move || {
         let local_app = myapp.clone_strong();
         let computer = myapp.global::<ComputerDetail>();

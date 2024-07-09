@@ -1,16 +1,15 @@
 use std::rc::Rc;
 
 use crate::database;
-use slint::{ComponentHandle, Model, ModelRc, StandardListViewItem, VecModel};
+use slint::{ComponentHandle, Model, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 use crate::{App, UserDetail, Users};
 pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
     let row_data = Rc::new(VecModel::default());
     let tmp = database::get_users().await?;
     for i in tmp {
-        dbg!(&i);
         let items = Rc::new(VecModel::default());
-        items.push(slint::format!("{0}", i.name).into());
+        items.push(slint::format!("{0}", i.name.to_lowercase()).into());
         items.push(slint::format!("{}", i.login).into());
         items.push(slint::format!("{}", i.email).into());
 
@@ -63,7 +62,6 @@ async fn get_departs() -> anyhow::Result<ModelRc<StandardListViewItem>> {
 pub async fn user_list(app: &App) -> anyhow::Result<()> {
     let row_data = get_user_list().await?;
 
-    dbg!("Oi");
     app.global::<Users>().set_row_data(row_data.clone().into());
 
     update_departments(&app);
@@ -97,6 +95,14 @@ pub async fn user_detail(app: &App) {
             let _ = database::create_user(tmp).await;
             let _ = user_list(&local_app).await;
         });
+        detail.set_name(SharedString::default());
+        detail.set_login(SharedString::default());
+        detail.set_extension(SharedString::default());
+        detail.set_email(SharedString::new());
+        detail.set_department(SharedString::new());
+        detail.set_document(SharedString::new());
+        detail.set_id(0);
+        detail.set_phone_number(SharedString::new());
     });
     let myapp = app.clone_strong();
     app.global::<UserDetail>().on_save(move || {

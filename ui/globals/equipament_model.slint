@@ -1,0 +1,12 @@
+
+export global GlobalEquipamentModel {
+    in-out property <[string]> brands:["dell","HP"];
+    in-out property <[[StandardListViewItem]]> row_data:[
+        [{text:"laptop 1"},{text:"dell"}],
+        [{text:"laptop 2"},{text:"HP"}]
+    ];
+    in-out property <string> name;
+    in-out property <string> actual_brand;
+    callback delete_item(StandardListViewItem);
+    callback add_item(string,string);
+}

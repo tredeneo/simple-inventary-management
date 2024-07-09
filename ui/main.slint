@@ -5,22 +5,24 @@ import { CheckBox, StandardListView, StyleMetrics } from "std-widgets.slint";
 import {  UserList } from "pages/pages.slint";
 import { ComputerList} from "pages/pages.slint";
 import { SideBar } from "side_bar.slint";
-import { GlobalCPU , ChangeEquipament , Users ,
-        UserDetail , Computers , ComputerDetail , GlobalBrand ,
-        GlobalDepartment, GlobalRole , GlobalPhone } from "globals/globals.slint";
+import { GlobalCPU , ChangeEquipament , Users,
+        UserDetail , Computers , ComputerDetail , GlobalBrand,
+        GlobalDepartment, GlobalRole , GlobalPhone,
+        GlobalEquipamentModel } from "globals/globals.slint";
 import { Brand} from "pages/brand.slint";
 import {Department} from "pages/department.slint";
 
 import {CPU} from "pages/cpu.slint";
 import { PhoneNumbers } from "pages/phone_number.slint";
-
+import {EquipamentModel} from "pages/equipament_model.slint";
 
 
 
 
 export {Users,UserDetail,ChangeEquipament,
     ComputerDetail,Computers,GlobalBrand,
-    GlobalCPU,GlobalDepartment,GlobalRole
+    GlobalCPU,GlobalDepartment,GlobalRole,
+    GlobalEquipamentModel
 }
 
 
@@ -35,9 +37,10 @@ export component App inherits Window {
                 @tr("Menu" => "Users"),
                 @tr("Menu" => "Computers"),
                 @tr("Menu" => "Brand"),
-                @tr("Menu"=> "CPU"),
+                @tr("Menu" => "CPU"),
                 @tr("Menu" => "Department"),
-                @tr("Menu" => "Phone number")
+                @tr("Menu" => "Phone number"),
+                @tr("Menu" => "Equipament Model")
             ];
         }
 
@@ -46,6 +49,7 @@ export component App inherits Window {
         if(side-bar.current-item == 2): Brand { }
         if(side-bar.current-item == 3): CPU { }
         if(side-bar.current-item == 4): Department { }
-        if(side-bar.current-item == 5): PhoneNumbers {}
+        if(side-bar.current-item == 5): PhoneNumbers { }
+        if(side-bar.current-item == 6): EquipamentModel {}
     }
 }

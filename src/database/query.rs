@@ -1,6 +1,7 @@
 pub const SELECT_USER_INFOMATION: &str = r#"
             SELECT name,login,email,id,document,department,phone_number,extension
             FROM users
+            order by name
         "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
             UPDATE users
@@ -158,5 +159,46 @@ pub const INSERT_CPU: &str = r#"
 
 pub const DELETE_CPU: &str = r#"
    DELETE from cpu
+    where name = ?1 
+"#;
+
+pub const SELECT_EQUIPAMENT_MODEL: &str = r#"
+    SELECT equipament_model.cpu.name,brands.name as brand
+    FROM equipament_model
+    JOIN brands ON equipament_model.brand = brands.id
+"#;
+
+pub const INSERT_EQUIPAMENT_MODEL: &str = r#"
+   INSERT INTO equipament_model (name,brand) 
+    VALUES (
+    ?1,
+        (SELECT id
+        FROM brands
+        WHERE name = ?2)
+    )
+"#;
+
+pub const DELETE_EQUIPAMENT_MODEL: &str = r#"
+   DELETE from equipament_model    
+   where name = ?1 
+"#;
+
+pub const SELECT_GPU: &str = r#"
+    SELECT gpu.name,brands.name as brand
+    FROM gpu
+    JOIN brands ON gpu.brand = brands.id
+"#;
+pub const INSERT_GPU: &str = r#"
+   INSERT INTO gpu (name,brand) 
+    VALUES (
+    ?1,
+        (SELECT id
+        FROM brands
+        WHERE name = ?2)
+)
+"#;
+
+pub const DELETE_GPU: &str = r#"
+   DELETE from gpu
     where name = ?1 
 "#;

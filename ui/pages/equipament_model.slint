@@ -1,0 +1,45 @@
+import { StandardTableView, VerticalBox ,Button, LineEdit, ComboBox} from "std-widgets.slint";
+import {GlobalEquipamentModel} from "../globals/equipament_model.slint";
+
+
+
+export component EquipamentModel inherits VerticalBox {
+    private property <int> current;
+    private property <string> text;
+    private property <string> brand:GlobalEquipamentModel.brands[0];
+
+    VerticalLayout {
+        HorizontalLayout {
+            LineEdit{
+                edited(actual) => {
+                    root.text = actual;
+                }
+            }
+            ComboBox {model: GlobalEquipamentModel.brands;
+                selected(actual) => {
+                    root.brand = actual;
+                }
+            }
+            Button {text:"add";
+                clicked => {
+                    GlobalEquipamentModel.add_item(root.text,root.brand)
+                }
+            }
+            Button {text:"delete";
+            clicked => {
+                GlobalEquipamentModel.delete_item(GlobalEquipamentModel.row_data[root.current][0])
+            }
+            }
+            
+
+        }
+        StandardTableView{
+            rows: GlobalEquipamentModel.row_data;
+            current-row-changed(actual) => {
+                root.current = actual;
+            }
+
+        }
+    }
+
+}

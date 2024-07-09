@@ -54,6 +54,40 @@ pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
         .await?;
     Ok(())
 }
+pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentModel>> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbEquipamentModel>(query_select::SELECT_EQUIPAMENT_MODEL)
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(recs)
+}
+
+pub async fn delete_equipament_model(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::DELETE_EQUIPAMENT_MODEL)
+        .bind(name)
+        .execute(&poll)
+        .await;
+    Ok(())
+}
+pub async fn insert_equipament_model(name: String, brand: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::INSERT_EQUIPAMENT_MODEL)
+        .bind(name)
+        .bind(brand)
+        .execute(&poll)
+        .await?;
+    Ok(())
+}
+pub async fn get_gpus() -> anyhow::Result<Vec<model::DbGPU>> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbGPU>(query_select::SELECT_GPU)
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(recs)
+}
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
@@ -124,7 +158,7 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
 pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_USER_INFORMATION)
-        .bind(user.name)
+        .bind(user.name.to_lowercase())
         .bind(user.department)
         .bind(user.document)
         .bind(user.email)
