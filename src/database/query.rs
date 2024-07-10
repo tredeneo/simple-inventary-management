@@ -163,7 +163,7 @@ pub const DELETE_CPU: &str = r#"
 "#;
 
 pub const SELECT_EQUIPAMENT_MODEL: &str = r#"
-    SELECT equipament_model.cpu.name,brands.name as brand
+    SELECT equipament_model.name,brands.name as brand
     FROM equipament_model
     JOIN brands ON equipament_model.brand = brands.id
 "#;

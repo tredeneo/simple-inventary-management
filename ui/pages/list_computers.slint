@@ -79,20 +79,8 @@ component CreateComputer inherits VerticalBox {
                 }
 
                 Text {
-                    text: "brand";
-                    row: 1;
-                }
-
-                ComboBox {
-                    model: ComputerDetail.brands;
-                    selected(str) => {
-                        ComputerDetail.brand= str;
-                    }
-                }
-
-                Text {
                     text: "cpu";
-                    row: 2;
+                    row: 1;
                 }
 
                 ComboBox {
@@ -105,7 +93,7 @@ component CreateComputer inherits VerticalBox {
 
                 Text {
                     text: "storage";
-                    row: 3;
+                    row: 2;
                 }
 
                 LineEdit {
@@ -117,7 +105,7 @@ component CreateComputer inherits VerticalBox {
 
                 Text {
                     text: "memory";
-                    row: 4;
+                    row: 3;
                 }
 
                 LineEdit {
@@ -129,18 +117,18 @@ component CreateComputer inherits VerticalBox {
 
                 Text {
                     text: "model";
-                    row: 5;
+                    row: 4;
                 }
 
-                LineEdit {
-                    edited(str) => {
-                        ComputerDetail.model= str
+                ComboBox {
+                    model: ComputerDetail.model_equipaments;
+                    selected(str)=>{
+                        ComputerDetail.model_equipament = str
                     }
                 }
-
                 Text {
                     text: "gpu";
-                    row: 6;
+                    row: 5;
                 }
 
                 ComboBox {
@@ -151,7 +139,7 @@ component CreateComputer inherits VerticalBox {
                 }
                 Text {
                     text: "observation";
-                    row: 8;
+                    row: 7;
                 }
 
                 LineEdit {

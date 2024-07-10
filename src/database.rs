@@ -48,17 +48,23 @@ pub async fn delete_cpu(name: String) -> anyhow::Result<()> {
 pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_CPU)
-        .bind(name)
+        .bind(name.to_uppercase())
         .bind(brand)
         .execute(&poll)
-        .await?;
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        })?;
     Ok(())
 }
 pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentModel>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbEquipamentModel>(query_select::SELECT_EQUIPAMENT_MODEL)
         .fetch_all(&pool)
-        .await?;
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        })?;
 
     Ok(recs)
 }
@@ -73,11 +79,15 @@ pub async fn delete_equipament_model(name: String) -> anyhow::Result<()> {
 }
 pub async fn insert_equipament_model(name: String, brand: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
+    dbg!(&name, &brand);
     let _ = sqlx::query(query_select::INSERT_EQUIPAMENT_MODEL)
-        .bind(name)
+        .bind(name.to_uppercase())
         .bind(brand)
         .execute(&poll)
-        .await?;
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        })?;
     Ok(())
 }
 pub async fn get_gpus() -> anyhow::Result<Vec<model::DbGPU>> {
@@ -109,7 +119,7 @@ pub async fn delete_brand(name: String) -> anyhow::Result<()> {
 pub async fn insert_brand(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_BRAND)
-        .bind(name)
+        .bind(name.to_uppercase())
         .execute(&poll)
         .await?;
     Ok(())
@@ -174,6 +184,7 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
 }
 
 pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> {
+    dbg!(&computer);
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_COMPUTER)
         .bind(computer.serialnumber)

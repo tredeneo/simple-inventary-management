@@ -22,7 +22,7 @@ export component EquipamentModel inherits VerticalBox {
             }
             Button {text:"add";
                 clicked => {
-                    GlobalEquipamentModel.add_item(root.text,root.brand)
+                    GlobalEquipamentModel.add_item(root.text,root.brand);
                 }
             }
             Button {text:"delete";

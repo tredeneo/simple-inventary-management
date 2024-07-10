@@ -18,7 +18,7 @@ async fn get_equipament_model_list(
     Ok(row_data)
 }
 
-pub async fn equipament_mode(app: &App) -> anyhow::Result<()> {
+pub async fn equipament_model(app: &App) -> anyhow::Result<()> {
     async fn ui_update(app: &App) -> anyhow::Result<()> {
         let row_data = get_equipament_model_list().await?;
         app.global::<GlobalEquipamentModel>()
@@ -40,7 +40,8 @@ pub async fn equipament_mode(app: &App) -> anyhow::Result<()> {
         .on_add_item(move |name, brand| {
             let local_app = myapp.clone_strong();
             let _ = slint::spawn_local(async move {
-                let _ = database::insert_cpu(name.to_string(), brand.to_string()).await;
+                let _ =
+                    database::insert_equipament_model(name.to_string(), brand.to_string()).await;
                 let _ = ui_update(&local_app).await;
             });
         });
@@ -49,7 +50,7 @@ pub async fn equipament_mode(app: &App) -> anyhow::Result<()> {
         .on_delete_item(move |value| {
             let local_app = myapp.clone_strong();
             let _ = slint::spawn_local(async move {
-                let _ = database::delete_cpu(value.text.to_string()).await;
+                let _ = database::delete_equipament_model(value.text.to_string()).await;
                 let _ = ui_update(&local_app).await;
             });
         });

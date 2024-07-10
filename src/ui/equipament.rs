@@ -39,6 +39,15 @@ async fn get_cpus() -> anyhow::Result<ModelRc<SharedString>> {
     Ok(ModelRc::from(row_data.as_slice()))
 }
 
+async fn get_equipament_model() -> anyhow::Result<ModelRc<SharedString>> {
+    let cpus = database::get_equipament_model().await?;
+    let mut row_data = Vec::default();
+    for i in cpus {
+        row_data.push(slint::format!("{}", i.name));
+    }
+    Ok(ModelRc::from(row_data.as_slice()))
+}
+
 async fn get_gpus() -> anyhow::Result<ModelRc<SharedString>> {
     let gpus = database::get_gpus().await?;
     let mut row_data = Vec::default();
@@ -58,12 +67,13 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
     app.global::<ComputerDetail>()
         .set_brands(get_brands().await?);
 
+    app.global::<ComputerDetail>().set_cpus(get_cpus().await?);
+
+    app.global::<ComputerDetail>().set_gpus(get_gpus().await?);
+
     app.global::<ComputerDetail>()
-        .set_cpus(get_cpus().await?);
-    
-    app.global::<ComputerDetail>()
-        .set_gpus(get_gpus().await?);
-    
+        .set_model_equipaments(get_equipament_model().await?);
+
     app.global::<ChangeEquipament>().on_change_user(move || {
         let local_app = myapp.clone_strong();
         let computer = myapp.global::<ComputerDetail>();
