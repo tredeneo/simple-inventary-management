@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub const SELECT_USER_INFOMATION: &str = r#"
             SELECT name,login,email,id,document,department,phone_number,extension
             FROM users

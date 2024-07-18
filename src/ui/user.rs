@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::database;
-use slint::{ComponentHandle, Model, ModelRc, SharedString, StandardListViewItem, VecModel};
+use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 use crate::{App, UserDetail, Users};
 pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
@@ -27,33 +27,11 @@ fn update_departments(app: &App) {
     });
 }
 
-async fn filter_department(app: &App) {
-    let myapp = app.clone_strong();
-
-    app.global::<UserDetail>()
-        .on_filter_departments(move |text| {
-            let local_app = myapp.clone_strong();
-            update_departments(&local_app);
-            let filted: Vec<StandardListViewItem> = local_app
-                .global::<UserDetail>()
-                .get_departments()
-                .iter()
-                .filter(|arg| {
-                    arg.text
-                        .to_lowercase()
-                        .contains(&text.clone().to_lowercase().as_str())
-                })
-                .collect();
-            let tmp = Rc::new(VecModel::from(filted)).into();
-            local_app.global::<UserDetail>().set_departments(tmp)
-        });
-}
-async fn get_departs() -> anyhow::Result<ModelRc<StandardListViewItem>> {
+async fn get_departs() -> anyhow::Result<ModelRc<SharedString>> {
     let depart = database::get_department().await?;
     let mut row_data = Vec::default();
     for i in depart {
-        let mut item = StandardListViewItem::default();
-        item.text = slint::format!("{}", i.name);
+        let item = slint::format!("{}", i.name);
         row_data.push(item);
     }
     Ok(ModelRc::from(row_data.as_slice()))
@@ -71,7 +49,7 @@ pub async fn user_list(app: &App) -> anyhow::Result<()> {
 pub async fn user_detail(app: &App) {
     let myapp = app.clone_strong();
 
-    let _ = filter_department(&app).await;
+    // let _ = filter_department(&app).await;
     app.global::<UserDetail>().on_update(move || {
         let local_app = myapp.clone_strong();
         let _ = slint::spawn_local(async move { user_list(&local_app).await.unwrap() });

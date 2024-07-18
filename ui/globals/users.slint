@@ -36,7 +36,7 @@ export global UserDetail {
             { text:"" }
         ],
     ];
-    in-out property <[StandardListViewItem]> departments:[{text:"frota"},{text:"ti"},{text:"rh"}] ;
+    in-out property <[string]> departments:["frota","ti","rh"] ;
     in property <string> department:"" ;
     in property <string> name;
     in property <string> login;
@@ -45,7 +45,6 @@ export global UserDetail {
     in property <int> id;
     in property <string> extension;
     in property <string> phone_number;
-    callback filter_departments(string);
     callback save();
     callback create();
     callback update();

@@ -1,6 +1,5 @@
 import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView, HorizontalBox} from "std-widgets.slint";
 import { Users,  UserDetail } from "../globals/users.slint";
-import { MenuSelect } from "../menu.slint";
 
 
 component CreateUser inherits VerticalBox {
@@ -45,16 +44,11 @@ component CreateUser inherits VerticalBox {
                     row: 1;
                 }
 
-                MenuSelect {
-                    text: "escolha";
+                ComboBox {
                     model: UserDetail.departments;
-                    height: 100px;
-                    changed(value) => {
-                        UserDetail.department = value
-                    }
-                    filter_list(str) => {
-                        UserDetail.filter_departments(str);
-                        self.model = UserDetail.departments
+                    height: root.height_itens;
+                    selected(actual) => {
+                        UserDetail.department = actual;
                     }
                 }
 
@@ -174,12 +168,10 @@ component User inherits VerticalBox {
                 row: 2;
             }
 
-            MenuSelect {
-                text: UserDetail.department;
+            ComboBox {
                 model: UserDetail.departments;
-                height: 100px;
-                changed(value) => {
-                    UserDetail.department = value
+                selected(value) => {
+                    UserDetail.department = value;
                 }
             }
 
