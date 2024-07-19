@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::database;
+use crate::{database, ui::user};
 use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 use crate::{App, UserDetail, Users};
@@ -49,7 +49,6 @@ pub async fn user_list(app: &App) -> anyhow::Result<()> {
 pub async fn user_detail(app: &App) {
     let myapp = app.clone_strong();
 
-    // let _ = filter_department(&app).await;
     app.global::<UserDetail>().on_update(move || {
         let local_app = myapp.clone_strong();
         let _ = slint::spawn_local(async move { user_list(&local_app).await.unwrap() });
@@ -64,7 +63,7 @@ pub async fn user_detail(app: &App) {
             email: detail.get_email().to_string(),
             department: detail.get_department().to_string(),
             document: detail.get_document().to_string(),
-            id: detail.get_id(),
+            id: detail.get_id().to_string().parse::<i32>().unwrap(),
             extension: detail.get_extension().to_string(),
             phone_number: detail.get_phone_number().to_string(),
         };
@@ -79,28 +78,58 @@ pub async fn user_detail(app: &App) {
         detail.set_email(SharedString::new());
         detail.set_department(SharedString::new());
         detail.set_document(SharedString::new());
-        detail.set_id(0);
+        detail.set_id(0.to_string().into());
         detail.set_phone_number(SharedString::new());
     });
+
+    let myapp = app.clone_strong();
+    app.global::<Users>().on_select_user(move |user_login| {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move {
+            let user_detail = local_app.global::<UserDetail>();
+            let user = database::get_specific_user(user_login.to_string())
+                .await
+                .unwrap();
+            let tmp = database::get_department_by_id(user.department.to_string())
+                .await
+                .unwrap();
+            user_detail.set_name(user.name.into());
+            user_detail.set_department(tmp.name.into());
+            // user_detail.set_department(user.department.into());
+            user_detail.set_document(user.document.into());
+            user_detail.set_email(user.email.into());
+            user_detail.set_extension(user.extension.into());
+            user_detail.set_login(user.login.into());
+            user_detail.set_phone_number(user.phone_number.into());
+        });
+    });
+
     let myapp = app.clone_strong();
     app.global::<UserDetail>().on_save(move || {
         let local_app = myapp.clone_strong();
-        let detail = myapp.global::<UserDetail>();
-        let user = database::model::DbUser {
-            name: detail.get_name().to_string(),
-            login: detail.get_login().to_string(),
-            email: detail.get_email().to_string(),
-            id: i32::default(),
-            document: String::default(),
-            department: String::default(),
-            extension: detail.get_extension().to_string(),
-            phone_number: detail.get_phone_number().to_string(),
-        };
 
-        let tmp = user.clone();
-        let _ = slint::spawn_local(async move {
-            let _ = database::update_user(tmp).await;
-            let _ = user_list(&local_app).await;
+        let _ = slint::spawn_local({
+            let user_app = myapp.clone_strong();
+            async move {
+                let detail = user_app.global::<UserDetail>();
+                let tmp = database::get_department_by_name(detail.get_department().to_string())
+                    .await
+                    .unwrap()
+                    .id;
+                let user = database::model::DbUser {
+                    name: detail.get_name().to_string(),
+                    login: detail.get_login().to_string(),
+                    email: detail.get_email().to_string(),
+                    id: tmp,
+                    document: detail.get_document().to_string(),
+                    department: detail.get_department().to_string(),
+                    extension: detail.get_extension().to_string(),
+                    phone_number: detail.get_phone_number().to_string(),
+                };
+                let tmp = user.clone();
+                let _ = database::update_user(tmp).await;
+                let _ = user_list(&local_app).await;
+            }
         });
     });
 }

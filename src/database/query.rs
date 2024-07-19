@@ -4,6 +4,11 @@ pub const SELECT_USER_INFOMATION: &str = r#"
             FROM users
             order by name
         "#;
+pub const SELECT_SPECIFIC_USER_INFOMATION: &str = r#"
+            SELECT name,login,email,id,document,department,phone_number,extension
+            FROM users
+            where login =?1
+        "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
             UPDATE users
             SET name=?1, email=?2 
@@ -115,6 +120,18 @@ pub const DELETE_PHONE_NUMBER: &str = r#"
 pub const SELECT_DEPARTMENT: &str = r#"
     SELECT id,name
     FROM departments
+"#;
+
+pub const SELECT_DEPARTMENT_BY_ID: &str = r#"
+    SELECT id,name
+    FROM departments
+    where id=?1
+"#;
+
+pub const SELECT_DEPARTMENT_BY_NAME: &str = r#"
+    SELECT id
+    from departments
+    where name = ?1
 "#;
 
 pub const INSERT_DEPARTMENT: &str = r#"

@@ -54,3 +54,8 @@ pub struct DbGPU {
     pub name: String,
     pub brand: String,
 }
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbInteger {
+    pub id: i32,
+}

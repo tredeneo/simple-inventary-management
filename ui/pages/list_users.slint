@@ -85,7 +85,7 @@ component CreateUser inherits VerticalBox {
                     edited(str) => {
                         UserDetail.login = str
                     }
-                    height: 50px;
+                    height: root.height_itens;
                 }
 
                 Text {
@@ -170,6 +170,7 @@ component User inherits VerticalBox {
 
             ComboBox {
                 model: UserDetail.departments;
+                current-value: UserDetail.department;
                 selected(value) => {
                     UserDetail.department = value;
                 }
@@ -182,6 +183,45 @@ component User inherits VerticalBox {
 
             LineEdit {
                 text: UserDetail.email;
+                edited(str) => {
+                    UserDetail.email = str
+                }
+            }
+
+            Text {
+                text: "phone";
+                row: 4;
+            }
+
+            LineEdit {
+                text: UserDetail.phone_number;
+                edited(str) => {
+                    UserDetail.phone_number = str;
+                }
+            }
+
+            Text {
+                text: "documento";
+                row: 5;
+            }
+
+            LineEdit {
+                text: UserDetail.document;
+                edited(str) => {
+                    UserDetail.document = str;
+                }
+            }
+
+            Text {
+                text: "ramal";
+                row: 6;
+            }
+
+            LineEdit {
+                text: UserDetail.extension;
+                edited(str) => {
+                    UserDetail.extension = str;
+                }
             }
         }
 
@@ -216,9 +256,7 @@ component ShowUser inherits VerticalBox {
             row-pointer-event(index, event, _) => {
                 if event.button == PointerEventButton.left {
                     Users.current_user = Users.row_data[index][0].text;
-                    UserDetail.name = Users.row_data[index][0].text;
-                    UserDetail.login = Users.row_data[index][1].text;
-                    UserDetail.email = Users.row_data[index][2].text;
+                    Users.select_user(Users.row_data[index][1].text);
                     Users.selected_user = true;
                 }
             }

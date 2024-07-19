@@ -10,6 +10,7 @@ export global Users {
     in property <bool> create_user:false;
     in property <bool> selected_user: false;
     in property <string> current_user;
+    callback select_user(string);
 }
 
 export global UserDetail {
@@ -42,7 +43,7 @@ export global UserDetail {
     in property <string> login;
     in property <string> email;
     in property <string> document;
-    in property <int> id;
+    in property <string> id;
     in property <string> extension;
     in property <string> phone_number;
     callback save();
