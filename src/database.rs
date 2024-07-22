@@ -4,6 +4,8 @@ use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
 
 mod query;
 use query as query_select;
+
+use self::model::DbEquipamentModel;
 pub mod model;
 
 fn data_base_directory() -> Arc<String> {
@@ -69,6 +71,19 @@ pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentMod
     Ok(recs)
 }
 
+pub async fn update_equipament_model(user: model::DbEquipamentModel) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    dbg!(&user);
+    let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
+        .bind(user.name)
+        .execute(&poll)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?
+        .rows_affected();
+    Ok(())
+}
 pub async fn delete_equipament_model(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::DELETE_EQUIPAMENT_MODEL)
@@ -77,12 +92,10 @@ pub async fn delete_equipament_model(name: String) -> anyhow::Result<()> {
         .await;
     Ok(())
 }
-pub async fn insert_equipament_model(name: String, brand: String) -> anyhow::Result<()> {
+pub async fn insert_equipament_model(equipament: model::DbEquipamentModel) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
-    dbg!(&name, &brand);
     let _ = sqlx::query(query_select::INSERT_EQUIPAMENT_MODEL)
-        .bind(name.to_uppercase())
-        .bind(brand)
+        .bind(equipament.name.to_uppercase())
         .execute(&poll)
         .await
         .inspect_err(|f| {
@@ -134,6 +147,18 @@ pub async fn get_specific_user(login: String) -> anyhow::Result<model::DbUser> {
         .await;
     Ok(recs?)
 }
+pub async fn get_specific_equipament_model(
+    login: String,
+) -> anyhow::Result<model::DbEquipamentModel> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbEquipamentModel>(
+        query_select::SELECT_SPECIFIC_USER_INFOMATION,
+    )
+    .bind(&login)
+    .fetch_one(&pool)
+    .await;
+    Ok(recs?)
+}
 pub async fn delete_brand(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::DELETE_BRAND)
@@ -180,8 +205,33 @@ pub async fn get_department_by_name(name: String) -> anyhow::Result<model::DbInt
         .bind(name)
         .fetch_one(&pool)
         .await
+        .inspect_err(|e| {
+            dbg!(e);
+        })?;
+
+    Ok(recs)
+}
+
+pub async fn get_brand_by_id(id: String) -> anyhow::Result<model::DbBrand> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_DEPARTMENT_BY_ID)
+        .bind(id)
+        .fetch_one(&pool)
+        .await
         .inspect_err(|f| {
             dbg!(f);
+        })?;
+
+    Ok(recs)
+}
+pub async fn get_brand_by_name(name: String) -> anyhow::Result<model::DbInteger> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_DEPARTMENT_BY_NAME)
+        .bind(name)
+        .fetch_one(&pool)
+        .await
+        .inspect_err(|e| {
+            dbg!(e);
         })?;
 
     Ok(recs)
@@ -191,7 +241,10 @@ pub async fn delete_department(name: String) -> anyhow::Result<()> {
     let _ = sqlx::query(query_select::DELETE_DEPARTMENT)
         .bind(name)
         .execute(&poll)
-        .await?;
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?;
 
     Ok(())
 }
@@ -201,7 +254,10 @@ pub async fn insert_department(name: String) -> anyhow::Result<()> {
     let _ = sqlx::query(query_select::INSERT_DEPARTMENT)
         .bind(name)
         .execute(&poll)
-        .await?;
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?;
     Ok(())
 }
 
@@ -212,6 +268,9 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
         .bind(user.name)
         .bind(user.email)
         .bind(user.login)
+        .bind(user.phone_number)
+        .bind(user.department)
+        .bind(user.extension)
         .execute(&poll)
         .await
         .inspect_err(|e| {

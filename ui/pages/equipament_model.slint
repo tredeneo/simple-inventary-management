@@ -1,45 +1,151 @@
-import { StandardTableView, VerticalBox ,Button, LineEdit, ComboBox} from "std-widgets.slint";
-import {GlobalEquipamentModel} from "../globals/equipament_model.slint";
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView, HorizontalBox} from "std-widgets.slint";
+import {  GlobalEquipamentModelDetail, GlobalEquipamentModel} from "../globals/equipament_model.slint";
 
 
-
-export component EquipamentModel inherits VerticalBox {
-    private property <int> current;
-    private property <string> text;
-    private property <string> brand:GlobalEquipamentModel.brands[0];
-
-    VerticalLayout {
+component CreateEquipamentModel inherits VerticalBox {
+    private property <length> height_itens:50px;
+    private property <length> width_itens:100px;
+    VerticalBox {
         HorizontalLayout {
-            LineEdit{
-                edited(actual) => {
-                    root.text = actual;
-                }
-            }
-            ComboBox {model: GlobalEquipamentModel.brands;
-                selected(actual) => {
-                    root.brand = actual;
-                }
-            }
-            Button {text:"add";
+            Button {
+                height: 50px;
+                text: "save";
                 clicked => {
-                    GlobalEquipamentModel.add_item(root.text,root.brand);
+                    GlobalEquipamentModelDetail.create();
+                    GlobalEquipamentModel.create_equipament = false
                 }
             }
-            Button {text:"delete";
-            clicked => {
-                GlobalEquipamentModel.delete_item(GlobalEquipamentModel.row_data[root.current][0])
-            }
-            }
-            
 
-        }
-        StandardTableView{
-            rows: GlobalEquipamentModel.row_data;
-            current-row-changed(actual) => {
-                root.current = actual;
+            Button {
+                height: 50px;
+                text: "back";
+                clicked => {
+                    GlobalEquipamentModel.create_equipament = false
+                }
             }
+        }
+
+        ScrollView {
+            GridLayout {
+                Text {
+                    text: "name";
+                }
+
+                LineEdit {
+                    edited(str) => {
+                        GlobalEquipamentModelDetail.name=str
+                    }
+                    height: root.height_itens;
+                }
+
+                Text {
+                    width: root.width_itens;
+                    text: "brand";
+                    row: 1;
+                }
+
+                ComboBox {
+                    model: GlobalEquipamentModelDetail.brands;
+                    height: root.height_itens;
+                    current-value: "";
+                    selected(str) => {
+                        GlobalEquipamentModelDetail.brand = str;
+                        
+                    }
+                }
+            }
+        }
+    }
+}
+
+component Equipament inherits VerticalBox {
+    in-out property <string> name;
+    VerticalLayout {
+        spacing: 50px;
+        alignment: LayoutAlignment.start;
+        HorizontalLayout {
+            Button {
+                text: "salvar";
+                clicked => {
+                    GlobalEquipamentModelDetail.save();
+                    GlobalEquipamentModelDetail.update();
+                }
+            }
+
+            HorizontalLayout {
+                alignment: LayoutAlignment.end;
+                Button {
+                    text: "voltar";
+                    height: 50px;
+                    clicked => {
+                        GlobalEquipamentModel.selected_equipament = false;
+                    }
+                }
+            }
+        }
+
+        GridLayout {
+            spacing: 50px;
+            Text {
+                text: "name";
+            }
+
+            LineEdit {
+                text: GlobalEquipamentModelDetail.name;
+                edited(str) => {
+                    GlobalEquipamentModelDetail.name = str
+                }
+            }
+
+
+            Text {
+                text: "brands";
+                row: 1;
+            }
+
+            ComboBox {
+                model: GlobalEquipamentModelDetail.brands;
+                current-value: GlobalEquipamentModelDetail.brand;
+                selected(str) => {
+                    GlobalEquipamentModelDetail.brand = str
+                }
+            }
+
 
         }
     }
+}
 
+component ShowEquipament inherits VerticalBox {
+    VerticalLayout {
+        HorizontalLayout {
+            Button {
+                text: "create equipament";
+                clicked => {
+                    GlobalEquipamentModel.create_equipament = true;
+                }
+            }
+        }
+
+        StandardTableView {
+            columns: [{ title: "name" }, { title: "brand" }, { title: "cpu" }];
+            rows:GlobalEquipamentModel.row_data;
+            row-pointer-event(index, event, _) => {
+                if event.button == PointerEventButton.left {
+                    GlobalEquipamentModel.current_equipament = GlobalEquipamentModel.row_data[index][0].text;
+                    GlobalEquipamentModel.select_equipament(GlobalEquipamentModel.row_data[index][1].text);
+                    GlobalEquipamentModel.selected_equipament = true;
+                }
+            }
+        }
+    }
+}
+
+export component EquipamentModel inherits VerticalBox {
+    if !GlobalEquipamentModel.selected_equipament && !GlobalEquipamentModel.create_equipament: ShowEquipament{}
+    if !GlobalEquipamentModel.selected_equipament && GlobalEquipamentModel.create_equipament: CreateEquipamentModel{}
+    if GlobalEquipamentModel.selected_equipament:Equipament{
+        name: GlobalEquipamentModel.current_equipament;
+    }
+        
 }

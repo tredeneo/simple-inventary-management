@@ -1,12 +1,27 @@
-
 export global GlobalEquipamentModel {
-    in-out property <[string]> brands:["dell","HP"];
-    in-out property <[[StandardListViewItem]]> row_data:[
-        [{text:"laptop 1"},{text:"dell"}],
-        [{text:"laptop 2"},{text:"HP"}]
+    in property <[[StandardListViewItem]]> row_data: [
+        [{ text:"name 1" }, { text:"login 1" }, { text:"email 1" }],
+        [{ text:"name 2" }, { text:"email 2" }, { text:"email 2" }],
+        [{ text:"name 3" }, { text:"login 3" }, { text:"email 3" }],
     ];
-    in-out property <string> name;
-    in-out property <string> actual_brand;
-    callback delete_item(StandardListViewItem);
-    callback add_item(string,string);
+    in property <bool> create_equipament:false;
+    in property <bool> selected_equipament: false;
+    in property <string> current_equipament;
+    callback select_equipament(string);
+}
+
+export global GlobalEquipamentModelDetail {
+    in-out property <[string]> cpus:["ryzen 7 5700G", "i5 10400K"];
+    in-out property <[string]> gpus:["rx 570", "gtx 1060"];
+    in-out property <[string]> brands:[
+        "HP",
+        "dell",
+    ];
+    in property <string> name;
+    in property <string> brand;
+    in property <string> cpu;
+    in property <string> gpu;
+    callback save();
+    callback create();
+    callback update();
 }

@@ -11,7 +11,11 @@ pub const SELECT_SPECIFIC_USER_INFOMATION: &str = r#"
         "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
             UPDATE users
-            SET name=?1, email=?2 
+            SET name=?1, 
+                email=?2,
+                phone_number=?3,
+                department=?4,
+                extension=?5
             WHERE login=?3
         "#;
 
@@ -184,7 +188,7 @@ pub const DELETE_CPU: &str = r#"
 "#;
 
 pub const SELECT_EQUIPAMENT_MODEL: &str = r#"
-    SELECT equipament_model.name,brands.name as brand
+    SELECT equipament_model.name,brands.name as brand,cpu.name as cpu,gpu.name as gpu
     FROM equipament_model
     JOIN brands ON equipament_model.brand = brands.id
 "#;

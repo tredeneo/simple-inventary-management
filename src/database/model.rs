@@ -47,6 +47,8 @@ pub struct DbCPU {
 pub struct DbEquipamentModel {
     pub name: String,
     pub brand: String,
+    pub cpu: String,
+    pub gpu: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]

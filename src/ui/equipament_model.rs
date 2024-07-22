@@ -1,58 +1,134 @@
 use std::rc::Rc;
 
-use slint::{ComponentHandle, ModelRc, StandardListViewItem, VecModel};
+use crate::database;
+use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
-use crate::{database, App, GlobalEquipamentModel};
-
-async fn get_equipament_model_list(
-) -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardListViewItem>>>> {
+use crate::{App, GlobalEquipamentModel, GlobalEquipamentModelDetail};
+pub async fn get_equipament_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
     let row_data = Rc::new(VecModel::default());
     let tmp = database::get_equipament_model().await?;
-
     for i in tmp {
         let items = Rc::new(VecModel::default());
-        items.push(slint::format!("{}", i.name).into());
+        items.push(slint::format!("{0}", i.name.to_lowercase()).into());
         items.push(slint::format!("{}", i.brand).into());
+        items.push(slint::format!("{}", i.cpu).into());
+
         row_data.push(items.into());
     }
     Ok(row_data)
 }
 
-pub async fn equipament_model(app: &App) -> anyhow::Result<()> {
-    async fn ui_update(app: &App) -> anyhow::Result<()> {
-        let row_data = get_equipament_model_list().await?;
-        app.global::<GlobalEquipamentModel>()
-            .set_row_data(row_data.clone().into());
+fn update_departments(app: &App) {
+    let myapp = app.clone_strong();
+    let _ = slint::spawn_local(async move {
+        myapp
+            .global::<GlobalEquipamentModelDetail>()
+            .set_brands(get_brands().await.unwrap_or_default());
+    });
+}
 
-        let brands = database::get_brands().await?;
-        let mut row_data = Vec::default();
-        for i in brands {
-            let item = slint::format!("{}", i.name);
-            row_data.push(item)
-        }
-        app.global::<GlobalEquipamentModel>()
-            .set_brands(ModelRc::from(row_data.as_slice()));
-        Ok(())
+async fn get_brands() -> anyhow::Result<ModelRc<SharedString>> {
+    let depart = database::get_brands().await?;
+    let mut row_data = Vec::default();
+    for i in depart {
+        let item = slint::format!("{}", i.name);
+        row_data.push(item);
     }
-    let myapp = app.clone_strong();
-    ui_update(&myapp).await?;
+    Ok(ModelRc::from(row_data.as_slice()))
+}
+
+pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
+    let row_data = get_equipament_list().await?;
+
     app.global::<GlobalEquipamentModel>()
-        .on_add_item(move |name, brand| {
-            let local_app = myapp.clone_strong();
-            let _ = slint::spawn_local(async move {
-                let _ =
-                    database::insert_equipament_model(name.to_string(), brand.to_string()).await;
-                let _ = ui_update(&local_app).await;
-            });
-        });
-    let myapp = app.clone_strong();
-    app.global::<GlobalEquipamentModel>()
-        .on_delete_item(move |value| {
-            let local_app = myapp.clone_strong();
-            let _ = slint::spawn_local(async move {
-                let _ = database::delete_equipament_model(value.text.to_string()).await;
-                let _ = ui_update(&local_app).await;
-            });
-        });
+        .set_row_data(row_data.clone().into());
+
+    update_departments(app);
     Ok(())
+}
+
+pub async fn user_detail(app: &App) {
+    let myapp = app.clone_strong();
+
+    app.global::<GlobalEquipamentModelDetail>()
+        .on_update(move || {
+            let local_app = myapp.clone_strong();
+            let _ = slint::spawn_local(async move { equipament_list(&local_app).await.unwrap() });
+        });
+    let myapp = app.clone_strong();
+    app.global::<GlobalEquipamentModelDetail>()
+        .on_create(move || {
+            let local_app = myapp.clone_strong();
+            let detail = myapp.global::<GlobalEquipamentModelDetail>();
+            // let user = database::model::DbUser {
+            //     name: detail.get_name().to_string(),
+            //     login: detail.get_login().to_string(),
+            //     email: detail.get_email().to_string(),
+            //     department: detail.get_department().to_string(),
+            //     document: detail.get_document().to_string(),
+            //     id: 0,
+            //     extension: detail.get_extension().to_string(),
+            //     phone_number: detail.get_phone_number().to_string(),
+            // };
+
+            let equipament = database::model::DbEquipamentModel {
+                name: detail.get_name().to_string(),
+                brand: detail.get_brand().to_string(),
+                cpu: detail.get_cpu().to_string(),
+                gpu: detail.get_gpu().to_string(),
+            };
+            let tmp = equipament.clone();
+            let _ = slint::spawn_local(async move {
+                let _ = database::insert_equipament_model(tmp).await;
+                let _ = equipament_list(&local_app).await;
+            });
+            detail.set_brand(SharedString::default());
+            detail.set_cpu(SharedString::default());
+            detail.set_gpu(SharedString::default());
+            detail.set_name(SharedString::default());
+        });
+
+    let myapp = app.clone_strong();
+    app.global::<GlobalEquipamentModel>()
+        .on_select_equipament(move |user_login| {
+            let local_app = myapp.clone_strong();
+            let _ = slint::spawn_local(async move {
+                let equipament_detail = local_app.global::<GlobalEquipamentModelDetail>();
+                let user = database::get_specific_equipament_model(user_login.to_string())
+                    .await
+                    .unwrap();
+                let tmp = database::get_brand_by_id(user.brand.to_string())
+                    .await
+                    .unwrap();
+                equipament_detail.set_name(user.name.into());
+                equipament_detail.set_brand(tmp.name.into());
+            });
+        });
+
+    let myapp = app.clone_strong();
+    app.global::<GlobalEquipamentModelDetail>()
+        .on_save(move || {
+            let local_app = myapp.clone_strong();
+
+            let _ = slint::spawn_local({
+                let user_app = myapp.clone_strong();
+                async move {
+                    let detail = user_app.global::<GlobalEquipamentModelDetail>();
+                    let tmp = database::get_brand_by_name(detail.get_brand().to_string())
+                        .await
+                        .unwrap()
+                        .id;
+
+                    let equipament = database::model::DbEquipamentModel {
+                        name: detail.get_name().to_string(),
+                        brand: detail.get_brand().to_string(),
+                        cpu: detail.get_cpu().to_string(),
+                        gpu: detail.get_gpu().to_string(),
+                    };
+                    let tmp = equipament.clone();
+                    let _ = database::update_equipament_model(tmp).await;
+                    let _ = equipament_list(&local_app).await;
+                }
+            });
+        });
 }
