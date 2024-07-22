@@ -5,7 +5,6 @@ use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
 mod query;
 use query as query_select;
 
-use self::model::DbEquipamentModel;
 pub mod model;
 
 fn data_base_directory() -> Arc<String> {
@@ -152,12 +151,15 @@ pub async fn get_specific_equipament_model(
 ) -> anyhow::Result<model::DbEquipamentModel> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbEquipamentModel>(
-        query_select::SELECT_SPECIFIC_USER_INFOMATION,
+        query_select::SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION,
     )
     .bind(&login)
     .fetch_one(&pool)
-    .await;
-    Ok(recs?)
+    .await
+    .inspect_err(|e| {
+        dbg!(e);
+    })?;
+    Ok(recs)
 }
 pub async fn delete_brand(name: String) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
@@ -214,7 +216,7 @@ pub async fn get_department_by_name(name: String) -> anyhow::Result<model::DbInt
 
 pub async fn get_brand_by_id(id: String) -> anyhow::Result<model::DbBrand> {
     let pool = get_sql_pool().await?;
-    let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_DEPARTMENT_BY_ID)
+    let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_BRAND_BY_ID)
         .bind(id)
         .fetch_one(&pool)
         .await
@@ -226,7 +228,57 @@ pub async fn get_brand_by_id(id: String) -> anyhow::Result<model::DbBrand> {
 }
 pub async fn get_brand_by_name(name: String) -> anyhow::Result<model::DbInteger> {
     let pool = get_sql_pool().await?;
-    let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_DEPARTMENT_BY_NAME)
+    let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_BRAND_BY_NAME)
+        .bind(name)
+        .fetch_one(&pool)
+        .await
+        .inspect_err(|e| {
+            dbg!(e);
+        })?;
+
+    Ok(recs)
+}
+
+pub async fn get_gpu_by_id(id: String) -> anyhow::Result<model::DbGPU> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbGPU>(query_select::SELECT_GPU_BY_ID)
+        .bind(id)
+        .fetch_one(&pool)
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        })?;
+
+    Ok(recs)
+}
+pub async fn get_gpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_GPU_BY_NAME)
+        .bind(name)
+        .fetch_one(&pool)
+        .await
+        .inspect_err(|e| {
+            dbg!(e);
+        })?;
+
+    Ok(recs)
+}
+
+pub async fn get_cpu_by_id(id: String) -> anyhow::Result<model::DbCPU> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbCPU>(query_select::SELECT_CPU_BY_ID)
+        .bind(id)
+        .fetch_one(&pool)
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        })?;
+
+    Ok(recs)
+}
+pub async fn get_cpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_CPU_BY_NAME)
         .bind(name)
         .fetch_one(&pool)
         .await

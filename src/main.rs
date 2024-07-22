@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 
 use simple_inventary::ui;
 use slint::ComponentHandle;
@@ -14,6 +14,7 @@ async fn main() -> anyhow::Result<()> {
     let _ = ui::cpu::cpu(&myapp).await;
     let _ = ui::department::department(&myapp).await;
     let _ = ui::equipament_model::equipament_list(&myapp).await;
+    let _ = ui::equipament_model::equipament_detail(&myapp).await;
     let _ = ui::gpu::gpu(&myapp).await;
 
     myapp.run().unwrap();

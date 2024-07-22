@@ -9,6 +9,11 @@ pub const SELECT_SPECIFIC_USER_INFOMATION: &str = r#"
             FROM users
             where login =?1
         "#;
+pub const SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION: &str = r#"
+            SELECT name,brand,cpu,gpu
+            FROM users
+            where login =?1
+        "#;
 pub const UPDADE_USER_INFORMATION: &str = r#"
             UPDATE users
             SET name=?1, 
@@ -187,9 +192,44 @@ pub const DELETE_CPU: &str = r#"
     where name = ?1 
 "#;
 
+pub const SELECT_BRAND_BY_ID: &str = r#"
+    SELECT id,name
+    FROM brands
+    where id=?1
+"#;
+
+pub const SELECT_CPU_BY_NAME: &str = r#"
+    SELECT id
+    from cpu
+    where name = ?1
+"#;
+pub const SELECT_CPU_BY_ID: &str = r#"
+    SELECT id,name
+    FROM cpu 
+    where id=?1
+"#;
+
+pub const SELECT_BRAND_BY_NAME: &str = r#"
+    SELECT id
+    from brands
+    where name = ?1
+"#;
+pub const SELECT_GPU_BY_ID: &str = r#"
+    SELECT id,name
+    FROM gpu
+    where id=?1
+"#;
+
+pub const SELECT_GPU_BY_NAME: &str = r#"
+    SELECT id
+    from gpu   
+    where name = ?1
+"#;
 pub const SELECT_EQUIPAMENT_MODEL: &str = r#"
     SELECT equipament_model.name,brands.name as brand,cpu.name as cpu,gpu.name as gpu
     FROM equipament_model
+    JOIN cpu ON equipament_model.cpu = cpu.id
+    JOIN gpu On equipament_model.gpu = gpu.id
     JOIN brands ON equipament_model.brand = brands.id
 "#;
 

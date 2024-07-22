@@ -4,7 +4,7 @@ use crate::database;
 use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 use crate::{App, GlobalEquipamentModel, GlobalEquipamentModelDetail};
-pub async fn get_equipament_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
+async fn get_equipament_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
     let row_data = Rc::new(VecModel::default());
     let tmp = database::get_equipament_model().await?;
     for i in tmp {
@@ -47,7 +47,7 @@ pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn user_detail(app: &App) {
+pub async fn equipament_detail(app: &App) {
     let myapp = app.clone_strong();
 
     app.global::<GlobalEquipamentModelDetail>()
@@ -60,16 +60,6 @@ pub async fn user_detail(app: &App) {
         .on_create(move || {
             let local_app = myapp.clone_strong();
             let detail = myapp.global::<GlobalEquipamentModelDetail>();
-            // let user = database::model::DbUser {
-            //     name: detail.get_name().to_string(),
-            //     login: detail.get_login().to_string(),
-            //     email: detail.get_email().to_string(),
-            //     department: detail.get_department().to_string(),
-            //     document: detail.get_document().to_string(),
-            //     id: 0,
-            //     extension: detail.get_extension().to_string(),
-            //     phone_number: detail.get_phone_number().to_string(),
-            // };
 
             let equipament = database::model::DbEquipamentModel {
                 name: detail.get_name().to_string(),
@@ -90,18 +80,41 @@ pub async fn user_detail(app: &App) {
 
     let myapp = app.clone_strong();
     app.global::<GlobalEquipamentModel>()
-        .on_select_equipament(move |user_login| {
+        .on_select_equipament(move |equipament_name| {
+            dbg!("cheguei");
             let local_app = myapp.clone_strong();
             let _ = slint::spawn_local(async move {
                 let equipament_detail = local_app.global::<GlobalEquipamentModelDetail>();
-                let user = database::get_specific_equipament_model(user_login.to_string())
+                dbg!("cheguei");
+                let user = database::get_specific_equipament_model(equipament_name.to_string())
                     .await
-                    .unwrap();
-                let tmp = database::get_brand_by_id(user.brand.to_string())
+                    .inspect_err(|e| {
+                        dbg!(e);
+                    })
+                    .unwrap_or_default();
+                let brand = database::get_brand_by_id(user.brand.to_string())
                     .await
-                    .unwrap();
+                    .inspect_err(|e| {
+                        dbg!(e);
+                    })
+                    .unwrap_or_default();
+                let cpu = database::get_brand_by_id(user.brand.to_string())
+                    .await
+                    .inspect_err(|e| {
+                        dbg!(e);
+                    })
+                    .unwrap_or_default();
+                let gpu = database::get_brand_by_id(user.brand.to_string())
+                    .await
+                    .inspect_err(|e| {
+                        dbg!(e);
+                    })
+                    .unwrap_or_default();
+                dbg!("passei");
                 equipament_detail.set_name(user.name.into());
-                equipament_detail.set_brand(tmp.name.into());
+                equipament_detail.set_brand(brand.name.into());
+                equipament_detail.set_cpu(cpu.name.into());
+                equipament_detail.set_gpu(gpu.name.into());
             });
         });
 
@@ -114,16 +127,29 @@ pub async fn user_detail(app: &App) {
                 let user_app = myapp.clone_strong();
                 async move {
                     let detail = user_app.global::<GlobalEquipamentModelDetail>();
-                    let tmp = database::get_brand_by_name(detail.get_brand().to_string())
+                    let brand = database::get_brand_by_name(detail.get_brand().to_string())
                         .await
                         .unwrap()
-                        .id;
+                        .id
+                        .to_string();
+
+                    let cpu = database::get_cpu_by_name(detail.get_cpu().to_string())
+                        .await
+                        .unwrap()
+                        .id
+                        .to_string();
+
+                    let gpu = database::get_gpu_by_name(detail.get_gpu().to_string())
+                        .await
+                        .unwrap()
+                        .id
+                        .to_string();
 
                     let equipament = database::model::DbEquipamentModel {
                         name: detail.get_name().to_string(),
-                        brand: detail.get_brand().to_string(),
-                        cpu: detail.get_cpu().to_string(),
-                        gpu: detail.get_gpu().to_string(),
+                        brand,
+                        cpu,
+                        gpu,
                     };
                     let tmp = equipament.clone();
                     let _ = database::update_equipament_model(tmp).await;
