@@ -1,0 +1,12 @@
+
+export global GlobalGPU {
+    in-out property <[string]> brands:["AMD","NVIDIA"];
+    in-out property <[[StandardListViewItem]]> row_data:[
+        [{text:"RX 570"},{text:"AMD"}],
+        [{text:"GTX 1060"},{text:"NVIDIA"}]
+    ];
+    in-out property <string> name;
+    in-out property <string> actual_brand;
+    callback delete_item(StandardListViewItem);
+    callback add_item(string,string);
+}

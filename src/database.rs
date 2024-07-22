@@ -98,6 +98,27 @@ pub async fn get_gpus() -> anyhow::Result<Vec<model::DbGPU>> {
 
     Ok(recs)
 }
+
+pub async fn delete_gpu(name: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::DELETE_GPU)
+        .bind(name)
+        .execute(&poll)
+        .await;
+    Ok(())
+}
+pub async fn insert_gpu(name: String, brand: String) -> anyhow::Result<()> {
+    let poll = get_sql_pool().await?;
+    let _ = sqlx::query(query_select::INSERT_GPU)
+        .bind(name.to_uppercase())
+        .bind(brand)
+        .execute(&poll)
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        })?;
+    Ok(())
+}
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)

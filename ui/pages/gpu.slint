@@ -1,46 +1,48 @@
 import { StandardTableView, VerticalBox ,Button, LineEdit, ComboBox} from "std-widgets.slint";
-import {GlobalCPU} from "../globals/cpu.slint";
+import {GlobalGPU} from "../globals/gpu.slint";
 
 
 
-export component CPU inherits VerticalBox {
+export component GPU inherits VerticalBox {
     private property <int> current;
     private property <string> text;
-    private property <string> brand:GlobalCPU.brands[0];
-
+    private property <string> brand:GlobalGPU.brands[0];
     VerticalLayout {
         HorizontalLayout {
-            LineEdit{
+            LineEdit {
                 edited(actual) => {
                     root.text = actual;
                 }
             }
-            ComboBox {model: GlobalCPU.brands;
+
+            ComboBox {
+                model: GlobalGPU.brands;
                 current-value: "";
                 selected(actual) => {
                     root.brand = actual;
                 }
             }
-            Button {text:"add";
+
+            Button {
+                text: "add";
                 clicked => {
-                    GlobalCPU.add_item(root.text,root.brand)
+                    GlobalGPU.add_item(root.text,root.brand)
                 }
             }
-            Button {text:"delete";
-            clicked => {
-                GlobalCPU.delete_item(GlobalCPU.row_data[root.current][0])
-            }
-            }
-            
 
+            Button {
+                text: "delete";
+                clicked => {
+                    GlobalGPU.delete_item(GlobalGPU.row_data[root.current][0])
+                }
+            }
         }
-        StandardTableView{
-            rows: GlobalCPU.row_data;
+
+        StandardTableView {
+            rows: GlobalGPU.row_data;
             current-row-changed(actual) => {
                 root.current = actual;
             }
-
         }
     }
-
 }

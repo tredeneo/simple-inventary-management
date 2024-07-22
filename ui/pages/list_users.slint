@@ -47,6 +47,7 @@ component CreateUser inherits VerticalBox {
                 ComboBox {
                     model: UserDetail.departments;
                     height: root.height_itens;
+                    current-value: "";
                     selected(actual) => {
                         UserDetail.department = actual;
                     }

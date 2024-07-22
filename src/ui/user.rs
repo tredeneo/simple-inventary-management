@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{database, ui::user};
+use crate::database;
 use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
 use crate::{App, UserDetail, Users};
@@ -42,7 +42,7 @@ pub async fn user_list(app: &App) -> anyhow::Result<()> {
 
     app.global::<Users>().set_row_data(row_data.clone().into());
 
-    update_departments(&app);
+    update_departments(app);
     Ok(())
 }
 
@@ -63,7 +63,7 @@ pub async fn user_detail(app: &App) {
             email: detail.get_email().to_string(),
             department: detail.get_department().to_string(),
             document: detail.get_document().to_string(),
-            id: detail.get_id().to_string().parse::<i32>().unwrap(),
+            id: 0,
             extension: detail.get_extension().to_string(),
             phone_number: detail.get_phone_number().to_string(),
         };
@@ -95,7 +95,6 @@ pub async fn user_detail(app: &App) {
                 .unwrap();
             user_detail.set_name(user.name.into());
             user_detail.set_department(tmp.name.into());
-            // user_detail.set_department(user.department.into());
             user_detail.set_document(user.document.into());
             user_detail.set_email(user.email.into());
             user_detail.set_extension(user.extension.into());

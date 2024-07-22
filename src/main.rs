@@ -14,6 +14,7 @@ async fn main() -> anyhow::Result<()> {
     let _ = ui::cpu::cpu(&myapp).await;
     let _ = ui::department::department(&myapp).await;
     let _ = ui::equipament_model::equipament_model(&myapp).await;
+    let _ = ui::gpu::gpu(&myapp).await;
 
     myapp.run().unwrap();
     Ok(())

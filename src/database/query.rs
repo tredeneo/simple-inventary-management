@@ -90,6 +90,7 @@ pub const INSERT_NEW_USER_COMPUTER: &str = r#"
 pub const SELECT_BRAND: &str = r#"
     SELECT id,name
     FROM brands 
+    order by name
 "#;
 
 pub const INSERT_BRAND: &str = r#"
@@ -120,6 +121,7 @@ pub const DELETE_PHONE_NUMBER: &str = r#"
 pub const SELECT_DEPARTMENT: &str = r#"
     SELECT id,name
     FROM departments
+    order by name
 "#;
 
 pub const SELECT_DEPARTMENT_BY_ID: &str = r#"
@@ -163,6 +165,7 @@ pub const SELECT_CPU: &str = r#"
     SELECT cpu.name,brands.name as brand
     FROM cpu
     JOIN brands ON cpu.brand = brands.id
+    order by cpu.name
 "#;
 
 pub const INSERT_CPU: &str = r#"
@@ -205,6 +208,7 @@ pub const SELECT_GPU: &str = r#"
     SELECT gpu.name,brands.name as brand
     FROM gpu
     JOIN brands ON gpu.brand = brands.id
+    order by gpu.name
 "#;
 pub const INSERT_GPU: &str = r#"
    INSERT INTO gpu (name,brand) 
