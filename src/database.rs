@@ -70,11 +70,14 @@ pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentMod
     Ok(recs)
 }
 
-pub async fn update_equipament_model(user: model::DbEquipamentModel) -> anyhow::Result<()> {
+pub async fn update_equipament_model(equipament: model::DbEquipamentModel) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
-    dbg!(&user);
-    let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
-        .bind(user.name)
+    let _ = sqlx::query(query_select::UPDADE_EQUIPAMENT_MODEL_INFORMATION)
+        .bind(equipament.name.clone())
+        .bind(equipament.brand)
+        .bind(equipament.cpu)
+        .bind(equipament.gpu)
+        .bind(equipament.name)
         .execute(&poll)
         .await
         .inspect_err(|e| {
@@ -150,18 +153,20 @@ pub async fn get_specific_user(login: String) -> anyhow::Result<model::DbUser> {
     Ok(recs?)
 }
 pub async fn get_specific_equipament_model(
-    login: String,
+    name: String,
 ) -> anyhow::Result<model::DbEquipamentModel> {
     let pool = get_sql_pool().await?;
+
     let recs = sqlx::query_as::<_, model::DbEquipamentModel>(
         query_select::SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION,
     )
-    .bind(&login)
+    .bind(&name.to_uppercase())
     .fetch_one(&pool)
     .await
     .inspect_err(|e| {
         dbg!(e);
-    })?;
+    })
+    .unwrap_or_default();
     Ok(recs)
 }
 pub async fn delete_brand(name: String) -> anyhow::Result<()> {
@@ -200,7 +205,8 @@ pub async fn get_department_by_id(id: String) -> anyhow::Result<model::DbDepartm
         .await
         .inspect_err(|f| {
             dbg!(f);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -212,7 +218,8 @@ pub async fn get_department_by_name(name: String) -> anyhow::Result<model::DbInt
         .await
         .inspect_err(|e| {
             dbg!(e);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -225,7 +232,8 @@ pub async fn get_brand_by_id(id: String) -> anyhow::Result<model::DbBrand> {
         .await
         .inspect_err(|f| {
             dbg!(f);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -237,7 +245,8 @@ pub async fn get_brand_by_name(name: String) -> anyhow::Result<model::DbInteger>
         .await
         .inspect_err(|e| {
             dbg!(e);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -250,7 +259,8 @@ pub async fn get_gpu_by_id(id: String) -> anyhow::Result<model::DbGPU> {
         .await
         .inspect_err(|f| {
             dbg!(f);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -262,7 +272,8 @@ pub async fn get_gpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
         .await
         .inspect_err(|e| {
             dbg!(e);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -275,7 +286,8 @@ pub async fn get_cpu_by_id(id: String) -> anyhow::Result<model::DbCPU> {
         .await
         .inspect_err(|f| {
             dbg!(f);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -287,7 +299,8 @@ pub async fn get_cpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
         .await
         .inspect_err(|e| {
             dbg!(e);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -386,7 +399,8 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
         query_select::SELECT_COMPUTER_INFORMATION_WITH_LAST_USER,
     )
     .fetch_all(&poll)
-    .await?;
+    .await
+    .unwrap_or_default();
     Ok(recs)
 }
 pub async fn update_user_equipament(

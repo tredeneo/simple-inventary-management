@@ -110,28 +110,11 @@ pub async fn equipament_detail(app: &App) {
                         dbg!(e);
                     })
                     .unwrap_or_default();
-                let brand = database::get_brand_by_id(user.brand.to_string())
-                    .await
-                    .inspect_err(|e| {
-                        dbg!(e);
-                    })
-                    .unwrap_or_default();
-                let cpu = database::get_brand_by_id(user.brand.to_string())
-                    .await
-                    .inspect_err(|e| {
-                        dbg!(e);
-                    })
-                    .unwrap_or_default();
-                let gpu = database::get_brand_by_id(user.brand.to_string())
-                    .await
-                    .inspect_err(|e| {
-                        dbg!(e);
-                    })
-                    .unwrap_or_default();
+
                 equipament_detail.set_name(user.name.into());
-                equipament_detail.set_brand(brand.name.into());
-                equipament_detail.set_cpu(cpu.name.into());
-                equipament_detail.set_gpu(gpu.name.into());
+                equipament_detail.set_brand(user.brand.into());
+                equipament_detail.set_cpu(user.cpu.into());
+                equipament_detail.set_gpu(user.gpu.into());
             });
         });
 
@@ -144,29 +127,29 @@ pub async fn equipament_detail(app: &App) {
                 let user_app = myapp.clone_strong();
                 async move {
                     let detail = user_app.global::<GlobalEquipamentModelDetail>();
-                    let brand = database::get_brand_by_name(detail.get_brand().to_string())
-                        .await
-                        .unwrap()
-                        .id
-                        .to_string();
+                    // let brand = database::get_brand_by_name(detail.get_brand().to_string())
+                    //     .await
+                    //     .unwrap()
+                    //     .id
+                    //     .to_string();
 
-                    let cpu = database::get_cpu_by_name(detail.get_cpu().to_string())
-                        .await
-                        .unwrap()
-                        .id
-                        .to_string();
+                    // let cpu = database::get_cpu_by_name(detail.get_cpu().to_string())
+                    //     .await
+                    //     .unwrap()
+                    //     .id
+                    //     .to_string();
 
-                    let gpu = database::get_gpu_by_name(detail.get_gpu().to_string())
-                        .await
-                        .unwrap()
-                        .id
-                        .to_string();
+                    // let gpu = database::get_gpu_by_name(detail.get_gpu().to_string())
+                    //     .await
+                    //     .unwrap()
+                    //     .id
+                    //     .to_string();
 
                     let equipament = database::model::DbEquipamentModel {
                         name: detail.get_name().to_string(),
-                        brand,
-                        cpu,
-                        gpu,
+                        brand: detail.get_brand().to_string(),
+                        cpu: detail.get_cpu().to_string(),
+                        gpu: detail.get_gpu().to_string(),
                     };
                     let tmp = equipament.clone();
                     let _ = database::update_equipament_model(tmp).await;

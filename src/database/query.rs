@@ -10,19 +10,13 @@ pub const SELECT_SPECIFIC_USER_INFOMATION: &str = r#"
             where login =?1
         "#;
 pub const SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION: &str = r#"
-            SELECT name,brand,cpu,gpu
-            FROM users
-            where login =?1
-        "#;
-pub const UPDADE_USER_INFORMATION: &str = r#"
-            UPDATE users
-            SET name=?1, 
-                email=?2,
-                phone_number=?3,
-                department=?4,
-                extension=?5
-            WHERE login=?3
-        "#;
+        SELECT name,
+        	(select name from brands where id=equipament_model.brand) as brand,
+        	(select name from cpu where id=equipament_model.cpu) as cpu,
+        	(select name from gpu where id=equipament_model.gpu) as gpu
+        FROM equipament_model
+        WHERE name=?1
+"#;
 
 pub const INSERT_USER_INFORMATION: &str = r#"
     insert into users (name,department,document,email,login,extension,phone_number)
@@ -155,21 +149,6 @@ pub const DELETE_DEPARTMENT: &str = r#"
     where name = ?1 
 "#;
 
-pub const SELECT_ROLE: &str = r#"
-    SELECT id,name
-    FROM roles
-"#;
-
-pub const INSERT_ROLE: &str = r#"
-   INSERT INTO roles (name) 
-    VALUES (?1)
-"#;
-
-pub const DELETE_ROLE: &str = r#"
-   DELETE from roles
-    where name = ?1 
-"#;
-
 pub const SELECT_CPU: &str = r#"
     SELECT cpu.name,brands.name as brand
     FROM cpu
@@ -275,4 +254,22 @@ pub const INSERT_GPU: &str = r#"
 pub const DELETE_GPU: &str = r#"
    DELETE from gpu
     where name = ?1 
+"#;
+
+pub const UPDADE_USER_INFORMATION: &str = r#"
+    UPDATE users
+    SET name=?1, 
+        email=?2,
+        phone_number=?3,
+        department=?4,
+        extension=?5
+    WHERE login=?3
+"#;
+pub const UPDADE_EQUIPAMENT_MODEL_INFORMATION: &str = r#"
+    UPDATE equipament_model
+    SET name=?1, 
+        brand= (SELECT id FROM brands WHERE name=?2),
+        cpu=   (SELECT id FROM cpu WHERE name=?3),
+        gpu=   (SELECT id FROM GPU WHERE name=?4)
+    WHERE name=?5
 "#;

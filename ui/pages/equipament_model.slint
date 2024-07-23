@@ -150,7 +150,7 @@ component Equipament inherits VerticalBox {
             ComboBox {
                 model: GlobalEquipamentModelDetail.cpus;
                 height: root.height_itens;
-                current-value: "";
+                current-value: GlobalEquipamentModelDetail.cpu;
                 selected(str) => {
                     GlobalEquipamentModelDetail.cpu = str;
                 }
@@ -165,7 +165,7 @@ component Equipament inherits VerticalBox {
             ComboBox {
                 model: GlobalEquipamentModelDetail.gpus;
                 height: root.height_itens;
-                current-value: "";
+                current-value: GlobalEquipamentModelDetail.gpu;
                 selected(str) => {
                     GlobalEquipamentModelDetail.gpu = str;
                 }
@@ -191,7 +191,7 @@ component ShowEquipament inherits VerticalBox {
             row-pointer-event(index, event, _) => {
                 if event.button == PointerEventButton.left {
                     GlobalEquipamentModel.current_equipament = GlobalEquipamentModel.row_data[index][0].text;
-                    GlobalEquipamentModel.select_equipament(GlobalEquipamentModel.row_data[index][1].text);
+                    GlobalEquipamentModel.select_equipament(GlobalEquipamentModel.row_data[index][0].text);
                     GlobalEquipamentModel.selected_equipament = true;
                 }
             }
