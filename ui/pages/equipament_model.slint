@@ -33,7 +33,7 @@ component CreateEquipamentModel inherits VerticalBox {
 
                 LineEdit {
                     edited(str) => {
-                        GlobalEquipamentModelDetail.name=str
+                        GlobalEquipamentModelDetail.name = str
                     }
                     height: root.height_itens;
                 }
@@ -50,7 +50,36 @@ component CreateEquipamentModel inherits VerticalBox {
                     current-value: "";
                     selected(str) => {
                         GlobalEquipamentModelDetail.brand = str;
-                        
+                    }
+                }
+
+                Text {
+                    width: root.width_itens;
+                    text: "cpu";
+                    row: 2;
+                }
+
+                ComboBox {
+                    model: GlobalEquipamentModelDetail.cpus;
+                    height: root.height_itens;
+                    current-value: "";
+                    selected(str) => {
+                        GlobalEquipamentModelDetail.cpu = str;
+                    }
+                }
+
+                Text {
+                    width: root.width_itens;
+                    text: "gpu";
+                    row: 3;
+                }
+
+                ComboBox {
+                    model: GlobalEquipamentModelDetail.gpus;
+                    height: root.height_itens;
+                    current-value: "";
+                    selected(str) => {
+                        GlobalEquipamentModelDetail.gpu = str;
                     }
                 }
             }
@@ -60,6 +89,8 @@ component CreateEquipamentModel inherits VerticalBox {
 
 component Equipament inherits VerticalBox {
     in-out property <string> name;
+    private property <length> height_itens:50px;
+    private property <length> width_itens:100px;
     VerticalLayout {
         spacing: 50px;
         alignment: LayoutAlignment.start;
@@ -97,7 +128,6 @@ component Equipament inherits VerticalBox {
                 }
             }
 
-
             Text {
                 text: "brands";
                 row: 1;
@@ -111,7 +141,35 @@ component Equipament inherits VerticalBox {
                 }
             }
 
+            Text {
+                width: root.width_itens;
+                text: "cpu";
+                row: 2;
+            }
 
+            ComboBox {
+                model: GlobalEquipamentModelDetail.cpus;
+                height: root.height_itens;
+                current-value: "";
+                selected(str) => {
+                    GlobalEquipamentModelDetail.cpu = str;
+                }
+            }
+
+            Text {
+                width: root.width_itens;
+                text: "gpu";
+                row: 3;
+            }
+
+            ComboBox {
+                model: GlobalEquipamentModelDetail.gpus;
+                height: root.height_itens;
+                current-value: "";
+                selected(str) => {
+                    GlobalEquipamentModelDetail.gpu = str;
+                }
+            }
         }
     }
 }
@@ -129,7 +187,7 @@ component ShowEquipament inherits VerticalBox {
 
         StandardTableView {
             columns: [{ title: "name" }, { title: "brand" }, { title: "cpu" }];
-            rows:GlobalEquipamentModel.row_data;
+            rows: GlobalEquipamentModel.row_data;
             row-pointer-event(index, event, _) => {
                 if event.button == PointerEventButton.left {
                     GlobalEquipamentModel.current_equipament = GlobalEquipamentModel.row_data[index][0].text;
@@ -142,10 +200,9 @@ component ShowEquipament inherits VerticalBox {
 }
 
 export component EquipamentModel inherits VerticalBox {
-    if !GlobalEquipamentModel.selected_equipament && !GlobalEquipamentModel.create_equipament: ShowEquipament{}
-    if !GlobalEquipamentModel.selected_equipament && GlobalEquipamentModel.create_equipament: CreateEquipamentModel{}
-    if GlobalEquipamentModel.selected_equipament:Equipament{
+    if !GlobalEquipamentModel.selected_equipament && !GlobalEquipamentModel.create_equipament: ShowEquipament { }
+    if !GlobalEquipamentModel.selected_equipament && GlobalEquipamentModel.create_equipament: CreateEquipamentModel { }
+    if GlobalEquipamentModel.selected_equipament:Equipament {
         name: GlobalEquipamentModel.current_equipament;
     }
-        
 }

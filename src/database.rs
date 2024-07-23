@@ -95,6 +95,9 @@ pub async fn insert_equipament_model(equipament: model::DbEquipamentModel) -> an
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_EQUIPAMENT_MODEL)
         .bind(equipament.name.to_uppercase())
+        .bind(equipament.brand)
+        .bind(equipament.cpu)
+        .bind(equipament.gpu)
         .execute(&poll)
         .await
         .inspect_err(|f| {

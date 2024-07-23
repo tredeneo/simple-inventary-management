@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 pub const SELECT_USER_INFOMATION: &str = r#"
             SELECT name,login,email,id,document,department,phone_number,extension
             FROM users
@@ -234,12 +234,20 @@ pub const SELECT_EQUIPAMENT_MODEL: &str = r#"
 "#;
 
 pub const INSERT_EQUIPAMENT_MODEL: &str = r#"
-   INSERT INTO equipament_model (name,brand) 
+   INSERT INTO equipament_model (name,brand,cpu,gpu) 
     VALUES (
     ?1,
         (SELECT id
         FROM brands
-        WHERE name = ?2)
+        WHERE name = ?2),
+        
+        (SELECT id
+        FROM cpu
+        WHERE name = ?3),
+        
+        (SELECT id
+        FROM gpu
+        WHERE name = ?4)
     )
 "#;
 
