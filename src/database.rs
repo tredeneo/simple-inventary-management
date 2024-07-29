@@ -65,7 +65,8 @@ pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentMod
         .await
         .inspect_err(|f| {
             dbg!(f);
-        })?;
+        })
+        .unwrap_or_default();
 
     Ok(recs)
 }
@@ -371,12 +372,9 @@ pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> 
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_COMPUTER)
         .bind(computer.serialnumber)
-        .bind(computer.brand)
-        .bind(computer.cpu)
         .bind(computer.storage)
         .bind(computer.memory)
         .bind(computer.model)
-        .bind(computer.type_equipament)
         .bind(computer.observation)
         .execute(&poll)
         .await
@@ -400,6 +398,12 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
     )
     .fetch_all(&poll)
     .await
+    .inspect(|s| {
+        dbg!(s);
+    })
+    .inspect_err(|e| {
+        dbg!(e);
+    })
     .unwrap_or_default();
     Ok(recs)
 }

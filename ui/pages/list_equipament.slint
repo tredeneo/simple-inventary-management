@@ -58,6 +58,11 @@ component CreateComputer inherits VerticalBox {
             height: 50px;
             text: "save";
             clicked => {
+                debug(ComputerDetail.brand);
+                debug(ComputerDetail.serial_number);
+                debug(ComputerDetail.memory);
+                debug(ComputerDetail.storage);
+                debug(ComputerDetail.model);
                 ComputerDetail.create_computer();
                 Computers.create_computer = false;
             }
@@ -78,18 +83,6 @@ component CreateComputer inherits VerticalBox {
                     height: 50px;
                 }
 
-                Text {
-                    text: "cpu";
-                    row: 1;
-                }
-
-                ComboBox {
-                    model: ComputerDetail.cpus;
-                    selected(str) => {
-                        ComputerDetail.cpu = str
-                    }
-                    height: 50px;
-                }
 
                 Text {
                     text: "storage";
@@ -122,21 +115,13 @@ component CreateComputer inherits VerticalBox {
 
                 ComboBox {
                     model: ComputerDetail.model_equipaments;
+                    current-value: "";
                     selected(str)=>{
+                        debug("combobox model:",str);
                         ComputerDetail.model_equipament = str
                     }
                 }
-                Text {
-                    text: "gpu";
-                    row: 5;
-                }
 
-                ComboBox {
-                    model: ComputerDetail.gpus;
-                    selected(str) => {
-                        ComputerDetail.gpu= str
-                    }
-                }
                 Text {
                     text: "observation";
                     row: 7;

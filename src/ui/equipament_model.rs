@@ -127,31 +127,12 @@ pub async fn equipament_detail(app: &App) {
                 let user_app = myapp.clone_strong();
                 async move {
                     let detail = user_app.global::<GlobalEquipamentModelDetail>();
-                    // let brand = database::get_brand_by_name(detail.get_brand().to_string())
-                    //     .await
-                    //     .unwrap()
-                    //     .id
-                    //     .to_string();
-
-                    // let cpu = database::get_cpu_by_name(detail.get_cpu().to_string())
-                    //     .await
-                    //     .unwrap()
-                    //     .id
-                    //     .to_string();
-
-                    // let gpu = database::get_gpu_by_name(detail.get_gpu().to_string())
-                    //     .await
-                    //     .unwrap()
-                    //     .id
-                    //     .to_string();
-
-                    let equipament = database::model::DbEquipamentModel {
+                    let tmp = database::model::DbEquipamentModel {
                         name: detail.get_name().to_string(),
                         brand: detail.get_brand().to_string(),
                         cpu: detail.get_cpu().to_string(),
                         gpu: detail.get_gpu().to_string(),
                     };
-                    let tmp = equipament.clone();
                     let _ = database::update_equipament_model(tmp).await;
                     let _ = equipament_list(&local_app).await;
                 }
