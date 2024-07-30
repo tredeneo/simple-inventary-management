@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.79"
 chrono = "0.4.37"
+iced = { version = "0.12.1", features = ["image", "tokio"] }
+iced_aw = "0.9.3"
 slint = "1.7"
 sqlx = { version = "0.7.3", features = ["sqlite", "runtime-tokio"]}
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "rt", "macros"] }
