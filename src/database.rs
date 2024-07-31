@@ -407,24 +407,62 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
     .unwrap_or_default();
     Ok(recs)
 }
+
+pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model::DbLastUser>> {
+    let poll = get_sql_pool().await?;
+    dbg!(&serial_number);
+    let all = sqlx::query_as!(model::DbLastUser,"
+        select (select name from users where users.id = has.user_id )  as usuario , date_begin, date_end 
+        FROM has
+        WHERE (select id from equipaments where equipaments.serialnumber = ?1)
+        order by has.date_begin desc                
+        ",serial_number)
+        .fetch_all(&poll)
+        .await
+        .inspect(|ok|{dbg!(ok);})
+        .inspect_err(|err| {dbg!(err);})?;
+    // for i in all.iter() {
+    // dbg!(i);
+    // }
+    // Ok(())
+
+    Ok(all)
+}
 pub async fn update_user_equipament(
     actual_user: String,
     future_user: String,
     equipament: String,
 ) -> anyhow::Result<()> {
     let poll = get_sql_pool().await?;
+    dbg!(&actual_user);
+    dbg!(&future_user);
+    dbg!(&equipament);
     let today = chrono::Local::now().date_naive().to_string();
-    let _ = sqlx::query(query_select::UPDATE_LAST_USER_COMPUTER)
+    sqlx::query(query_select::UPDATE_LAST_USER_COMPUTER)
         .bind(&today)
         .bind(&actual_user)
         .bind(&equipament)
         .execute(&poll)
-        .await?;
-    let _ = sqlx::query(query_select::INSERT_NEW_USER_COMPUTER)
+        .await
+        .inspect(|ok| {
+            dbg!(ok);
+        })
+        .inspect_err(|err| {
+            dbg!(err);
+        })
+        .ok();
+    sqlx::query(query_select::INSERT_NEW_USER_COMPUTER)
         .bind(&equipament)
         .bind(&future_user)
         .bind(&today)
         .execute(&poll)
-        .await?;
+        .await
+        .inspect(|ok| {
+            dbg!(ok);
+        })
+        .inspect_err(|err| {
+            dbg!(err);
+        })
+        .ok();
     Ok(())
 }

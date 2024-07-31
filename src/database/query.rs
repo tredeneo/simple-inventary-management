@@ -197,7 +197,7 @@ pub const UPDATE_LAST_USER_COMPUTER: &str = r#"
                         )
             and computer_id=(
                      	SELECT id 
-                    	FROM computer c 
+                    	FROM equipaments c 
                     	WHERE c.serialnumber = ?3
                         )
             AND date_end IS NULL
@@ -205,8 +205,8 @@ pub const UPDATE_LAST_USER_COMPUTER: &str = r#"
 pub const INSERT_NEW_USER_COMPUTER: &str = r#"
         INSERT INTO has (computer_id, user_id, date_begin)
         VALUES (
-        (SELECT id FROM computer WHERE serialnumber = ?1),
-        ?2,
+        (SELECT id FROM equipaments WHERE serialnumber = ?1),
+        (SELECT id FROM users WHERE login like ?2),
         ?3
         )   
         "#;

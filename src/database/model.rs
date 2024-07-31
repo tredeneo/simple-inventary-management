@@ -21,6 +21,13 @@ pub struct DbComputer {
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbLastUser {
+    pub usuario: String,
+    pub date_begin: String,
+    pub date_end: Option<String>,
+}
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
 pub struct DbBrand {
     pub name: String,
 }
