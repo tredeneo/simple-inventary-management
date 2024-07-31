@@ -20,6 +20,9 @@ use ferris::{FerrisMessage, FerrisTab};
 mod counter;
 use counter::{CounterMessage, CounterTab};
 
+// use brands;
+use simple_inventary::screens::brands;
+
 // mod settings;
 // use settings::{SettingsMessage, SettingsTab, TabBarPosition};
 
@@ -59,6 +62,7 @@ struct State {
     active_tab: TabId,
     ferris_tab: FerrisTab,
     counter_tab: CounterTab,
+    brands_tab: brands::GlobalBrand,
 }
 #[derive(Clone, PartialEq, Eq, Debug)]
 enum TabId {
@@ -119,6 +123,7 @@ impl Application for TabBarExample {
                         active_tab: TabId::Ferris,
                         ferris_tab: FerrisTab::new(),
                         counter_tab: CounterTab::new(),
+                        brands_tab: brands::GlobalBrand::new(()),
                     })
                 }
             }
