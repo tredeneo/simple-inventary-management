@@ -46,14 +46,8 @@ component ChangeComputer inherits VerticalBox {
         }
 
         StandardTableView {
-            columns: [{ title:"name" }, { title:"login" }, { title:"email" }, { title:"initial date" }];
+            columns: [{ title:"name" },{ title:"initial date" }];
             rows: ComputerDetail.row_data;
-            current-row-changed(index) => {
-                debug(ChangeEquipament.users[index][1].text);
-                debug(ChangeEquipament.users[index][0].text);
-                debug(ChangeEquipament.users[index][2].text);
-                ComputerDetail.users_history(ComputerDetail.serial_number);
-            }
         }
     }
 }
@@ -167,6 +161,7 @@ component ShowComputers inherits VerticalBox {
                     ComputerDetail.brand = Computers.row_data[index][1].text;
                     ComputerDetail.actual_user = Computers.row_data[index][2].text;
                     ComputerDetail.model = Computers.row_data[index][3].text;
+                    ComputerDetail.users_history(ComputerDetail.serial_number);
                     Computers.selected_computer = true;
                 }
             }

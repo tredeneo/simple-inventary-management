@@ -36,9 +36,9 @@ async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
     // let row_data: Rc<VecModel<slint::VecModel<StandardListViewItem>>> =
     // Rc::new(VecModel::default());
     let row_data = Rc::new(VecModel::default());
-    let local_app = app.clone_strong();
+    // let local_app = app.clone_strong();
+    dbg!(&serial);
     let users = database::get_user_computers(&serial).await?;
-    // dbg!(&serial);
     for i in users {
         let items = Rc::new(VecModel::default());
         items.push(slint::format!("{}", i.usuario).into());

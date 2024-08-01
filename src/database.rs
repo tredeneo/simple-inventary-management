@@ -398,9 +398,9 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
     )
     .fetch_all(&poll)
     .await
-    .inspect(|s| {
-        dbg!(s);
-    })
+    // .inspect(|s| {
+    //     dbg!(s);
+    // })
     .inspect_err(|e| {
         dbg!(e);
     })
@@ -410,22 +410,16 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
 
 pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model::DbLastUser>> {
     let poll = get_sql_pool().await?;
-    dbg!(&serial_number);
     let all = sqlx::query_as!(model::DbLastUser,"
         select (select name from users where users.id = has.user_id )  as usuario , date_begin, date_end 
         FROM has
-        WHERE (select id from equipaments where equipaments.serialnumber = ?1)
+        WHERE has.computer_id = (select id from equipaments where equipaments.serialnumber = ?1)
         order by has.date_begin desc                
         ",serial_number)
         .fetch_all(&poll)
         .await
-        .inspect(|ok|{dbg!(ok);})
+        // .inspect(|ok| {dbg!(ok);})
         .inspect_err(|err| {dbg!(err);})?;
-    // for i in all.iter() {
-    // dbg!(i);
-    // }
-    // Ok(())
-
     Ok(all)
 }
 pub async fn update_user_equipament(

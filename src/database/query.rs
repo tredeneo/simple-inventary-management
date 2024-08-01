@@ -32,7 +32,7 @@ SELECT * FROM (
         ROW_NUMBER() OVER (PARTITION BY equipaments.id ORDER BY has.date_begin DESC) AS rn
     FROM 
         equipaments
-	JOIN equipament_model ON equipaments.id = equipament_model.id
+	JOIN equipament_model ON equipaments.model= equipament_model.id
     JOIN brands ON equipament_model.brand = brands.id
 	LEFT JOIN has ON has.computer_id = equipaments.id
     LEFT JOIN users ON users.id = has.user_id
