@@ -4,12 +4,11 @@ use crate::database::{self};
 use crate::{App, ChangeEquipament, ComputerDetail, Computers};
 use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
 
-pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
-    let row_data: Rc<VecModel<slint::ModelRc<StandardListViewItem>>> = Rc::new(VecModel::default());
+pub async fn get_equipament_list(
+) -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardListViewItem>>>> {
+    let row_data = Rc::new(VecModel::default());
     let tmp = database::get_computers().await.unwrap_or_default();
-
     for i in tmp {
-        // for i in tc
         let items = Rc::new(VecModel::default());
         items.push(slint::format!("{}", i.serialnumber).into());
         items.push(slint::format!("{}", i.actual_user).into());
@@ -17,10 +16,7 @@ pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
         row_data.push(items.into());
     }
 
-    app.global::<Computers>()
-        .set_row_data(row_data.clone().into());
-
-    Ok(())
+    Ok(row_data)
 }
 
 async fn get_equipament_model() -> anyhow::Result<ModelRc<SharedString>> {
@@ -33,11 +29,7 @@ async fn get_equipament_model() -> anyhow::Result<ModelRc<SharedString>> {
 }
 
 async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
-    // let row_data: Rc<VecModel<slint::VecModel<StandardListViewItem>>> =
-    // Rc::new(VecModel::default());
     let row_data = Rc::new(VecModel::default());
-    // let local_app = app.clone_strong();
-    dbg!(&serial);
     let users = database::get_user_computers(&serial).await?;
     for i in users {
         let items = Rc::new(VecModel::default());
@@ -46,11 +38,20 @@ async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
         items.push(slint::format!("{}", i.date_end.unwrap_or_default()).into());
         row_data.push(items.into());
     }
-    // let tmp = ModelRc::from(row_data.clone());
     app.global::<ComputerDetail>().set_row_data(row_data.into());
     Ok(())
 }
 
+pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
+    let row_data = get_equipament_list().await?;
+
+    // app.global::<ComputerDetail>()
+    //     .set_row_data(row_data.clone().into());
+
+    app.global::<Computers>()
+        .set_row_data(row_data.clone().into());
+    Ok(())
+}
 pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
     use crate::ui::user::get_user_list;
 
@@ -60,6 +61,12 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
 
     app.global::<ComputerDetail>()
         .set_model_equipaments(get_equipament_model().await?);
+
+    let myapp = app.clone_strong();
+    app.global::<ComputerDetail>().on_update(move || {
+        let local_app = myapp.clone_strong();
+        let _ = slint::spawn_local(async move { equipament_list(&local_app).await.unwrap() });
+    });
 
     let myapp = app.clone_strong();
     app.global::<ComputerDetail>().on_users_history(move |arg| {
@@ -84,6 +91,7 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
         };
         slint::spawn_local(async move {
             database::create_computer(equipament).await.ok();
+            equipament_list(&local_app).await.ok();
         })
         .ok();
     });

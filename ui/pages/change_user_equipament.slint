@@ -1,5 +1,5 @@
 import { VerticalBox, StandardListView, Button, LineEdit, HorizontalBox, StandardTableView } from "std-widgets.slint";
-import {ChangeEquipament, ComputerDetail } from "../globals/computer.slint";
+import {ChangeEquipament, ComputerDetail,Computers } from "../globals/computer.slint";
 
 export component ChangeUserEquipament inherits VerticalBox {
     HorizontalBox {
@@ -7,6 +7,8 @@ export component ChangeUserEquipament inherits VerticalBox {
             text: @tr("save");
             clicked => {
                 ChangeEquipament.change_user();
+                ChangeEquipament.change_equipament = false;
+                Computers.selected_computer = false;
             }
         }
 
@@ -27,10 +29,6 @@ export component ChangeUserEquipament inherits VerticalBox {
     StandardTableView {
         rows: ChangeEquipament.users;
         current-row-changed(index) => {
-            // debug(ChangeEquipament.users[index][1].text);
-            // debug(ChangeEquipament.users[index][0].text);
-            // debug(ChangeEquipament.users[index][2].text);
-            // debug(ComputerDetail.serial_number);
             ComputerDetail.users_history(ComputerDetail.serial_number);
             ChangeEquipament.future_login = ChangeEquipament.users[index][1].text;
         }

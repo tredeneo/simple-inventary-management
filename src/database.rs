@@ -371,7 +371,7 @@ pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> 
     dbg!(&computer);
     let poll = get_sql_pool().await?;
     let _ = sqlx::query(query_select::INSERT_COMPUTER)
-        .bind(computer.serialnumber)
+        .bind(computer.serialnumber.to_uppercase())
         .bind(computer.storage)
         .bind(computer.memory)
         .bind(computer.model)

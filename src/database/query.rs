@@ -23,11 +23,10 @@ SELECT * FROM (
     SELECT 
         equipaments.serialnumber,
         brands.name AS brand,
-        equipaments.model,
 		equipaments.memory,
 		equipaments.storage,
 		equipaments.observation,
-		equipament_model.name,
+		equipament_model.name as 'model',
         login AS actual_user,
         ROW_NUMBER() OVER (PARTITION BY equipaments.id ORDER BY has.date_begin DESC) AS rn
     FROM 

@@ -12,7 +12,9 @@ component ChangeComputer inherits VerticalBox {
             Button {
                 text: @tr("update");
                 clicked => {
-                    ComputerDetail.save()
+                    ComputerDetail.save();
+                    ComputerDetail.update();
+                    
                 }
             }
 
@@ -64,6 +66,7 @@ component CreateComputer inherits VerticalBox {
                 debug(ComputerDetail.storage);
                 debug(ComputerDetail.model);
                 ComputerDetail.create_computer();
+                ComputerDetail.update();
                 Computers.create_computer = false;
             }
         }
