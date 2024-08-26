@@ -139,9 +139,9 @@ pub const UPDADE_USER_INFORMATION: &str = r#"
     UPDATE users
     SET name=?1, 
         email=?2,
-        phone_number=?3,
-        department=?4,
-        extension=?5
+        phone_number=?4,
+        department=(SELECT id FROM departments WHERE name = ?5),
+        extension=?6
     WHERE login=?3
 "#;
 pub const UPDADE_EQUIPAMENT_MODEL_INFORMATION: &str = r#"
