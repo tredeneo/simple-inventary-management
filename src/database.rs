@@ -1,27 +1,161 @@
-use std::{path::Path, sync::Arc};
+use std::{fs, ops::Not, path::Path, sync::Arc};
 
-use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqlitePool},
+    Pool, Sqlite,
+};
 
 mod query;
 use query as query_select;
 
 pub mod model;
 
-fn data_base_directory() -> Arc<String> {
+async fn data_base_directory() -> Arc<String> {
     use std::env;
-    let dir = match env::var("SIMPLE_INVENTARY_DATABASE_PATH") {
-        Ok(path) => Arc::new(path),
-        _ => {
-            let path = Path::new("./").join("database.sqlite3");
-            if path.exists() {
-                return Arc::new(path.to_string_lossy().to_string());
-            }
-            Arc::new(path.to_string_lossy().to_string()) // TODO: use XDG path
-        }
-    };
-    dir //TODO: check if database already exist, create if not
+
+    let _ = get_xdg_database_path();
+    if let Ok(path) = env::var("SIMPLE_INVENTARY_DATABASE_PATH") {
+        return Arc::new(path);
+    }
+
+    let local_path = Path::new("./database.sqlite3");
+    if local_path.exists() {
+        return Arc::new(local_path.to_string_lossy().to_string());
+    }
+    let xdg_dir = get_xdg_database_path();
+    create_database(xdg_dir.clone()).await.ok();
+    Arc::new(xdg_dir)
 }
 
+fn get_xdg_database_path() -> String {
+    use directories::BaseDirs;
+
+    let dir = BaseDirs::new().unwrap();
+    let mut dir = dir.config_local_dir().to_path_buf();
+    dir.push("simple_inventary");
+    if dir.exists().not() {
+        if let Err(e) = fs::create_dir_all(&dir) {
+            eprintln!("Erro ao criar diretório: {}", e);
+        }
+    }
+    dir.push("database.sqlite3");
+    dir.to_string_lossy().to_string()
+}
+// async fn create_database(location: &Path) -> anyhow::Result<()> {
+async fn create_database(location: String) -> anyhow::Result<()> {
+    let tmp = SqliteConnectOptions::new()
+        // .filename(location.to_string_lossy().to_string())
+        .filename(location.to_string())
+        .create_if_missing(true);
+
+    let pool = SqlitePool::connect_with(tmp)
+        .await
+        .inspect(|ok| {
+            dbg!(ok);
+        })
+        .inspect_err(|e| {
+            dbg!(e);
+        })?;
+    sqlx::query(
+        r#"
+        CREATE TABLE "CPU" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"brand"	INTEGER NOT NULL,
+        	"name"	TEXT NOT NULL UNIQUE,
+        	FOREIGN KEY("brand") REFERENCES "brands"("id"),
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "GPU" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"brand"	INTEGER NOT NULL,
+        	"name"	TEXT NOT NULL UNIQUE,
+        	FOREIGN KEY("brand") REFERENCES "brands"("id"),
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "brands" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"name"	TEXT NOT NULL UNIQUE,
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "departments" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"name"	TEXT NOT NULL UNIQUE,
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "equipament_model" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"name"	TEXT NOT NULL UNIQUE,
+        	"brand"	INTEGER NOT NULL,
+        	"cpu"	INTEGER NOT NULL,
+        	"gpu"	INTEGER NOT NULL,
+        	"type"	INTEGER DEFAULT 1,
+        	FOREIGN KEY("brand") REFERENCES "brands"("id"),
+        	FOREIGN KEY("gpu") REFERENCES "GPU"("id"),
+        	FOREIGN KEY("cpu") REFERENCES "CPU"("id"),
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "equipaments" (
+        	"serialnumber"	TEXT NOT NULL UNIQUE,
+        	"storage"	INTEGER NOT NULL,
+        	"memory"	INTEGER NOT NULL,
+        	"model"	TEXT NOT NULL,
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"observation"	TEXT,
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "has" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"computer_id"	INTEGER NOT NULL,
+        	"user_id"	INTEGER NOT NULL,
+        	"date_begin"	TEXT NOT NULL,
+        	"date_end"	TEXT DEFAULT null,
+        	"type"	INTEGER NOT NULL DEFAULT 1,
+        	FOREIGN KEY("computer_id") REFERENCES "equipaments"("id"),
+        	FOREIGN KEY("user_id") REFERENCES "users"("id"),
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "models" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"name"	TEXT UNIQUE,
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "phone_number" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"number"	TEXT,
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE type (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, category NOT NULL);
+        CREATE TABLE "users" (
+        	"id"	INTEGER NOT NULL UNIQUE,
+        	"name"	TEXT NOT NULL UNIQUE,
+        	"department"	TEXT NOT NULL,
+        	"document"	TEXT UNIQUE,
+        	"email"	TEXT NOT NULL,
+        	"login"	TEXT NOT NULL UNIQUE,
+        	"extension"	TEXT,
+        	"phone_number"	TEXT,
+        	"active"	INTEGER NOT NULL DEFAULT 1,
+        	PRIMARY KEY("id" AUTOINCREMENT),
+        	FOREIGN KEY("department") REFERENCES "departments"("id")
+        );
+        
+    "#,
+    )
+    .execute(&pool)
+    .await?;
+
+    println!("Banco de dados criado (se necessário) e conectado com sucesso!");
+
+    Ok(())
+}
+
+async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
+    Ok(SqlitePool::connect(&data_base_directory().await)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?)
+}
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_BRAND)
@@ -383,13 +517,6 @@ pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> 
         });
     Ok(())
 }
-async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
-    Ok(SqlitePool::connect(&data_base_directory())
-        .await
-        .inspect_err(|e| {
-            dbg!(&e);
-        })?)
-}
 
 pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
     let poll = get_sql_pool().await?;
@@ -410,12 +537,13 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
 
 pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model::DbLastUser>> {
     let poll = get_sql_pool().await?;
-    let all = sqlx::query_as!(model::DbLastUser,"
+    let all = sqlx::query_as::<_,model::DbLastUser>("
         select (select name from users where users.id = has.user_id )  as usuario , date_begin, date_end 
         FROM has
         WHERE has.computer_id = (select id from equipaments where equipaments.serialnumber = ?1)
         order by has.date_begin desc                
-        ",serial_number)
+        ")
+        .bind(serial_number)
         .fetch_all(&poll)
         .await
         // .inspect(|ok| {dbg!(ok);})

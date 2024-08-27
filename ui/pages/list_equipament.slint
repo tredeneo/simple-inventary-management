@@ -3,7 +3,6 @@ import { ChangeUserEquipament } from "./change_user_equipament.slint";
 import { ComputerDetail,Computers,ChangeEquipament} from "../globals/computer.slint";
 
 
-
 component ChangeComputer inherits VerticalBox {
     VerticalLayout {
         alignment: LayoutAlignment.space-between;
@@ -14,7 +13,6 @@ component ChangeComputer inherits VerticalBox {
                 clicked => {
                     ComputerDetail.save();
                     ComputerDetail.update();
-                    
                 }
             }
 
@@ -48,7 +46,7 @@ component ChangeComputer inherits VerticalBox {
         }
 
         StandardTableView {
-            columns: [{ title:"name" },{ title:"initial date" }];
+            columns: [{ title:"name" }, { title:"initial date" }];
             rows: ComputerDetail.row_data;
         }
     }
@@ -181,5 +179,5 @@ component Computer inherits VerticalBox {
 export component ComputerList inherits VerticalBox {
     if !Computers.selected_computer && !Computers.create_computer:ShowComputers { }
     if !Computers.selected_computer && Computers.create_computer: CreateComputer { }
-    if Computers.selected_computer: Computer { }
+    if Computers.selected_computer:  Computer { }
 }
