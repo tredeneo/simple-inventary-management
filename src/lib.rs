@@ -258,15 +258,6 @@ mod user {
         Ok(row_data)
     }
 
-    async fn get_departs() -> anyhow::Result<ModelRc<SharedString>> {
-        let depart = database::get_department().await?;
-        let mut row_data = Vec::default();
-        for i in depart {
-            let item = slint::format!("{}", i.name);
-            row_data.push(item);
-        }
-        Ok(ModelRc::from(row_data.as_slice()))
-    }
     pub async fn ui_update(app: &App) -> anyhow::Result<()> {
         let row_data = get_user_list().await?;
 
