@@ -1,79 +1,9 @@
-use std::rc::Rc;
-
-use crate::database;
-use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
+use crate::{database, global_update};
+use slint::{ComponentHandle, SharedString};
 
 use crate::{App, GlobalEquipamentModel, GlobalEquipamentModelDetail};
-async fn get_equipament_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
-    let row_data = Rc::new(VecModel::default());
-    let tmp = database::get_equipament_model().await?;
-    for i in tmp {
-        let items = Rc::new(VecModel::default());
-        items.push(slint::format!("{0}", i.name.to_lowercase()).into());
-        items.push(slint::format!("{}", i.brand).into());
-        items.push(slint::format!("{}", i.cpu).into());
-
-        row_data.push(items.into());
-    }
-    Ok(row_data)
-}
-
-fn update_features(app: &App) {
-    let myapp = app.clone_strong();
-    let _ = slint::spawn_local(async move {
-        let tmp = myapp.global::<GlobalEquipamentModelDetail>();
-        tmp.set_brands(get_brands().await.unwrap_or_default());
-        tmp.set_cpus(get_cpu().await.unwrap_or_default());
-        tmp.set_gpus(get_gpu().await.unwrap_or_default());
-    });
-}
-
-async fn get_gpu() -> anyhow::Result<ModelRc<SharedString>> {
-    let depart = database::get_gpus().await?;
-    let mut row_data = Vec::default();
-    for i in depart {
-        let item = slint::format!("{}", i.name);
-        row_data.push(item);
-    }
-    Ok(ModelRc::from(row_data.as_slice()))
-}
-async fn get_cpu() -> anyhow::Result<ModelRc<SharedString>> {
-    let depart = database::get_cpus().await?;
-    let mut row_data = Vec::default();
-    for i in depart {
-        let item = slint::format!("{}", i.name);
-        row_data.push(item);
-    }
-    Ok(ModelRc::from(row_data.as_slice()))
-}
-async fn get_brands() -> anyhow::Result<ModelRc<SharedString>> {
-    let depart = database::get_brands().await?;
-    let mut row_data = Vec::default();
-    for i in depart {
-        let item = slint::format!("{}", i.name);
-        row_data.push(item);
-    }
-    Ok(ModelRc::from(row_data.as_slice()))
-}
-
-pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
-    let row_data = get_equipament_list().await?;
-
-    app.global::<GlobalEquipamentModel>()
-        .set_row_data(row_data.clone().into());
-
-    update_features(app);
-    Ok(())
-}
 
 pub async fn equipament_detail(app: &App) {
-    let myapp = app.clone_strong();
-
-    app.global::<GlobalEquipamentModelDetail>()
-        .on_update(move || {
-            let local_app = myapp.clone_strong();
-            let _ = slint::spawn_local(async move { equipament_list(&local_app).await.unwrap() });
-        });
     let myapp = app.clone_strong();
     app.global::<GlobalEquipamentModelDetail>()
         .on_create(move || {
@@ -88,8 +18,8 @@ pub async fn equipament_detail(app: &App) {
                     gpu: tmp.get_gpu().to_string(),
                 };
                 async move {
-                    let _ = database::insert_equipament_model(tmp).await;
-                    let _ = equipament_list(&local_app).await;
+                    database::insert_equipament_model(tmp).await.ok();
+                    global_update(&local_app).await.ok();
                 }
             });
             detail.set_brand(SharedString::default());
@@ -133,8 +63,8 @@ pub async fn equipament_detail(app: &App) {
                         cpu: detail.get_cpu().to_string(),
                         gpu: detail.get_gpu().to_string(),
                     };
-                    let _ = database::update_equipament_model(tmp).await;
-                    let _ = equipament_list(&local_app).await;
+                    database::update_equipament_model(tmp).await.ok();
+                    global_update(&local_app).await.ok();
                 }
             });
         });

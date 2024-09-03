@@ -1,32 +1,8 @@
 use std::rc::Rc;
 
 use crate::database::{self};
-use crate::{App, ChangeEquipament, ComputerDetail, Computers};
-use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
-
-pub async fn get_equipament_list(
-) -> anyhow::Result<Rc<VecModel<slint::ModelRc<StandardListViewItem>>>> {
-    let row_data = Rc::new(VecModel::default());
-    let tmp = database::get_computers().await.unwrap_or_default();
-    for i in tmp {
-        let items = Rc::new(VecModel::default());
-        items.push(slint::format!("{}", i.serialnumber).into());
-        items.push(slint::format!("{}", i.actual_user).into());
-        items.push(slint::format!("{}", i.model).into());
-        row_data.push(items.into());
-    }
-
-    Ok(row_data)
-}
-
-async fn get_equipament_model() -> anyhow::Result<ModelRc<SharedString>> {
-    let cpus = database::get_equipament_model().await?;
-    let mut row_data = Vec::default();
-    for i in cpus {
-        row_data.push(slint::format!("{}", i.name));
-    }
-    Ok(ModelRc::from(row_data.as_slice()))
-}
+use crate::{global_update, App, ChangeEquipament, ComputerDetail};
+use slint::{ComponentHandle, VecModel};
 
 async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
     let row_data = Rc::new(VecModel::default());
@@ -42,30 +18,11 @@ async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn equipament_list(app: &App) -> anyhow::Result<()> {
-    let row_data = get_equipament_list().await?;
-
-    // app.global::<ComputerDetail>()
-    //     .set_row_data(row_data.clone().into());
-
-    app.global::<Computers>()
-        .set_row_data(row_data.clone().into());
-    Ok(())
-}
 pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
-    use crate::ui::user::get_user_list;
-
-    let row_data = get_user_list().await?;
-    app.global::<ChangeEquipament>()
-        .set_users(row_data.clone().into());
-
-    app.global::<ComputerDetail>()
-        .set_model_equipaments(get_equipament_model().await?);
-
     let myapp = app.clone_strong();
     app.global::<ComputerDetail>().on_update(move || {
         let local_app = myapp.clone_strong();
-        let _ = slint::spawn_local(async move { equipament_list(&local_app).await.unwrap() });
+        let _ = slint::spawn_local(async move { global_update(&local_app).await.unwrap() });
     });
 
     let myapp = app.clone_strong();
@@ -91,7 +48,7 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
         };
         slint::spawn_local(async move {
             database::create_computer(equipament).await.ok();
-            equipament_list(&local_app).await.ok();
+            global_update(&local_app).await.ok();
         })
         .ok();
     });
@@ -113,7 +70,7 @@ pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
             )
             .await
             .ok();
-            equipament_list(&local_app).await.ok();
+            global_update(&local_app).await.ok();
         })
         .ok();
     });
