@@ -1,18 +1,18 @@
-import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ScrollView, ComboBox} from "std-widgets.slint";
+import {DatePickerPopup, StandardTableView, VerticalBox ,Button, Palette, LineEdit, ScrollView, ComboBox} from "std-widgets.slint";
+
 import { ChangeUserEquipament } from "./change_user_equipament.slint";
 import { ComputerDetail,Computers,ChangeEquipament} from "../globals/computer.slint";
 
 
 component ChangeComputer inherits VerticalBox {
     VerticalLayout {
-        alignment: LayoutAlignment.space-between;
+        alignment: LayoutAlignment.start;
         HorizontalLayout {
             alignment: LayoutAlignment.space-around;
             Button {
                 text: @tr("update");
                 clicked => {
                     ComputerDetail.save();
-                    ComputerDetail.update();
                 }
             }
 
@@ -43,6 +43,24 @@ component ChangeComputer inherits VerticalBox {
             LineEdit {
                 text: ComputerDetail.model;
             }
+
+            Text {
+                text: "brand";
+                row: 2;
+            }
+
+            LineEdit {
+                text: ComputerDetail.brand;
+            }
+
+            Text {
+                text: "serialnumber";
+                row: 3;
+            }
+
+            LineEdit {
+                text: ComputerDetail.serial_number;
+            }
         }
 
         StandardTableView {
@@ -54,87 +72,119 @@ component ChangeComputer inherits VerticalBox {
 
 component CreateComputer inherits VerticalBox {
     VerticalBox {
-        Button {
-            height: 50px;
-            text: "save";
-            clicked => {
-                debug(ComputerDetail.brand);
-                debug(ComputerDetail.serial_number);
-                debug(ComputerDetail.memory);
-                debug(ComputerDetail.storage);
-                debug(ComputerDetail.model);
-                ComputerDetail.create_computer();
-                ComputerDetail.update();
-                Computers.create_computer = false;
+        alignment: LayoutAlignment.start;
+        HorizontalLayout {
+            alignment: LayoutAlignment.space-around;
+            Button {
+                text: "save";
+                clicked => {
+                    debug(ComputerDetail.brand);
+                    debug(ComputerDetail.serial_number);
+                    debug(ComputerDetail.memory);
+                    debug(ComputerDetail.storage);
+                    debug(ComputerDetail.model);
+                    ComputerDetail.create_computer();
+                    Computers.create_computer = false;
+                }
+            }
+
+            Button {
+                text:"back";
+                clicked => {
+                    Computers.create_computer = false;
+                }
             }
         }
 
-        ScrollView {
-            GridLayout {
-                Text {
-                    text: "serialnumber";
-                    row: 0;
-                }
+        GridLayout {
+            Text {
+                text: "serialnumber";
+                row: 0;
+            }
 
-                LineEdit {
-                    edited(str) => {
-                        ComputerDetail.serial_number = str
-                    }
-                    height: 50px;
+            LineEdit {
+                edited(str) => {
+                    ComputerDetail.serial_number = str
                 }
+                height: 50px;
+            }
 
-                Text {
-                    text: "storage";
-                    row: 2;
+            Text {
+                text: "storage";
+                row: 1;
+            }
+
+            LineEdit {
+                edited(str) => {
+                    ComputerDetail.storage = str
                 }
+                height: 50px;
+            }
 
-                LineEdit {
-                    edited(str) => {
-                        ComputerDetail.storage = str
-                    }
-                    height: 50px;
+            Text {
+                text: "memory";
+                row: 2;
+            }
+
+            LineEdit {
+                edited(str) => {
+                    ComputerDetail.memory = str
                 }
+                height: 50px;
+            }
 
-                Text {
-                    text: "memory";
-                    row: 3;
+            Text {
+                text: "model";
+                row: 3;
+            }
+
+            ComboBox {
+                model: ComputerDetail.model_equipaments;
+                current-value: "";
+                selected(str) => {
+                    debug("combobox model:",str);
+                    ComputerDetail.model_equipament = str
                 }
+                height: 50px;
+            }
 
-                LineEdit {
-                    edited(str) => {
-                        ComputerDetail.memory = str
-                    }
-                    height: 50px;
+            Text {
+                text: "observation";
+                row: 4;
+            }
+
+            LineEdit {
+                edited(str) => {
+                    ComputerDetail.observation = str
                 }
+                height: 50px;
+            }
 
-                Text {
-                    text: "model";
-                    row: 4;
+            Text {
+                text: "data entregue";
+                row: 5;
+            }
+
+            date-picker-button := Button {
+                text: @tr("Open Date Picker");
+                clicked => {
+                    date-picker.show();
                 }
+                height: 50px;
+            }
 
-                ComboBox {
-                    model: ComputerDetail.model_equipaments;
-                    current-value: "";
-                    selected(str) => {
-                        debug("combobox model:",str);
-                        ComputerDetail.model_equipament = str
-                    }
-                }
-
-                Text {
-                    text: "observation";
-                    row: 7;
-                }
-
-                LineEdit {
-                    edited(str) => {
-                        ComputerDetail.observation = str
-                    }
+            date-picker := DatePickerPopup {
+                close-on-click: false;
+                accepted(date) => {
+                    date-picker.close();
+                    ComputerDetail.date_change = date;
                 }
             }
         }
     }
 }
+
+
 
 component ShowComputers inherits VerticalBox {
     VerticalLayout {

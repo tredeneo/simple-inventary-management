@@ -21,6 +21,16 @@ pub struct DbComputer {
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbSmartphone {
+    pub serialnumber: String,
+    pub storage: i32,
+    pub memory: i32,
+    pub model: String,
+    pub observation: String,
+    pub actual_user: String,
+}
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
 pub struct DbLastUser {
     pub usuario: String,
     pub date_begin: String,
@@ -52,6 +62,7 @@ pub struct DbEquipamentModel {
     pub brand: String,
     pub cpu: String,
     pub gpu: String,
+    pub smartphone: i32,
 }
 
 #[derive(sqlx::FromRow, Debug, Default, Clone)]

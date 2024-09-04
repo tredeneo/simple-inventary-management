@@ -6,7 +6,7 @@ use slint::{ComponentHandle, VecModel};
 
 async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
     let row_data = Rc::new(VecModel::default());
-    let users = database::get_user_computers(&serial).await?;
+    let users = database::get_user_computers(serial).await?;
     for i in users {
         let items = Rc::new(VecModel::default());
         items.push(slint::format!("{}", i.usuario).into());
@@ -19,12 +19,6 @@ async fn last_user(app: App, serial: &str) -> anyhow::Result<()> {
 }
 
 pub async fn change_equipament(app: &App) -> anyhow::Result<()> {
-    let myapp = app.clone_strong();
-    app.global::<ComputerDetail>().on_update(move || {
-        let local_app = myapp.clone_strong();
-        let _ = slint::spawn_local(async move { global_update(&local_app).await.unwrap() });
-    });
-
     let myapp = app.clone_strong();
     app.global::<ComputerDetail>().on_users_history(move |arg| {
         let myapp = myapp.clone_strong();

@@ -16,6 +16,7 @@ pub async fn equipament_detail(app: &App) {
                     brand: tmp.get_brand().to_string(),
                     cpu: tmp.get_cpu().to_string(),
                     gpu: tmp.get_gpu().to_string(),
+                    smartphone: tmp.get_smartphone() as i32,
                 };
                 async move {
                     database::insert_equipament_model(tmp).await.ok();
@@ -26,6 +27,7 @@ pub async fn equipament_detail(app: &App) {
             detail.set_cpu(SharedString::default());
             detail.set_gpu(SharedString::default());
             detail.set_name(SharedString::default());
+            detail.set_smartphone(false);
         });
 
     let myapp = app.clone_strong();
@@ -62,6 +64,7 @@ pub async fn equipament_detail(app: &App) {
                         brand: detail.get_brand().to_string(),
                         cpu: detail.get_cpu().to_string(),
                         gpu: detail.get_gpu().to_string(),
+                        smartphone: detail.get_smartphone() as i32,
                     };
                     database::update_equipament_model(tmp).await.ok();
                     global_update(&local_app).await.ok();

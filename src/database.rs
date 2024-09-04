@@ -45,7 +45,7 @@ fn get_xdg_database_path() -> String {
 async fn create_database(location: String) -> anyhow::Result<()> {
     let tmp = SqliteConnectOptions::new()
         // .filename(location.to_string_lossy().to_string())
-        .filename(location.to_string())
+        .filename(location)
         .create_if_missing(true);
 
     let pool = SqlitePool::connect_with(tmp)
@@ -82,18 +82,20 @@ async fn create_database(location: String) -> anyhow::Result<()> {
         	"name"	TEXT NOT NULL UNIQUE,
         	PRIMARY KEY("id" AUTOINCREMENT)
         );
+        
         CREATE TABLE "equipament_model" (
-        	"id"	INTEGER NOT NULL UNIQUE,
-        	"name"	TEXT NOT NULL UNIQUE,
-        	"brand"	INTEGER NOT NULL,
-        	"cpu"	INTEGER NOT NULL,
-        	"gpu"	INTEGER NOT NULL,
-        	"type"	INTEGER DEFAULT 1,
-        	FOREIGN KEY("brand") REFERENCES "brands"("id"),
-        	FOREIGN KEY("gpu") REFERENCES "GPU"("id"),
-        	FOREIGN KEY("cpu") REFERENCES "CPU"("id"),
-        	PRIMARY KEY("id" AUTOINCREMENT)
-        );
+            "id" INTEGER NOT NULL UNIQUE,
+            "name" TEXT NOT NULL UNIQUE,
+            "brand" INTEGER NOT NULL,
+            "cpu" INTEGER NOT NULL,
+            "gpu" INTEGER NOT NULL,
+            "smartphone" INTEGER DEFAULT 0,
+            FOREIGN KEY ("brand") REFERENCES "brands" ("id"),
+            FOREIGN KEY ("gpu") REFERENCES "GPU" ("id"),
+            FOREIGN KEY ("cpu") REFERENCES "CPU" ("id"),
+            PRIMARY KEY ("id" AUTOINCREMENT)
+          );
+          
         CREATE TABLE "equipaments" (
         	"serialnumber"	TEXT NOT NULL UNIQUE,
         	"storage"	INTEGER NOT NULL,
@@ -109,7 +111,6 @@ async fn create_database(location: String) -> anyhow::Result<()> {
         	"user_id"	INTEGER NOT NULL,
         	"date_begin"	TEXT NOT NULL,
         	"date_end"	TEXT DEFAULT null,
-        	"type"	INTEGER NOT NULL DEFAULT 1,
         	FOREIGN KEY("computer_id") REFERENCES "equipaments"("id"),
         	FOREIGN KEY("user_id") REFERENCES "users"("id"),
         	PRIMARY KEY("id" AUTOINCREMENT)
@@ -212,6 +213,7 @@ pub async fn update_equipament_model(equipament: model::DbEquipamentModel) -> an
         .bind(equipament.brand)
         .bind(equipament.cpu)
         .bind(equipament.gpu)
+        .bind(equipament.smartphone)
         .bind(equipament.name)
         .execute(&poll)
         .await
@@ -236,6 +238,7 @@ pub async fn insert_equipament_model(equipament: model::DbEquipamentModel) -> an
         .bind(equipament.brand)
         .bind(equipament.cpu)
         .bind(equipament.gpu)
+        .bind(equipament.smartphone)
         .execute(&poll)
         .await
         .inspect_err(|f| {
@@ -295,7 +298,7 @@ pub async fn get_specific_equipament_model(
     let recs = sqlx::query_as::<_, model::DbEquipamentModel>(
         query_select::SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION,
     )
-    .bind(&name.to_uppercase())
+    .bind(name.to_uppercase())
     .fetch_one(&pool)
     .await
     .inspect_err(|e| {

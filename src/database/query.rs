@@ -112,7 +112,7 @@ pub const SELECT_GPU_BY_NAME: &str = r#"
     where name = ?1
 "#;
 pub const SELECT_EQUIPAMENT_MODEL: &str = r#"
-    SELECT equipament_model.name,brands.name as brand,cpu.name as cpu,gpu.name as gpu
+    SELECT equipament_model.name,brands.name as brand,cpu.name as cpu,gpu.name as gpu,smartphone
     FROM equipament_model
     JOIN cpu ON equipament_model.cpu = cpu.id
     JOIN gpu On equipament_model.gpu = gpu.id
@@ -150,7 +150,8 @@ pub const UPDADE_EQUIPAMENT_MODEL_INFORMATION: &str = r#"
         brand= (SELECT id FROM brands WHERE name=?2),
         cpu=   (SELECT id FROM cpu WHERE name=?3),
         gpu=   (SELECT id FROM GPU WHERE name=?4)
-    WHERE name=?5
+        smartphone=?5
+    WHERE name=?6
 "#;
 pub const INSERT_CPU: &str = r#"
    INSERT INTO cpu (name,brand) 
@@ -176,7 +177,7 @@ pub const INSERT_USER_INFORMATION: &str = r#"
     )    
 "#;
 pub const INSERT_COMPUTER: &str = r#"
-   INSERT INTO equipaments(serialnumber,storage,memory,model,observation) 
+   INSERT INTO equipaments(serialnumber,storage,memory,model,observation,smartphone) 
     VALUES (
     ?1,
     ?2,
@@ -242,7 +243,7 @@ pub const DELETE_DEPARTMENT: &str = r#"
 "#;
 
 pub const INSERT_EQUIPAMENT_MODEL: &str = r#"
-   INSERT INTO equipament_model (name,brand,cpu,gpu) 
+   INSERT INTO equipament_model (name,brand,cpu,gpu,smartphone) 
     VALUES (
     ?1,
         (SELECT id
@@ -255,7 +256,10 @@ pub const INSERT_EQUIPAMENT_MODEL: &str = r#"
         
         (SELECT id
         FROM gpu
-        WHERE name = ?4)
+        WHERE name = ?4),
+
+        
+        ?5
     )
 "#;
 

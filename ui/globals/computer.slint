@@ -1,4 +1,4 @@
-import { StandardTableView } from "std-widgets.slint";
+import { StandardTableView,Date } from "std-widgets.slint";
 export global ChangeEquipament {
     in property <bool> change_equipament:false;
     in property <string> search;
@@ -55,8 +55,8 @@ export global ComputerDetail {
     in property <string> model_equipament;
     in property <string> observation;
     in property <string> actual_user;
+    in property <Date> date_change;
     callback users_history(string);
     callback save();
     callback create_computer();
-    callback update();
 }

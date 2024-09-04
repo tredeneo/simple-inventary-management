@@ -1,4 +1,4 @@
-import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView, HorizontalBox} from "std-widgets.slint";
+import { StandardTableView, VerticalBox ,Button, Palette, LineEdit, ComboBox, ScrollView, HorizontalBox, CheckBox} from "std-widgets.slint";
 import {  GlobalEquipamentModelDetail, GlobalEquipamentModel} from "../globals/equipament_model.slint";
 
 
@@ -82,6 +82,17 @@ component CreateEquipamentModel inherits VerticalBox {
                         GlobalEquipamentModelDetail.gpu = str;
                     }
                 }
+                Text{
+                    width: root.width_itens;
+                    text: "smartphone";
+                    row:4;
+                }
+                CheckBox {
+                    checked: false;
+                    toggled() => {
+                        GlobalEquipamentModelDetail.smartphone = !GlobalEquipamentModelDetail.smartphone;
+                    }
+                }
             }
         }
     }
@@ -126,6 +137,7 @@ component Equipament inherits VerticalBox {
                     GlobalEquipamentModelDetail.name = str
                 }
             }
+            
 
             Text {
                 text: "brands";
@@ -168,6 +180,11 @@ component Equipament inherits VerticalBox {
                 selected(str) => {
                     GlobalEquipamentModelDetail.gpu = str;
                 }
+            }
+            CheckBox {
+                row:4;
+                text: "smartphone";
+                checked: GlobalEquipamentModelDetail.smartphone;
             }
         }
     }

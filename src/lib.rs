@@ -21,7 +21,6 @@ mod cpu {
     }
 
     pub async fn ui_update(app: &App) -> anyhow::Result<()> {
-        // let myapp = app.clone_strong();
         let row_data = get_cpu_list().await?;
         app.global::<GlobalCPU>()
             .set_row_data(row_data.clone().into());
@@ -241,7 +240,7 @@ mod user {
     use std::rc::Rc;
 
     use crate::database;
-    use slint::{ComponentHandle, ModelRc, SharedString, StandardListViewItem, VecModel};
+    use slint::{ComponentHandle, ModelRc, StandardListViewItem, VecModel};
 
     use crate::{App, ChangeEquipament, Users};
     pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
@@ -271,12 +270,12 @@ mod user {
 }
 
 pub async fn global_update(app: &App) -> anyhow::Result<()> {
-    cpu::ui_update(&app).await?;
-    gpu::ui_update(&app).await?;
-    brand::ui_update(&app).await?;
-    department::ui_update(&app).await?;
-    equipament_model::ui_update(&app).await?;
-    equipament::ui_update(&app).await?;
-    user::ui_update(&app).await?;
+    cpu::ui_update(app).await?;
+    gpu::ui_update(app).await?;
+    brand::ui_update(app).await?;
+    department::ui_update(app).await?;
+    equipament_model::ui_update(app).await?;
+    equipament::ui_update(app).await?;
+    user::ui_update(app).await?;
     Ok(())
 }
