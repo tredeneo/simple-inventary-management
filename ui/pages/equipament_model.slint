@@ -185,6 +185,9 @@ component Equipament inherits VerticalBox {
                 row:4;
                 text: "smartphone";
                 checked: GlobalEquipamentModelDetail.smartphone;
+                toggled => {
+                    GlobalEquipamentModelDetail.smartphone = !GlobalEquipamentModelDetail.smartphone
+                }
             }
         }
     }

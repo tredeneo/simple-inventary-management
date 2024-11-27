@@ -239,10 +239,10 @@ mod user {
 
     use std::rc::Rc;
 
-    use crate::database;
+    use crate::database::{self, get_department};
     use slint::{ComponentHandle, ModelRc, StandardListViewItem, VecModel};
 
-    use crate::{App, ChangeEquipament, Users};
+    use crate::{App, ChangeEquipament, UserDetail, Users};
     pub async fn get_user_list() -> anyhow::Result<Rc<VecModel<ModelRc<StandardListViewItem>>>> {
         let row_data = Rc::new(VecModel::default());
         let tmp = database::get_users().await?;
@@ -259,12 +259,16 @@ mod user {
 
     pub async fn ui_update(app: &App) -> anyhow::Result<()> {
         let row_data = get_user_list().await?;
-
         app.global::<Users>().set_row_data(row_data.clone().into());
-
-        let row_data = get_user_list().await?;
         app.global::<ChangeEquipament>()
             .set_users(row_data.clone().into());
+        let tmp = get_department().await?;
+        // let row_data = get_user_list().await?;
+        let row_data = Rc::new(VecModel::default());
+        for i in tmp {
+            row_data.push(slint::format!("{}", i.name).into());
+        }
+        app.global::<UserDetail>().set_departments(row_data.into());
         Ok(())
     }
 }

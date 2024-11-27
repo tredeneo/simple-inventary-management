@@ -13,9 +13,24 @@ pub const SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION: &str = r#"
         SELECT name,
         	(select name from brands where id=equipament_model.brand) as brand,
         	(select name from cpu where id=equipament_model.cpu) as cpu,
-        	(select name from gpu where id=equipament_model.gpu) as gpu
+        	(select name from gpu where id=equipament_model.gpu) as gpu,
+        	smartphone
         FROM equipament_model
         WHERE name=?1
+"#;
+
+pub const SELECT_COMPUTERS_BY_USER: &str = r#"
+select equipaments.serialnumber "serialnumber",
+			equipament_model.name "model", 
+      brands.name "brand",
+      has.date_begin "initial date",
+      has.date_end "final date",
+      users.name
+from users
+join has on users.id = has.user_id
+join equipaments on equipaments.id = has.computer_id
+join equipament_model on equipament_model.id = equipaments.model
+join brands on brands.id = equipament_model.brand    
 "#;
 
 pub const SELECT_COMPUTER_INFORMATION_WITH_LAST_USER: &str = r#"
@@ -39,7 +54,8 @@ SELECT * FROM (
         has.date_end IS NULL
 ) AS sub
 WHERE 
-    sub.rn = 1;
+    sub.rn = 1
+order by serialnumber;
 "#;
 
 pub const SELECT_BRAND: &str = r#"
@@ -149,7 +165,7 @@ pub const UPDADE_EQUIPAMENT_MODEL_INFORMATION: &str = r#"
     SET name=?1, 
         brand= (SELECT id FROM brands WHERE name=?2),
         cpu=   (SELECT id FROM cpu WHERE name=?3),
-        gpu=   (SELECT id FROM GPU WHERE name=?4)
+        gpu=   (SELECT id FROM GPU WHERE name=?4),
         smartphone=?5
     WHERE name=?6
 "#;

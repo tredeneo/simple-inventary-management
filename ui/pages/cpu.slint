@@ -15,7 +15,8 @@ export component CPU inherits VerticalBox {
                     root.text = actual;
                 }
             }
-            ComboBox {model: GlobalCPU.brands;
+            ComboBox {
+                model: GlobalCPU.brands;
                 current-value: "";
                 selected(actual) => {
                     root.brand = actual;

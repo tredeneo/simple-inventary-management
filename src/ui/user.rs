@@ -50,6 +50,7 @@ pub async fn user_detail(app: &App) {
             let tmp = database::get_department_by_id(user.department.to_string())
                 .await
                 .unwrap();
+            dbg!(&tmp);
             user_detail.set_name(user.name.into());
             user_detail.set_department(tmp.name.into());
             user_detail.set_document(user.document.into());
@@ -57,6 +58,7 @@ pub async fn user_detail(app: &App) {
             user_detail.set_extension(user.extension.into());
             user_detail.set_login(user.login.into());
             user_detail.set_phone_number(user.phone_number.into());
+            global_update(&local_app).await.ok();
         });
     });
 

@@ -157,6 +157,15 @@ async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
             dbg!(&e);
         })?)
 }
+pub async fn get_equipaments_by_users(user_id: String) -> anyhow::Result<()> {
+    let pool = get_sql_pool().await?;
+    let recs = sqlx::query(query_select::SELECT_COMPUTERS_BY_USER)
+        .bind(user_id)
+        .execute(&pool)
+        .await?;
+    Ok(())
+}
+
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
     let pool = get_sql_pool().await?;
     let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_BRAND)
