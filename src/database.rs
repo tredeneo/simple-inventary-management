@@ -125,6 +125,14 @@ async fn create_database(location: String) -> anyhow::Result<()> {
         	"number"	TEXT,
         	PRIMARY KEY("id" AUTOINCREMENT)
         );
+        
+        CREATE TABLE
+          "phone_number" (
+            "id" INTEGER NOT NULL UNIQUE,
+            "user_id" INT NOT NULL UNIQUE,
+            "number" VARCHAR(255) NOT NULL,
+            PRIMARY KEY ("id" AUTOINCREMENT)
+          );   
         CREATE TABLE type (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, category NOT NULL);
         CREATE TABLE "users" (
         	"id"	INTEGER NOT NULL UNIQUE,
@@ -157,13 +165,19 @@ async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
             dbg!(&e);
         })?)
 }
-pub async fn get_equipaments_by_users(user_id: String) -> anyhow::Result<()> {
+pub async fn get_equipaments_by_users(
+    user_id: String,
+) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
     let pool = get_sql_pool().await?;
-    let recs = sqlx::query(query_select::SELECT_COMPUTERS_BY_USER)
-        .bind(user_id)
-        .execute(&pool)
-        .await?;
-    Ok(())
+    let recs =
+        sqlx::query_as::<_, model::DbEquipamentHistoric>(query_select::SELECT_COMPUTERS_BY_USER)
+            .bind(user_id)
+            .fetch_all(&pool)
+            .await
+            .inspect_err(|e| {
+                dbg!(&e);
+            })?;
+    Ok(recs)
 }
 
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
@@ -486,6 +500,7 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
         .bind(user.phone_number)
         .bind(user.department)
         .bind(user.extension)
+        .bind(user.document)
         .execute(&poll)
         .await
         .inspect_err(|e| {

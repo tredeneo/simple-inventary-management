@@ -208,9 +208,9 @@ component ShowComputers inherits VerticalBox {
                 if event.button == PointerEventButton.left {
                     Computers.current_computer = Computers.row_data[index][0].text;
                     ComputerDetail.serial_number = Computers.row_data[index][0].text;
-                    ComputerDetail.brand = Computers.row_data[index][1].text;
-                    ComputerDetail.actual_user = Computers.row_data[index][2].text;
-                    ComputerDetail.model = Computers.row_data[index][3].text;
+                    // ComputerDetail.brand = Computers.row_data[index][1].text;
+                    ComputerDetail.actual_user = Computers.row_data[index][1].text;
+                    ComputerDetail.model = Computers.row_data[index][2].text;
                     ComputerDetail.users_history(ComputerDetail.serial_number);
                     Computers.selected_computer = true;
                 }

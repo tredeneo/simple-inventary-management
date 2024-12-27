@@ -1,5 +1,7 @@
+use std::rc::Rc;
+
 use crate::{database, global_update};
-use slint::{ComponentHandle, SharedString};
+use slint::{ComponentHandle, SharedString, VecModel};
 
 use crate::{App, UserDetail, Users};
 
@@ -46,10 +48,11 @@ pub async fn user_detail(app: &App) {
             let user_detail = local_app.global::<UserDetail>();
             let user = database::get_specific_user(user_login.to_string())
                 .await
-                .unwrap();
+                .unwrap_or_default();
             let tmp = database::get_department_by_id(user.department.to_string())
                 .await
-                .unwrap();
+                .unwrap_or_default();
+
             dbg!(&tmp);
             user_detail.set_name(user.name.into());
             user_detail.set_department(tmp.name.into());
@@ -58,6 +61,21 @@ pub async fn user_detail(app: &App) {
             user_detail.set_extension(user.extension.into());
             user_detail.set_login(user.login.into());
             user_detail.set_phone_number(user.phone_number.into());
+
+            let row_data = Rc::new(VecModel::default());
+            let historic = database::get_equipaments_by_users(user_login.to_string())
+                .await
+                .unwrap_or_default();
+            for i in historic {
+                let items = Rc::new(VecModel::default());
+                items.push(slint::format!("{}", i.brand).into());
+                items.push(slint::format!("{}", i.model).into());
+                items.push(slint::format!("{}", i.serialnumber).into());
+                items.push(slint::format!("{}", i.initial_date).into());
+                items.push(slint::format!("{}", i.final_date).into());
+                row_data.push(items.into());
+            }
+            user_detail.set_row_data(row_data.into());
             global_update(&local_app).await.ok();
         });
     });

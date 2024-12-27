@@ -75,3 +75,12 @@ pub struct DbGPU {
 pub struct DbInteger {
     pub id: i32,
 }
+
+#[derive(sqlx::FromRow, Debug, Default, Clone)]
+pub struct DbEquipamentHistoric {
+    pub serialnumber: String,
+    pub brand: String,
+    pub initial_date: String,
+    pub final_date: String,
+    pub model: String,
+}

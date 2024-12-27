@@ -23,14 +23,14 @@ pub const SELECT_COMPUTERS_BY_USER: &str = r#"
 select equipaments.serialnumber "serialnumber",
 			equipament_model.name "model", 
       brands.name "brand",
-      has.date_begin "initial date",
-      has.date_end "final date",
-      users.name
+      has.date_begin "initial_date",
+      has.date_end "final_date"
 from users
 join has on users.id = has.user_id
 join equipaments on equipaments.id = has.computer_id
 join equipament_model on equipament_model.id = equipaments.model
 join brands on brands.id = equipament_model.brand    
+where users.login like ?1
 "#;
 
 pub const SELECT_COMPUTER_INFORMATION_WITH_LAST_USER: &str = r#"
@@ -157,7 +157,8 @@ pub const UPDADE_USER_INFORMATION: &str = r#"
         email=?2,
         phone_number=?4,
         department=(SELECT id FROM departments WHERE name = ?5),
-        extension=?6
+        extension=?6,
+        document=?7
     WHERE login=?3
 "#;
 pub const UPDADE_EQUIPAMENT_MODEL_INFORMATION: &str = r#"
@@ -193,7 +194,7 @@ pub const INSERT_USER_INFORMATION: &str = r#"
     )    
 "#;
 pub const INSERT_COMPUTER: &str = r#"
-   INSERT INTO equipaments(serialnumber,storage,memory,model,observation,smartphone) 
+   INSERT INTO equipaments(serialnumber,storage,memory,model,observation) 
     VALUES (
     ?1,
     ?2,

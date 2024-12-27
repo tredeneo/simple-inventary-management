@@ -248,7 +248,7 @@ mod user {
         let tmp = database::get_users().await?;
         for i in tmp {
             let items = Rc::new(VecModel::default());
-            items.push(slint::format!("{0}", i.name.to_lowercase()).into());
+            items.push(slint::format!("{}", i.name.to_lowercase()).into());
             items.push(slint::format!("{}", i.login).into());
             items.push(slint::format!("{}", i.email).into());
 
@@ -263,10 +263,9 @@ mod user {
         app.global::<ChangeEquipament>()
             .set_users(row_data.clone().into());
         let tmp = get_department().await?;
-        // let row_data = get_user_list().await?;
         let row_data = Rc::new(VecModel::default());
         for i in tmp {
-            row_data.push(slint::format!("{}", i.name).into());
+            row_data.push(slint::format!("{}", i.name));
         }
         app.global::<UserDetail>().set_departments(row_data.into());
         Ok(())
