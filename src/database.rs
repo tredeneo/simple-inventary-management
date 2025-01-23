@@ -2,7 +2,7 @@ use std::{fs, ops::Not, path::Path, sync::Arc};
 
 use sqlx::{
     sqlite::{SqliteConnectOptions, SqlitePool},
-    Pool, Sqlite,
+    Connection, SqliteConnection,
 };
 
 mod query;
@@ -158,8 +158,16 @@ async fn create_database(location: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
-    Ok(SqlitePool::connect(&data_base_directory().await)
+// async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
+//     Ok(SqlitePool::connect(&data_base_directory().await)
+//         .await
+//         .inspect_err(|e| {
+//             dbg!(&e);
+//         })?)
+// }
+
+async fn get_sql_connection() -> anyhow::Result<SqliteConnection> {
+    Ok(SqliteConnection::connect(&data_base_directory().await)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -168,11 +176,11 @@ async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
 pub async fn get_equipaments_by_users(
     user_id: String,
 ) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs =
         sqlx::query_as::<_, model::DbEquipamentHistoric>(query_select::SELECT_COMPUTERS_BY_USER)
             .bind(user_id)
-            .fetch_all(&pool)
+            .fetch_all(&mut pool)
             .await
             .inspect_err(|e| {
                 dbg!(&e);
@@ -181,35 +189,35 @@ pub async fn get_equipaments_by_users(
 }
 
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_BRAND)
-        .fetch_all(&pool)
+        .fetch_all(&mut pool)
         .await?;
     Ok(recs)
 }
 pub async fn get_cpus() -> anyhow::Result<Vec<model::DbCPU>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbCPU>(query_select::SELECT_CPU)
-        .fetch_all(&pool)
+        .fetch_all(&mut pool)
         .await?;
 
     Ok(recs)
 }
 
 pub async fn delete_cpu(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::DELETE_CPU)
         .bind(name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await;
     Ok(())
 }
 pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_CPU)
         .bind(name.to_uppercase())
         .bind(brand)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -217,9 +225,9 @@ pub async fn insert_cpu(name: String, brand: String) -> anyhow::Result<()> {
     Ok(())
 }
 pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentModel>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbEquipamentModel>(query_select::SELECT_EQUIPAMENT_MODEL)
-        .fetch_all(&pool)
+        .fetch_all(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -230,7 +238,7 @@ pub async fn get_equipament_model() -> anyhow::Result<Vec<model::DbEquipamentMod
 }
 
 pub async fn update_equipament_model(equipament: model::DbEquipamentModel) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::UPDADE_EQUIPAMENT_MODEL_INFORMATION)
         .bind(equipament.name.clone())
         .bind(equipament.brand)
@@ -238,7 +246,7 @@ pub async fn update_equipament_model(equipament: model::DbEquipamentModel) -> an
         .bind(equipament.gpu)
         .bind(equipament.smartphone)
         .bind(equipament.name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -247,22 +255,22 @@ pub async fn update_equipament_model(equipament: model::DbEquipamentModel) -> an
     Ok(())
 }
 pub async fn delete_equipament_model(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::DELETE_EQUIPAMENT_MODEL)
         .bind(name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await;
     Ok(())
 }
 pub async fn insert_equipament_model(equipament: model::DbEquipamentModel) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_EQUIPAMENT_MODEL)
         .bind(equipament.name.to_uppercase())
         .bind(equipament.brand)
         .bind(equipament.cpu)
         .bind(equipament.gpu)
         .bind(equipament.smartphone)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -270,28 +278,28 @@ pub async fn insert_equipament_model(equipament: model::DbEquipamentModel) -> an
     Ok(())
 }
 pub async fn get_gpus() -> anyhow::Result<Vec<model::DbGPU>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbGPU>(query_select::SELECT_GPU)
-        .fetch_all(&pool)
+        .fetch_all(&mut pool)
         .await?;
 
     Ok(recs)
 }
 
 pub async fn delete_gpu(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::DELETE_GPU)
         .bind(name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await;
     Ok(())
 }
 pub async fn insert_gpu(name: String, brand: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_GPU)
         .bind(name.to_uppercase())
         .bind(brand)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -299,30 +307,30 @@ pub async fn insert_gpu(name: String, brand: String) -> anyhow::Result<()> {
     Ok(())
 }
 pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
-        .fetch_all(&pool)
+        .fetch_all(&mut pool)
         .await;
     Ok(recs?)
 }
 pub async fn get_specific_user(login: String) -> anyhow::Result<model::DbUser> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_SPECIFIC_USER_INFOMATION)
         .bind(&login)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await;
     Ok(recs?)
 }
 pub async fn get_specific_equipament_model(
     name: String,
 ) -> anyhow::Result<model::DbEquipamentModel> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
 
     let recs = sqlx::query_as::<_, model::DbEquipamentModel>(
         query_select::SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION,
     )
     .bind(name.to_uppercase())
-    .fetch_one(&pool)
+    .fetch_one(&mut pool)
     .await
     .inspect_err(|e| {
         dbg!(e);
@@ -331,38 +339,38 @@ pub async fn get_specific_equipament_model(
     Ok(recs)
 }
 pub async fn delete_brand(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::DELETE_BRAND)
         .bind(name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await?;
 
     Ok(())
 }
 
 pub async fn insert_brand(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_BRAND)
         .bind(name.to_uppercase())
-        .execute(&poll)
+        .execute(&mut pool)
         .await?;
     Ok(())
 }
 
 pub async fn get_department() -> anyhow::Result<Vec<model::DbDepartment>> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbDepartment>(query_select::SELECT_DEPARTMENT)
-        .fetch_all(&pool)
+        .fetch_all(&mut pool)
         .await?;
 
     Ok(recs)
 }
 
 pub async fn get_department_by_id(id: String) -> anyhow::Result<model::DbDepartment> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbDepartment>(query_select::SELECT_DEPARTMENT_BY_ID)
         .bind(id)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -372,10 +380,10 @@ pub async fn get_department_by_id(id: String) -> anyhow::Result<model::DbDepartm
     Ok(recs)
 }
 pub async fn get_department_by_name(name: String) -> anyhow::Result<model::DbInteger> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_DEPARTMENT_BY_NAME)
         .bind(name)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(e);
@@ -386,10 +394,10 @@ pub async fn get_department_by_name(name: String) -> anyhow::Result<model::DbInt
 }
 
 pub async fn get_brand_by_id(id: String) -> anyhow::Result<model::DbBrand> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbBrand>(query_select::SELECT_BRAND_BY_ID)
         .bind(id)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -399,10 +407,10 @@ pub async fn get_brand_by_id(id: String) -> anyhow::Result<model::DbBrand> {
     Ok(recs)
 }
 pub async fn get_brand_by_name(name: String) -> anyhow::Result<model::DbInteger> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_BRAND_BY_NAME)
         .bind(name)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(e);
@@ -413,10 +421,10 @@ pub async fn get_brand_by_name(name: String) -> anyhow::Result<model::DbInteger>
 }
 
 pub async fn get_gpu_by_id(id: String) -> anyhow::Result<model::DbGPU> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbGPU>(query_select::SELECT_GPU_BY_ID)
         .bind(id)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -426,10 +434,10 @@ pub async fn get_gpu_by_id(id: String) -> anyhow::Result<model::DbGPU> {
     Ok(recs)
 }
 pub async fn get_gpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_GPU_BY_NAME)
         .bind(name)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(e);
@@ -440,10 +448,10 @@ pub async fn get_gpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
 }
 
 pub async fn get_cpu_by_id(id: String) -> anyhow::Result<model::DbCPU> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbCPU>(query_select::SELECT_CPU_BY_ID)
         .bind(id)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|f| {
             dbg!(f);
@@ -453,10 +461,10 @@ pub async fn get_cpu_by_id(id: String) -> anyhow::Result<model::DbCPU> {
     Ok(recs)
 }
 pub async fn get_cpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
-    let pool = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbInteger>(query_select::SELECT_CPU_BY_NAME)
         .bind(name)
-        .fetch_one(&pool)
+        .fetch_one(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(e);
@@ -466,10 +474,10 @@ pub async fn get_cpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
     Ok(recs)
 }
 pub async fn delete_department(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::DELETE_DEPARTMENT)
         .bind(name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -479,10 +487,10 @@ pub async fn delete_department(name: String) -> anyhow::Result<()> {
 }
 
 pub async fn insert_department(name: String) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_DEPARTMENT)
         .bind(name)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -491,7 +499,7 @@ pub async fn insert_department(name: String) -> anyhow::Result<()> {
 }
 
 pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     dbg!(&user);
     let _ = sqlx::query(query_select::UPDADE_USER_INFORMATION)
         .bind(user.name)
@@ -501,7 +509,7 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
         .bind(user.department)
         .bind(user.extension)
         .bind(user.document)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -511,7 +519,7 @@ pub async fn update_user(user: model::DbUser) -> anyhow::Result<()> {
 }
 
 pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_USER_INFORMATION)
         .bind(user.name.to_lowercase())
         .bind(user.department)
@@ -520,7 +528,7 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
         .bind(user.login)
         .bind(user.extension)
         .bind(user.phone_number)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -530,14 +538,14 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
 
 pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> {
     dbg!(&computer);
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let _ = sqlx::query(query_select::INSERT_COMPUTER)
         .bind(computer.serialnumber.to_uppercase())
         .bind(computer.storage)
         .bind(computer.memory)
         .bind(computer.model)
         .bind(computer.observation)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect_err(|e| {
             dbg!(&e);
@@ -546,11 +554,11 @@ pub async fn create_computer(computer: model::DbComputer) -> anyhow::Result<()> 
 }
 
 pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbComputer>(
         query_select::SELECT_COMPUTER_INFORMATION_WITH_LAST_USER,
     )
-    .fetch_all(&poll)
+    .fetch_all(&mut pool)
     .await
     // .inspect(|s| {
     //     dbg!(s);
@@ -563,7 +571,7 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
 }
 
 pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model::DbLastUser>> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     let all = sqlx::query_as::<_,model::DbLastUser>("
         select (select name from users where users.id = has.user_id )  as usuario , date_begin, date_end 
         FROM has
@@ -571,7 +579,7 @@ pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model
         order by has.date_begin desc                
         ")
         .bind(serial_number)
-        .fetch_all(&poll)
+        .fetch_all(&mut pool)
         .await
         // .inspect(|ok| {dbg!(ok);})
         .inspect_err(|err| {dbg!(err);})?;
@@ -582,7 +590,7 @@ pub async fn update_user_equipament(
     future_user: String,
     equipament: String,
 ) -> anyhow::Result<()> {
-    let poll = get_sql_pool().await?;
+    let mut pool = get_sql_connection().await?;
     dbg!(&actual_user);
     dbg!(&future_user);
     dbg!(&equipament);
@@ -591,7 +599,7 @@ pub async fn update_user_equipament(
         .bind(&today)
         .bind(&actual_user)
         .bind(&equipament)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect(|ok| {
             dbg!(ok);
@@ -604,7 +612,7 @@ pub async fn update_user_equipament(
         .bind(&equipament)
         .bind(&future_user)
         .bind(&today)
-        .execute(&poll)
+        .execute(&mut pool)
         .await
         .inspect(|ok| {
             dbg!(ok);

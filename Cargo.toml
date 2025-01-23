@@ -9,16 +9,16 @@ edition = "2021"
 anyhow = "1.0.79"
 chrono = "0.4.37"
 directories = "5.0.1"
-slint = "1.8"
+slint = "1.9.2"
 sqlx = { version = "0.8.1", features = ["sqlite", "runtime-tokio"]}
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "rt", "macros"] }
 
 [build-dependencies]
-slint-build = "1.8"
+slint-build = "1.9.2"
 
 [profile.release]
 strip=true
-opt-level="z"
+# opt-level="z"
 lto=true
 
 [profile.dev.build-override]
