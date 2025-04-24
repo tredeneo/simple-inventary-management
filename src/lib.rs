@@ -247,9 +247,13 @@ mod user {
         let row_data = Rc::new(VecModel::default());
         let tmp = database::get_users().await?;
         for i in tmp {
+            let dep = database::get_department_by_id(i.department)
+                .await
+                .unwrap_or_default();
+
             let items = Rc::new(VecModel::default());
             items.push(slint::format!("{}", i.name.to_lowercase()).into());
-            items.push(slint::format!("{}", i.login).into());
+            items.push(slint::format!("{}", dep.name).into());
             items.push(slint::format!("{}", i.email).into());
 
             row_data.push(items.into());

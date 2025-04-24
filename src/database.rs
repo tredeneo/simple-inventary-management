@@ -158,14 +158,6 @@ async fn create_database(location: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-// async fn get_sql_pool() -> anyhow::Result<Pool<Sqlite>> {
-//     Ok(SqlitePool::connect(&data_base_directory().await)
-//         .await
-//         .inspect_err(|e| {
-//             dbg!(&e);
-//         })?)
-// }
-
 async fn get_sql_connection() -> anyhow::Result<SqliteConnection> {
     Ok(SqliteConnection::connect(&data_base_directory().await)
         .await
@@ -313,12 +305,23 @@ pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
         .await;
     Ok(recs?)
 }
-pub async fn get_specific_user(login: String) -> anyhow::Result<model::DbUser> {
+pub async fn get_specific_user_by_login(login: String) -> anyhow::Result<model::DbUser> {
     let mut pool = get_sql_connection().await?;
-    let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_SPECIFIC_USER_INFOMATION)
-        .bind(&login)
-        .fetch_one(&mut pool)
-        .await;
+    let recs =
+        sqlx::query_as::<_, model::DbUser>(query_select::SELECT_SPECIFIC_USER_INFOMATION_BY_LOGIN)
+            .bind(&login)
+            .fetch_one(&mut pool)
+            .await;
+    Ok(recs?)
+}
+
+pub async fn get_specific_user_by_name(login: String) -> anyhow::Result<model::DbUser> {
+    let mut pool = get_sql_connection().await?;
+    let recs =
+        sqlx::query_as::<_, model::DbUser>(query_select::SELECT_SPECIFIC_USER_INFOMATION_BY_NAME)
+            .bind(&login)
+            .fetch_one(&mut pool)
+            .await;
     Ok(recs?)
 }
 pub async fn get_specific_equipament_model(

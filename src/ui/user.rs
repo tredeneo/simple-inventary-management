@@ -17,14 +17,14 @@ pub async fn user_detail(app: &App) {
         let local_app = myapp.clone_strong();
         let detail = myapp.global::<UserDetail>();
         let user = database::model::DbUser {
-            name: detail.get_name().to_string(),
-            login: detail.get_login().to_string(),
-            email: detail.get_email().to_string(),
-            department: detail.get_department().to_string(),
-            document: detail.get_document().to_string(),
+            name: detail.get_name().trim().to_string(),
+            login: detail.get_login().trim().to_string(),
+            email: detail.get_email().trim().to_string(),
+            department: detail.get_department().trim().to_string(),
+            document: detail.get_document().trim().to_string(),
             id: 0,
-            extension: detail.get_extension().to_string(),
-            phone_number: detail.get_phone_number().to_string(),
+            extension: detail.get_extension().trim().to_string(),
+            phone_number: detail.get_phone_number().trim().to_string(),
         };
         let tmp = user.clone();
         let _ = slint::spawn_local(async move {
@@ -42,28 +42,27 @@ pub async fn user_detail(app: &App) {
     });
 
     let myapp = app.clone_strong();
-    app.global::<Users>().on_select_user(move |user_login| {
+    app.global::<Users>().on_select_user(move |user_name| {
         let local_app = myapp.clone_strong();
         let _ = slint::spawn_local(async move {
             let user_detail = local_app.global::<UserDetail>();
-            let user = database::get_specific_user(user_login.to_string())
+            let user = database::get_specific_user_by_name(user_name.to_string())
                 .await
                 .unwrap_or_default();
             let tmp = database::get_department_by_id(user.department.to_string())
                 .await
                 .unwrap_or_default();
 
-            dbg!(&tmp);
             user_detail.set_name(user.name.into());
             user_detail.set_department(tmp.name.into());
             user_detail.set_document(user.document.into());
             user_detail.set_email(user.email.into());
             user_detail.set_extension(user.extension.into());
-            user_detail.set_login(user.login.into());
+            user_detail.set_login(user.login.clone().into());
             user_detail.set_phone_number(user.phone_number.into());
 
             let row_data = Rc::new(VecModel::default());
-            let historic = database::get_equipaments_by_users(user_login.to_string())
+            let historic = database::get_equipaments_by_users(user.login.to_string())
                 .await
                 .unwrap_or_default();
             for i in historic {
@@ -93,14 +92,14 @@ pub async fn user_detail(app: &App) {
                     .unwrap()
                     .id;
                 let user = database::model::DbUser {
-                    name: detail.get_name().to_string(),
-                    login: detail.get_login().to_string(),
-                    email: detail.get_email().to_string(),
+                    name: detail.get_name().trim().to_string(),
+                    login: detail.get_login().trim().to_string(),
+                    email: detail.get_email().trim().to_string(),
                     id: tmp,
-                    document: detail.get_document().to_string(),
-                    department: detail.get_department().to_string(),
-                    extension: detail.get_extension().to_string(),
-                    phone_number: detail.get_phone_number().to_string(),
+                    document: detail.get_document().trim().to_string(),
+                    department: detail.get_department().trim().to_string(),
+                    extension: detail.get_extension().trim().to_string(),
+                    phone_number: detail.get_phone_number().trim().to_string(),
                 };
                 let tmp = user.clone();
                 database::update_user(tmp).await.ok();

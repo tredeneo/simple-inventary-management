@@ -4,11 +4,18 @@ pub const SELECT_USER_INFOMATION: &str = r#"
             FROM users
             order by name
         "#;
-pub const SELECT_SPECIFIC_USER_INFOMATION: &str = r#"
+pub const SELECT_SPECIFIC_USER_INFOMATION_BY_LOGIN: &str = r#"
             SELECT name,login,email,id,document,department,phone_number,extension
             FROM users
             where login =?1
         "#;
+
+pub const SELECT_SPECIFIC_USER_INFOMATION_BY_NAME: &str = r#"
+            SELECT name,login,email,id,document,department,phone_number,extension
+            FROM users
+            where name =?1
+        "#;
+
 pub const SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION: &str = r#"
         SELECT name,
         	(select name from brands where id=equipament_model.brand) as brand,

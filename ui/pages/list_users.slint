@@ -252,12 +252,12 @@ component ShowUser inherits VerticalBox {
         }
 
         StandardTableView {
-            columns: [{ title: "name" }, { title: "login" }, { title: "email" }];
+            columns: [{ title: "name" }, { title: "department" }, { title: "email" }];
             rows: Users.row-data;
             row-pointer-event(index, event, _) => {
                 if event.button == PointerEventButton.left {
                     Users.current_user = Users.row_data[index][0].text;
-                    Users.select_user(Users.row_data[index][1].text);
+                    Users.select_user(Users.row_data[index][0].text);
                     Users.selected_user = true;
                 }
             }
