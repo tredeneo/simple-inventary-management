@@ -9,12 +9,14 @@ edition = "2021"
 anyhow = "1.0.79"
 chrono = "0.4.37"
 directories = "5.0.1"
-slint = "1.9.2"
+iced = { version = "0.13.1", features = ["tokio"] }
+iced_aw = { version = "0.12.2", features = ["sidebar"] }
+iced_table = "0.13.0"
+reqwest = { version = "0.12.15", features = ["json"] }
+serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.1", features = ["sqlite", "runtime-tokio"]}
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "rt", "macros"] }
 
-[build-dependencies]
-slint-build = "1.9.2"
 
 [profile.release]
 strip=true
