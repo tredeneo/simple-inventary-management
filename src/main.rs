@@ -6,12 +6,12 @@
 use iced::{Element, Task};
 use iced_aw::sidebar::SidebarWithContent;
 
-use iced_async_screen_example::ui::counter::CounterTab;
+use simple_inventary::ui::counter::CounterTab;
 
-use iced_async_screen_example::ui::brand::{TestAsyncAction, TestAsyncTab};
-use iced_async_screen_example::{Message, Tab, TabId};
+use simple_inventary::ui::brand::{TestAsyncAction, TestAsyncTab};
+use simple_inventary::{Message, Tab, TabId};
 
-use iced_async_screen_example::ui::grid::{self, GridTestTab};
+use simple_inventary::ui::grid::{self, ListUsers, ListUsersAction};
 
 fn main() -> iced::Result {
     iced::application(
@@ -22,12 +22,24 @@ fn main() -> iced::Result {
     .run()
 }
 
-#[derive(Default)]
+// #[derive(Default)]
 struct TabBarExample {
     active_tab: TabId,
     counter_tab: CounterTab,
     lista_tab: TestAsyncTab,
-    grid_tab: grid::GridTestTab,
+    grid_tab: grid::ListUsers,
+}
+
+impl Default for TabBarExample {
+    fn default() -> Self {
+        let tmp = ListUsers::new().0;
+        Self {
+            active_tab: TabId::Counter,
+            counter_tab: CounterTab::new().0,
+            lista_tab: TestAsyncTab::new().0,
+            grid_tab: tmp,
+        }
+    }
 }
 
 impl TabBarExample {
@@ -43,24 +55,27 @@ impl TabBarExample {
                 let _ = self.counter_tab.update(message);
                 Task::none()
             }
-            Message::AsyncTest(message) => {
-                let action = self.lista_tab.update(message);
-                match action {
-                    TestAsyncAction::None => Task::none(),
-                    TestAsyncAction::Run(task) => task.map(Message::AsyncTest),
-                }
-            }
-            Message::GridTest(message) => {
-                let _ = self.grid_tab.update(message);
-                Task::none()
-            }
+            Message::AsyncTest(message) => match self.lista_tab.update(message) {
+                TestAsyncAction::None => Task::none(),
+                TestAsyncAction::Run(task) => task.map(Message::AsyncTest),
+            },
+            Message::ListUsers(message) => match self.grid_tab.update(message) {
+                ListUsersAction::None => Task::none(),
+                ListUsersAction::Run(task) => task.map(Message::ListUsers),
+            },
         }
     }
     fn reset_tab(&mut self, tab_id: TabId) {
         match tab_id {
-            TabId::Counter => self.counter_tab = CounterTab::new().0,
-            TabId::Lista => self.lista_tab = TestAsyncTab::new().0,
-            TabId::GridTest => self.grid_tab = GridTestTab::new().0,
+            TabId::Counter => {
+                self.counter_tab = CounterTab::new().0;
+            }
+            TabId::Lista => {
+                self.lista_tab = TestAsyncTab::new().0;
+            }
+            TabId::GridTest => {
+                self.grid_tab = ListUsers::new().0;
+            }
         }
     }
 

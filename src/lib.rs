@@ -1,3 +1,4 @@
+pub mod database;
 pub mod ui;
 
 use iced::{
@@ -11,13 +12,13 @@ use crate::ui::brand::TestAsyncMessage;
 
 use crate::ui::counter::CounterMessage;
 
-use crate::ui::grid::GridMessage;
+use crate::ui::grid::ListUsersMessage;
 #[derive(Clone, Debug)]
 pub enum Message {
     TabSelected(TabId),
     Counter(CounterMessage),
     AsyncTest(TestAsyncMessage),
-    GridTest(GridMessage),
+    ListUsers(ListUsersMessage),
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Default)]
@@ -94,4 +95,3 @@ pub trait Tab {
 
     fn content(&self) -> Element<'_, Self::Message>;
 }
-

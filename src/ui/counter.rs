@@ -23,7 +23,6 @@ impl CounterTab {
     }
 
     pub fn update(&mut self, message: CounterMessage) -> Task<Message> {
-        dbg!(&self.value);
         match message {
             CounterMessage::Increase => self.value += 1,
             CounterMessage::Decrease => self.value -= 1,
