@@ -10,19 +10,19 @@ use iced_aw::sidebar::TabLabel;
 
 use crate::ui::counter::CounterMessage;
 
-use crate::ui::list_users::ListUsersMessage;
+use crate::ui::list_users::UsersMessage;
 #[derive(Clone, Debug)]
 pub enum Message {
     TabSelected(TabId),
     Counter(CounterMessage),
-    ListUsers(ListUsersMessage),
+    ListUsers(UsersMessage),
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Default)]
 pub enum TabId {
     #[default]
     Counter,
-    ListUsers,
+    UsersTab,
 }
 
 const HEADER_SIZE: u16 = 32;

@@ -3,15 +3,15 @@
     windows_subsystem = "windows"
 )]
 
-use iced::{Element, Task};
+use iced::{Color, Element, Task};
 use iced_aw::sidebar::SidebarWithContent;
 
 use simple_inventary::ui::counter::CounterTab;
 
 use simple_inventary::{Message, Tab, TabId};
 
-use simple_inventary::ui::list_users;
-use simple_inventary::ui::list_users::{ListUsers, ListUsersAction};
+// use simple_inventary::ui::list_users::ListUsersAction;
+use simple_inventary::ui::list_users::UsersTab;
 
 fn main() -> iced::Result {
     iced::application(
@@ -26,7 +26,7 @@ fn main() -> iced::Result {
 struct TabBarExample {
     active_tab: TabId,
     counter_tab: CounterTab,
-    grid_tab: list_users::ListUsers,
+    list_users: UsersTab,
 }
 
 impl Default for TabBarExample {
@@ -34,7 +34,7 @@ impl Default for TabBarExample {
         Self {
             active_tab: TabId::Counter,
             counter_tab: CounterTab::new().0,
-            grid_tab: ListUsers::new().0,
+            list_users: UsersTab::new().0,
         }
     }
 }
@@ -52,10 +52,11 @@ impl TabBarExample {
                 Task::none()
             }
 
-            Message::ListUsers(message) => match self.grid_tab.update(message) {
-                ListUsersAction::None => Task::none(),
-                ListUsersAction::Run(task) => task.map(Message::ListUsers),
-            },
+            Message::ListUsers(message) => self
+                .list_users
+                .update(message)
+                .map(|task| task.map(Message::ListUsers))
+                .unwrap_or(Task::none()),
         }
     }
 
@@ -66,9 +67,9 @@ impl TabBarExample {
                 Task::none()
             }
 
-            TabId::ListUsers => {
-                let (screen, task) = ListUsers::new();
-                self.grid_tab = screen;
+            TabId::UsersTab => {
+                let (screen, task) = UsersTab::new();
+                self.list_users = screen;
 
                 task.map(Message::ListUsers)
             }
@@ -76,7 +77,7 @@ impl TabBarExample {
     }
 
     fn view(&self) -> Element<'_, Message> {
-        SidebarWithContent::new(Message::TabSelected)
+        let tmp: Element<_> = SidebarWithContent::new(Message::TabSelected)
             .tab_icon_position(iced_aw::sidebar::Position::End)
             .push(
                 TabId::Counter,
@@ -84,12 +85,16 @@ impl TabBarExample {
                 self.counter_tab.view(),
             )
             .push(
-                TabId::ListUsers,
-                self.grid_tab.tab_label(),
-                self.grid_tab.view(),
+                TabId::UsersTab,
+                self.list_users.tab_label(),
+                self.list_users.view().map(Message::ListUsers),
             )
             .set_active_tab(&self.active_tab)
             .sidebar_position(iced_aw::sidebar::SidebarPosition::Start)
-            .into()
+            .into();
+        if cfg!(debug_assertions) {
+            return tmp.explain(Color::from_rgb(255.0, 0.0, 0.0));
+        };
+        tmp
     }
 }

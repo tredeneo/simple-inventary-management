@@ -1,8 +1,8 @@
 use std::{fs, ops::Not, path::Path, sync::Arc};
 
 use sqlx::{
-    sqlite::{SqliteConnectOptions, SqlitePool},
     Connection, SqliteConnection,
+    sqlite::{SqliteConnectOptions, SqlitePool},
 };
 
 mod query;
@@ -302,7 +302,10 @@ pub async fn get_users() -> anyhow::Result<Vec<model::DbUser>> {
     let mut pool = get_sql_connection().await?;
     let recs = sqlx::query_as::<_, model::DbUser>(query_select::SELECT_USER_INFOMATION)
         .fetch_all(&mut pool)
-        .await;
+        .await
+        .inspect_err(|f| {
+            dbg!(f);
+        });
     Ok(recs?)
 }
 pub async fn get_specific_user_by_login(login: String) -> anyhow::Result<model::DbUser> {

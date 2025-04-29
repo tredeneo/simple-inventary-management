@@ -1,8 +1,9 @@
 // #![allow(dead_code)]
 pub const SELECT_USER_INFOMATION: &str = r#"
-            SELECT name,login,email,id,document,department,phone_number,extension
+            SELECT users.name,login,email,users.id,document,departments.name as department,phone_number,extension
             FROM users
-            order by name
+            JOIN departments ON departments.id = users.department
+            order by users.name
         "#;
 pub const SELECT_SPECIFIC_USER_INFOMATION_BY_LOGIN: &str = r#"
             SELECT name,login,email,id,document,department,phone_number,extension

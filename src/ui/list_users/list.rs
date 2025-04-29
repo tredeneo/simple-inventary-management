@@ -1,22 +1,28 @@
+// src/ui/list_users/list.rs
+
+use iced::widget::{Text, button, container, responsive, scrollable, text};
 use iced::{Element, Length, Renderer, Task, Theme};
 use iced_table::table;
 
-use crate::Message;
-use crate::Tab;
 use crate::database;
-use iced::widget::{Text, button, container, responsive, scrollable, text};
 
-pub enum ListUsersAction {
+// #[derive(Debug, Clone)]
+// pub enum Message {
+//     Internal(ListUsersMessage),
+//     External(crate::Message), // Para comunicação com a main se quiser
+// }
+
+pub enum Action {
     None,
     Run(Task<ListUsersMessage>),
 }
+
 enum ColumnKind {
     Name,
     Department,
     Edit,
 }
 
-// #[derive(Default)]
 pub struct ListUsers {
     columns: Vec<Column>,
     rows: Vec<Row>,
@@ -58,21 +64,22 @@ impl ListUsers {
 
         (screen, get_users)
     }
-    pub fn update(&mut self, _message: ListUsersMessage) -> ListUsersAction {
+
+    pub fn update(&mut self, _message: ListUsersMessage) -> Action {
         match _message {
-            ListUsersMessage::SyncHeader(offset) => ListUsersAction::Run(Task::batch(vec![
+            ListUsersMessage::SyncHeader(offset) => Action::Run(Task::batch(vec![
                 scrollable::scroll_to(self.header.clone(), offset),
                 scrollable::scroll_to(self.footer.clone(), offset),
             ])),
             ListUsersMessage::Edit(index) => {
                 dbg!(index);
-                ListUsersAction::None
+                Action::None
             }
             ListUsersMessage::Resizing(index, offset) => {
                 if let Some(column) = self.columns.get_mut(index) {
                     column.resize_offset = Some(offset);
                 }
-                ListUsersAction::None
+                Action::None
             }
             ListUsersMessage::Resized => {
                 self.columns.iter_mut().for_each(|column| {
@@ -80,14 +87,14 @@ impl ListUsers {
                         column.width += offset;
                     }
                 });
-                ListUsersAction::None
+                Action::None
             }
             ListUsersMessage::Temp => {
                 let tmp = Task::perform(database::get_users(), |arg| {
                     let tmp = arg.unwrap_or_default();
                     ListUsersMessage::GetUsers(tmp)
                 });
-                ListUsersAction::Run(tmp)
+                Action::Run(tmp)
             }
 
             ListUsersMessage::GetUsers(db_users) => {
@@ -98,13 +105,12 @@ impl ListUsers {
                         department: i.department,
                     })
                     .collect();
-                ListUsersAction::None
+                Action::None
             }
         }
     }
-}
-impl Tab for ListUsers {
-    fn content(&self) -> iced::Element<'_, Self::Message> {
+
+    pub fn view(&self) -> Element<'_, ListUsersMessage> {
         let table = responsive(|size| {
             let mut table = table(
                 self.header.clone(),
@@ -121,22 +127,11 @@ impl Tab for ListUsers {
             table.into()
         });
 
-        let tmp: Element<_> = container(container(table).width(Length::Fill).height(Length::Fill))
+        container(container(table).width(Length::Fill).height(Length::Fill))
             .padding(20)
             .center_x(Length::Fill)
             .center_y(Length::Fill)
-            .into();
-        tmp.map(Message::ListUsers)
-    }
-
-    type Message = Message;
-
-    fn title(&self) -> String {
-        String::from("Users List")
-    }
-
-    fn tab_label(&self) -> iced_aw::sidebar::TabLabel {
-        iced_aw::sidebar::TabLabel::Text(self.title())
+            .into()
     }
 }
 
@@ -149,7 +144,6 @@ struct Column {
 impl Column {
     fn new(kind: ColumnKind) -> Self {
         let width = match kind {
-            // ColumnKind::Index => 40.0,
             ColumnKind::Name => 200.0,
             ColumnKind::Department => 200.0,
             ColumnKind::Edit => 100.0,
@@ -188,9 +182,8 @@ impl<'a> table::Column<'a, ListUsersMessage, Theme, Renderer> for Column {
         row: &'a Row,
     ) -> Element<'a, ListUsersMessage> {
         let content: Element<_> = match self.kind {
-            ColumnKind::Name => Text::new(format!("{}", row.name)).into(),
-            ColumnKind::Department => Text::new(format!("{}", row.department)).into(),
-
+            ColumnKind::Name => Text::new(&row.name).into(),
+            ColumnKind::Department => Text::new(&row.department).into(),
             ColumnKind::Edit => button(text("Edit"))
                 .on_press(ListUsersMessage::Edit(row_index))
                 .into(),
@@ -204,12 +197,12 @@ impl<'a> table::Column<'a, ListUsersMessage, Theme, Renderer> for Column {
         _col_index: usize,
         rows: &'a [Row],
     ) -> Option<Element<'a, ListUsersMessage>> {
-        let content = {
-            let total_enabled = rows.len();
-
-            Element::from(text(format!("Total Enabled: {total_enabled}")))
-        };
-        Some(container(content).center_y(24).into())
+        let total_enabled = rows.len();
+        Some(
+            container(text(format!("Total Enabled: {total_enabled}")))
+                .center_y(24)
+                .into(),
+        )
     }
 
     fn width(&self) -> f32 {
