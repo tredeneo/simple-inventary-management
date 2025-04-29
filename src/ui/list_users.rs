@@ -1,5 +1,4 @@
-use iced::widget::column;
-use iced::{Color, Element, Length, Renderer, Task, Theme};
+use iced::{Element, Length, Renderer, Task, Theme};
 use iced_table::table;
 
 use crate::Message;
@@ -12,7 +11,6 @@ pub enum ListUsersAction {
     Run(Task<ListUsersMessage>),
 }
 enum ColumnKind {
-    Index,
     Name,
     Department,
     Edit,
@@ -42,7 +40,6 @@ impl ListUsers {
     pub fn new() -> (Self, Task<ListUsersMessage>) {
         let screen = Self {
             columns: vec![
-                Column::new(ColumnKind::Index),
                 Column::new(ColumnKind::Name),
                 Column::new(ColumnKind::Department),
                 Column::new(ColumnKind::Edit),
@@ -67,7 +64,10 @@ impl ListUsers {
                 scrollable::scroll_to(self.header.clone(), offset),
                 scrollable::scroll_to(self.footer.clone(), offset),
             ])),
-            ListUsersMessage::Edit(_index) => ListUsersAction::None,
+            ListUsersMessage::Edit(index) => {
+                dbg!(index);
+                ListUsersAction::None
+            }
             ListUsersMessage::Resizing(index, offset) => {
                 if let Some(column) = self.columns.get_mut(index) {
                     column.resize_offset = Some(offset);
@@ -91,11 +91,13 @@ impl ListUsers {
             }
 
             ListUsersMessage::GetUsers(db_users) => {
-                self.rows.clear();
-                self.rows.extend(db_users.into_iter().map(|i| Row {
-                    name: i.name,
-                    department: i.department,
-                }));
+                self.rows = db_users
+                    .into_iter()
+                    .map(|i| Row {
+                        name: i.name,
+                        department: i.department,
+                    })
+                    .collect();
                 ListUsersAction::None
             }
         }
@@ -124,14 +126,13 @@ impl Tab for ListUsers {
             .center_x(Length::Fill)
             .center_y(Length::Fill)
             .into();
-        let content: Element<'_, ListUsersMessage> = tmp.explain(Color::from_rgb(255.0, 0.0, 0.0));
-        content.map(Message::ListUsers)
+        tmp.map(Message::ListUsers)
     }
 
     type Message = Message;
 
     fn title(&self) -> String {
-        String::from("Grid")
+        String::from("Users List")
     }
 
     fn tab_label(&self) -> iced_aw::sidebar::TabLabel {
@@ -148,7 +149,7 @@ struct Column {
 impl Column {
     fn new(kind: ColumnKind) -> Self {
         let width = match kind {
-            ColumnKind::Index => 40.0,
+            // ColumnKind::Index => 40.0,
             ColumnKind::Name => 200.0,
             ColumnKind::Department => 200.0,
             ColumnKind::Edit => 100.0,
@@ -172,7 +173,6 @@ impl<'a> table::Column<'a, ListUsersMessage, Theme, Renderer> for Column {
 
     fn header(&'a self, _col_index: usize) -> Element<'a, ListUsersMessage> {
         let content = match self.kind {
-            ColumnKind::Index => "Index",
             ColumnKind::Name => "Name",
             ColumnKind::Department => "Department",
             ColumnKind::Edit => "",
@@ -188,7 +188,6 @@ impl<'a> table::Column<'a, ListUsersMessage, Theme, Renderer> for Column {
         row: &'a Row,
     ) -> Element<'a, ListUsersMessage> {
         let content: Element<_> = match self.kind {
-            ColumnKind::Index => text(row_index).into(),
             ColumnKind::Name => Text::new(format!("{}", row.name)).into(),
             ColumnKind::Department => Text::new(format!("{}", row.department)).into(),
 
