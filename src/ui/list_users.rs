@@ -2,10 +2,10 @@ use iced::widget::column;
 use iced::{Color, Element, Length, Renderer, Task, Theme};
 use iced_table::table;
 
-use crate::database;
 use crate::Message;
 use crate::Tab;
-use iced::widget::{button, container, responsive, scrollable, text, Text};
+use crate::database;
+use iced::widget::{Text, button, container, responsive, scrollable, text};
 
 pub enum ListUsersAction {
     None,
@@ -34,28 +34,32 @@ pub enum ListUsersMessage {
     Edit(usize),
     Resizing(usize, f32),
     Resized,
-    GetUsers,
-    UpdateUsers(Vec<database::model::DbUser>),
+    GetUsers(Vec<database::model::DbUser>),
+    Temp,
 }
 
 impl ListUsers {
     pub fn new() -> (Self, Task<ListUsersMessage>) {
-        let tmp = Self {
+        let screen = Self {
             columns: vec![
                 Column::new(ColumnKind::Index),
                 Column::new(ColumnKind::Name),
                 Column::new(ColumnKind::Department),
                 Column::new(ColumnKind::Edit),
             ],
-            // rows: (0..50).map(Row::generate).collect(),
-            rows: (0..50).map(Row::generate).collect(),
+            rows: Vec::new(),
             header: scrollable::Id::unique(),
             body: scrollable::Id::unique(),
             footer: scrollable::Id::unique(),
             _theme: Theme::Light,
         };
 
-        (tmp, Task::none())
+        let get_users = Task::perform(database::get_users(), |arg| {
+            let tmp = arg.unwrap_or_default();
+            ListUsersMessage::GetUsers(tmp)
+        });
+
+        (screen, get_users)
     }
     pub fn update(&mut self, _message: ListUsersMessage) -> ListUsersAction {
         match _message {
@@ -78,14 +82,15 @@ impl ListUsers {
                 });
                 ListUsersAction::None
             }
-            ListUsersMessage::GetUsers => {
+            ListUsersMessage::Temp => {
                 let tmp = Task::perform(database::get_users(), |arg| {
                     let tmp = arg.unwrap_or_default();
-                    ListUsersMessage::UpdateUsers(tmp)
+                    ListUsersMessage::GetUsers(tmp)
                 });
                 ListUsersAction::Run(tmp)
             }
-            ListUsersMessage::UpdateUsers(db_users) => {
+
+            ListUsersMessage::GetUsers(db_users) => {
                 self.rows.clear();
                 self.rows.extend(db_users.into_iter().map(|i| Row {
                     name: i.name,
@@ -114,10 +119,6 @@ impl Tab for ListUsers {
             table.into()
         });
 
-        let table = column![
-            button("atualizar").on_press(ListUsersMessage::GetUsers),
-            table
-        ];
         let tmp: Element<_> = container(container(table).width(Length::Fill).height(Length::Fill))
             .padding(20)
             .center_x(Length::Fill)
@@ -164,15 +165,6 @@ impl Column {
 struct Row {
     name: String,
     department: String,
-}
-
-impl Row {
-    fn generate(index: usize) -> Self {
-        Self {
-            name: format!("name {}", index),
-            department: format!("department {}", index),
-        }
-    }
 }
 
 impl<'a> table::Column<'a, ListUsersMessage, Theme, Renderer> for Column {

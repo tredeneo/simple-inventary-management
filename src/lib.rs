@@ -2,22 +2,19 @@ pub mod database;
 pub mod ui;
 
 use iced::{
+    Element, Length,
     alignment::{Horizontal, Vertical},
     widget::{Column, Container, Text},
-    Element, Length,
 };
 use iced_aw::sidebar::TabLabel;
 
-use crate::ui::brand::TestAsyncMessage;
-
 use crate::ui::counter::CounterMessage;
 
-use crate::ui::grid::ListUsersMessage;
+use crate::ui::list_users::ListUsersMessage;
 #[derive(Clone, Debug)]
 pub enum Message {
     TabSelected(TabId),
     Counter(CounterMessage),
-    AsyncTest(TestAsyncMessage),
     ListUsers(ListUsersMessage),
 }
 
@@ -25,47 +22,7 @@ pub enum Message {
 pub enum TabId {
     #[default]
     Counter,
-    Lista,
-    GridTest,
-}
-
-use serde::{Deserialize, Serialize};
-
-pub type Welcome = Vec<WelcomeElement>;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct WelcomeElement {
-    pub id: i64,
-    pub name: String,
-    pub username: String,
-    pub email: String,
-    pub address: Address,
-    pub phone: String,
-    pub website: String,
-    pub company: Company,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Address {
-    pub street: String,
-    pub suite: String,
-    pub city: String,
-    pub zipcode: String,
-    pub geo: Geo,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Geo {
-    pub lat: String,
-    pub lng: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Company {
-    pub name: String,
-    pub catch_phrase: String,
-    pub bs: String,
+    ListUsers,
 }
 
 const HEADER_SIZE: u16 = 32;

@@ -8,10 +8,10 @@ use iced_aw::sidebar::SidebarWithContent;
 
 use simple_inventary::ui::counter::CounterTab;
 
-use simple_inventary::ui::brand::{TestAsyncAction, TestAsyncTab};
 use simple_inventary::{Message, Tab, TabId};
 
-use simple_inventary::ui::grid::{self, ListUsers, ListUsersAction};
+use simple_inventary::ui::list_users;
+use simple_inventary::ui::list_users::{ListUsers, ListUsersAction};
 
 fn main() -> iced::Result {
     iced::application(
@@ -26,18 +26,15 @@ fn main() -> iced::Result {
 struct TabBarExample {
     active_tab: TabId,
     counter_tab: CounterTab,
-    lista_tab: TestAsyncTab,
-    grid_tab: grid::ListUsers,
+    grid_tab: list_users::ListUsers,
 }
 
 impl Default for TabBarExample {
     fn default() -> Self {
-        let tmp = ListUsers::new().0;
         Self {
             active_tab: TabId::Counter,
             counter_tab: CounterTab::new().0,
-            lista_tab: TestAsyncTab::new().0,
-            grid_tab: tmp,
+            grid_tab: ListUsers::new().0,
         }
     }
 }
@@ -48,33 +45,32 @@ impl TabBarExample {
         match message {
             Message::TabSelected(selected) => {
                 self.active_tab = selected.clone();
-                self.reset_tab(selected);
-                Task::none()
+                self.initialize_screens(selected)
             }
             Message::Counter(message) => {
                 let _ = self.counter_tab.update(message);
                 Task::none()
             }
-            Message::AsyncTest(message) => match self.lista_tab.update(message) {
-                TestAsyncAction::None => Task::none(),
-                TestAsyncAction::Run(task) => task.map(Message::AsyncTest),
-            },
+
             Message::ListUsers(message) => match self.grid_tab.update(message) {
                 ListUsersAction::None => Task::none(),
                 ListUsersAction::Run(task) => task.map(Message::ListUsers),
             },
         }
     }
-    fn reset_tab(&mut self, tab_id: TabId) {
+
+    fn initialize_screens(&mut self, tab_id: TabId) -> Task<Message> {
         match tab_id {
             TabId::Counter => {
                 self.counter_tab = CounterTab::new().0;
+                Task::none()
             }
-            TabId::Lista => {
-                self.lista_tab = TestAsyncTab::new().0;
-            }
-            TabId::GridTest => {
-                self.grid_tab = ListUsers::new().0;
+
+            TabId::ListUsers => {
+                let (screen, task) = ListUsers::new();
+                self.grid_tab = screen;
+
+                task.map(Message::ListUsers)
             }
         }
     }
@@ -88,12 +84,7 @@ impl TabBarExample {
                 self.counter_tab.view(),
             )
             .push(
-                TabId::Lista,
-                self.lista_tab.tab_label(),
-                self.lista_tab.view(),
-            )
-            .push(
-                TabId::GridTest,
+                TabId::ListUsers,
                 self.grid_tab.tab_label(),
                 self.grid_tab.view(),
             )
