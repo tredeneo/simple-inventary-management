@@ -1,10 +1,13 @@
-use iced::{
-    Alignment, Element, Task,
-    widget::{Button, Column, Container, Row, Text},
+use cosmic::{
+    Element, Task,
+    iced::{
+        Alignment, Length,
+        widget::{button, column, row},
+    },
+    widget::{container, text},
 };
-use iced_aw::sidebar::TabLabel;
 
-use crate::{Message, Tab};
+use crate::Message;
 
 #[derive(Debug, Clone)]
 pub enum CounterMessage {
@@ -19,48 +22,42 @@ pub struct CounterTab {
 
 impl CounterTab {
     pub fn new() -> (Self, Task<CounterMessage>) {
-        (CounterTab { value: 0 }, Task::none())
+        (Self { value: 0 }, Task::none())
     }
 
-    pub fn update(&mut self, message: CounterMessage) -> Task<Message> {
+    pub fn update(&mut self, message: CounterMessage) -> cosmic::app::Task<Message> {
         match message {
             CounterMessage::Increase => self.value += 1,
             CounterMessage::Decrease => self.value -= 1,
         }
-        Task::none()
-    }
-}
-
-impl Tab for CounterTab {
-    type Message = Message;
-
-    fn title(&self) -> String {
-        String::from("Counter")
+        cosmic::app::Task::none()
     }
 
-    fn tab_label(&self) -> TabLabel {
-        TabLabel::Text(self.title())
-    }
+    // pub fn view(&self) -> Element<'_, Message> {
+    pub fn view(&self) -> Element<'_, CounterMessage> {
+        let count_text = text(format!("Count: {}", self.value)).size(32);
 
-    fn content(&self) -> Element<'_, Self::Message> {
-        let content: Element<'_, CounterMessage> = Container::new(
-            Column::new()
-                .align_x(Alignment::Center)
-                .max_width(600)
-                .padding(20)
-                .spacing(16)
-                .push(Text::new(format!("Count: {}", self.value)).size(32))
-                .push(
-                    Row::new()
-                        .spacing(10)
-                        .push(Button::new(Text::new("Decrease")).on_press(CounterMessage::Decrease))
-                        .push(
-                            Button::new(Text::new("Increase")).on_press(CounterMessage::Increase),
-                        ),
-                ),
-        )
-        .into();
+        let buttons = row![
+            button("Decrease").on_press(CounterMessage::Decrease),
+            button("Increase").on_press(CounterMessage::Increase),
+        ]
+        .spacing(10);
 
-        content.map(Message::Counter)
+        let content = column![count_text, buttons]
+            .spacing(16)
+            .padding(20)
+            .max_width(600);
+
+        // .align_items(Alignment::Center);
+
+        // let tmp = container(content).width(Length::Fill);
+        // let tmp: Element<'_, CounterMessage> =
+        container(content)
+            .width(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center)
+            .into()
+        // tmp
+        // tmp.map(Message::Counter)
     }
 }

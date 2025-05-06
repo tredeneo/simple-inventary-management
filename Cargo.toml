@@ -9,9 +9,7 @@ edition = "2024"
 anyhow = "1.0.79"
 chrono = "0.4.37"
 directories = "5.0.1"
-iced = { version = "0.13.1", features = ["lazy", "tokio"] }
-iced_aw = { version = "0.12.2", features = ["sidebar"] }
-iced_table = "0.13.0"
+libcosmic = {git="https://github.com/joshuamegnauth54/libcosmic.git",branch="fix-855-windows-build",default-features=false, features = ["winit"]}
 reqwest = { version = "0.12.15", features = ["json"] }
 serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.1", features = ["sqlite", "runtime-tokio"]}
