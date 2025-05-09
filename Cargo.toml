@@ -10,7 +10,6 @@ anyhow = "1.0.79"
 chrono = "0.4.37"
 directories = "5.0.1"
 libcosmic = {git="https://github.com/ti-integra/libcosmic.git",features=["winit","wgpu"]} #temporary fork util fix on original repo
-# libcosmic = {git="https://github.com/joshuamegnauth54/libcosmic.git",branch="fix-855-windows-build",default-features=false, features = ["winit"]}
 reqwest = { version = "0.12.15", features = ["json"] }
 serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.1", features = ["sqlite", "runtime-tokio"]}

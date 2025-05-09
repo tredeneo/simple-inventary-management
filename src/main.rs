@@ -6,7 +6,7 @@
 use simple_inventary::Message;
 
 use cosmic::{
-    Application, ApplicationExt, Element,
+    Action, Application, ApplicationExt, Element,
     app::{Core, Settings, Task},
     executor,
     iced::{self, Alignment, Length},
@@ -77,19 +77,21 @@ impl Application for App {
 
     fn on_nav_select(&mut self, id: nav_bar::Id) -> Task<Self::Message> {
         if let Some(page) = self.nav_model.data::<Page>(id).copied() {
+            self.nav_model.activate(id);
             match page {
                 Page::Counter => {
                     self.counter_tab = CounterTab::new().0;
-                } // Page::UsersTab => {
-                //     let (screen, _task) = UsersTab::new();
-                //     self.list_users = screen;
-                // }
+                    return Task::none();
+                }
                 Page::ListUsers => {
-                    self.list_users_tab = ListUserTab::init().0;
+                    let (screen, task) = ListUserTab::init();
+
+                    self.list_users_tab = screen;
+
+                    return task.map(|msg| Action::App(Message::ListUsers(msg)));
                 }
             }
-            self.nav_model.activate(id);
-        }
+        };
 
         self.update_title()
     }
@@ -103,11 +105,6 @@ impl Application for App {
             Message::ListUsers(msg) => {
                 let _ = self.list_users_tab.update(msg);
                 Task::none()
-
-                //     .list_users
-                //     .update(msg)
-                //     .map(|task| task.map(Message::ListUsers))
-                //     .unwrap_or(Task::none()),
             }
         }
     }
@@ -115,7 +112,10 @@ impl Application for App {
     fn view(&self) -> Element<Self::Message> {
         let content = match self.nav_model.active_data::<Page>().copied() {
             Some(Page::Counter) => self.counter_tab.view().map(Message::Counter),
-            Some(Page::ListUsers) => self.list_users_tab.view().map(Message::ListUsers),
+            Some(Page::ListUsers) => self
+                .list_users_tab
+                .view()
+                .map(|arg| Message::ListUsers(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 
