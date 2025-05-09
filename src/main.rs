@@ -14,34 +14,28 @@ use cosmic::{
 };
 
 use simple_inventary::ui::counter::CounterTab;
-// use simple_inventary::ui::list_users::UsersTab;
+use simple_inventary::ui::list_users::list::ListUserTab;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Page {
     Counter,
-    // UsersTab,
+    ListUsers,
 }
 
 impl Page {
     fn title(&self) -> &'static str {
         match self {
             Page::Counter => "Contador",
-            // Page::UsersTab => "Usuários",
+            Page::ListUsers => "Users",
         }
     }
 }
-
-// #[derive(Debug, Clone)]
-// pub enum Message {
-//     Counter(simple_inventary::Message),
-//     // ListUsers(simple_inventary::ui::list_users::ListUsersMessage),
-// }
 
 pub struct App {
     core: Core,
     nav_model: nav_bar::Model,
     counter_tab: CounterTab,
-    // list_users: UsersTab,
+    list_users_tab: ListUserTab,
 }
 
 impl Application for App {
@@ -63,7 +57,7 @@ impl Application for App {
         let mut nav_model = nav_bar::Model::default();
 
         nav_model.insert().text("Contador").data(Page::Counter);
-        // nav_model.insert().text("Usuários").data(Page::UsersTab);
+        nav_model.insert().text("Usuários").data(Page::ListUsers);
         nav_model.activate_position(0);
 
         (
@@ -71,7 +65,7 @@ impl Application for App {
                 core,
                 nav_model,
                 counter_tab: CounterTab::new().0,
-                // list_users: UsersTab::new().0,
+                list_users_tab: ListUserTab::init().0,
             },
             Task::none(),
         )
@@ -87,9 +81,12 @@ impl Application for App {
                 Page::Counter => {
                     self.counter_tab = CounterTab::new().0;
                 } // Page::UsersTab => {
-                  //     let (screen, _task) = UsersTab::new();
-                  //     self.list_users = screen;
-                  // }
+                //     let (screen, _task) = UsersTab::new();
+                //     self.list_users = screen;
+                // }
+                Page::ListUsers => {
+                    self.list_users_tab = ListUserTab::init().0;
+                }
             }
             self.nav_model.activate(id);
         }
@@ -102,18 +99,23 @@ impl Application for App {
             Message::Counter(msg) => {
                 let _ = self.counter_tab.update(msg);
                 Task::none()
-            } // Message::ListUsers(msg) => self
-              //     .list_users
-              //     .update(msg)
-              //     .map(|task| task.map(Message::ListUsers))
-              //     .unwrap_or(Task::none()),
+            }
+            Message::ListUsers(msg) => {
+                let _ = self.list_users_tab.update(msg);
+                Task::none()
+
+                //     .list_users
+                //     .update(msg)
+                //     .map(|task| task.map(Message::ListUsers))
+                //     .unwrap_or(Task::none()),
+            }
         }
     }
 
     fn view(&self) -> Element<Self::Message> {
         let content = match self.nav_model.active_data::<Page>().copied() {
-            Some(Page::Counter) => self.counter_tab.view().map(|msg| Message::Counter(msg)),
-            // Some(Page::UsersTab) => self.list_users.view().map(Message::ListUsers),
+            Some(Page::Counter) => self.counter_tab.view().map(Message::Counter),
+            Some(Page::ListUsers) => self.list_users_tab.view().map(Message::ListUsers),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 
@@ -138,8 +140,7 @@ impl App {
         let title = format!("{} — Inventário", self.active_page_title());
 
         if let Some(win_id) = self.core.main_window_id() {
-            // self.set_window_title(title, win_id)
-            self.set_window_title(title)
+            self.set_window_title(title, win_id)
         } else {
             Task::none()
         }

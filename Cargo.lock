@@ -658,7 +658,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "atomicwrites",
  "cosmic-config-derive",
@@ -676,7 +676,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -734,7 +734,7 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "almost",
  "cosmic-config",
@@ -1890,7 +1890,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "dnd",
  "iced_accessibility",
@@ -1908,7 +1908,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -1917,12 +1917,13 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "bitflags 2.9.0",
  "bytes",
  "dnd",
  "glam",
+ "iced_accessibility",
  "log",
  "mime 0.1.0",
  "num-traits",
@@ -1940,7 +1941,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "futures",
  "iced_core",
@@ -1965,7 +1966,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "bitflags 2.9.0",
  "bytemuck",
@@ -1987,7 +1988,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -1999,10 +2000,11 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "bytes",
  "dnd",
+ "iced_accessibility",
  "iced_core",
  "iced_futures",
  "raw-window-handle",
@@ -2013,7 +2015,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2029,7 +2031,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "as-raw-xcb-connection",
  "bitflags 2.9.0",
@@ -2060,9 +2062,10 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "dnd",
+ "iced_accessibility",
  "iced_renderer",
  "iced_runtime",
  "num-traits",
@@ -2077,9 +2080,10 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.14.0-dev"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "dnd",
+ "iced_accessibility",
  "iced_futures",
  "iced_graphics",
  "iced_runtime",
@@ -2471,7 +2475,7 @@ checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
-source = "git+https://github.com/joshuamegnauth54/libcosmic.git?branch=fix-855-windows-build#acab784455615291ab3aa9c5ce767019c9c71a5f"
+source = "git+https://github.com/ti-integra/libcosmic.git#7bb88a1e9a4954e5a94cca3c21a124663e1ff9bd"
 dependencies = [
  "apply",
  "auto_enums",
@@ -2483,11 +2487,13 @@ dependencies = [
  "derive_setters",
  "futures",
  "iced",
+ "iced_accessibility",
  "iced_core",
  "iced_futures",
  "iced_renderer",
  "iced_runtime",
  "iced_tiny_skia",
+ "iced_wgpu",
  "iced_widget",
  "iced_winit",
  "image",
@@ -4816,15 +4822,15 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "0.6.8"
+version = "0.6.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dd7358ecb8fc2f8d014bf86f6f638ce72ba252a2c3a2572f2a795f1d23efb41"
+checksum = "3da5db5a963e24bc68be8b17b6fa82814bb22ee8660f192bb182771d498f09a3"
 
 [[package]]
 name = "toml_edit"
-version = "0.22.24"
+version = "0.22.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17b4795ff5edd201c7cd6dca065ae59972ce77d1b80fa0a84d94950ece7d1474"
+checksum = "310068873db2c5b3e7659d2cc35d21855dbafa50d1ce336397c666e3cb08137e"
 dependencies = [
  "indexmap",
  "toml_datetime",
@@ -5986,9 +5992,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.6"
+version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63d3fcd9bba44b03821e7d699eeee959f3126dcc4aa8e4ae18ec617c2a5cea10"
+checksum = "c06928c8748d81b05c9be96aad92e1b6ff01833332f281e8cfca3be4b35fc9ec"
 dependencies = [
  "memchr",
 ]

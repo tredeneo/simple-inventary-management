@@ -1,10 +1,10 @@
 use cosmic::{
-    Element, Task,
     iced::{
-        Alignment, Length,
         widget::{button, column, row},
+        Alignment, Length,
     },
     widget::{container, text},
+    Element, Task,
 };
 
 use crate::Message;
@@ -33,7 +33,6 @@ impl CounterTab {
         cosmic::app::Task::none()
     }
 
-    // pub fn view(&self) -> Element<'_, Message> {
     pub fn view(&self) -> Element<'_, CounterMessage> {
         let count_text = text(format!("Count: {}", self.value)).size(32);
 
@@ -48,16 +47,10 @@ impl CounterTab {
             .padding(20)
             .max_width(600);
 
-        // .align_items(Alignment::Center);
-
-        // let tmp = container(content).width(Length::Fill);
-        // let tmp: Element<'_, CounterMessage> =
         container(content)
             .width(Length::Fill)
             .align_x(Alignment::Center)
             .align_y(Alignment::Center)
             .into()
-        // tmp
-        // tmp.map(Message::Counter)
     }
 }
