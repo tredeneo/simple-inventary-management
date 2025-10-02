@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use cosmic::Action;
 use cosmic::app::Task;
 use cosmic::iced;
 use cosmic::prelude::*;
+use cosmic::widget::text;
 use cosmic::widget::{self};
 use cosmic::widget::{nav_bar, scrollable, table};
 
@@ -75,11 +78,13 @@ pub enum UsersMessage {
     ItemSelect(table::Entity),
     CategorySelect(Category),
     GetUsers(Vec<database::model::DbUser>),
+    CloseDetail,
     NoOp,
 }
 
 pub struct ListUserTab {
     table_model: table::SingleSelectModel<Item, Category>,
+    active_detail: bool,
 }
 
 impl ListUserTab {
@@ -91,7 +96,10 @@ impl ListUserTab {
         let table_model =
             table::Model::new(vec![Category::Name, Category::Department, Category::Email]);
 
-        let app = ListUserTab { table_model };
+        let app = ListUserTab {
+            table_model,
+            active_detail: false,
+        };
 
         let command = Task::perform(database::get_users(), |arg| {
             let tmp = arg.unwrap_or_default();
@@ -106,6 +114,7 @@ impl ListUserTab {
             Action::App(message) => match message {
                 UsersMessage::ItemSelect(entity) => {
                     self.table_model.activate(entity);
+                    self.active_detail = true;
                     Action::None
                 }
                 UsersMessage::CategorySelect(category) => {
@@ -116,6 +125,10 @@ impl ListUserTab {
                         }
                     }
                     self.table_model.sort(category, ascending);
+                    Action::None
+                }
+                UsersMessage::CloseDetail => {
+                    self.active_detail = false;
                     Action::None
                 }
                 UsersMessage::GetUsers(db_user) => {
@@ -141,6 +154,11 @@ impl ListUserTab {
         }
     }
 
+    fn screen_detail(&self) -> Element<'_, UsersMessage> {
+        let coluna =
+            cosmic::iced::widget::column![text("teste 1").size(32), text("teste 2").size(30)];
+        coluna.into()
+    }
     pub fn view(&self) -> Element<'_, UsersMessage> {
         cosmic::widget::responsive(|size| {
             let table_wdget = if size.width < 600.0 {
@@ -151,10 +169,55 @@ impl ListUserTab {
                 widget::table(&self.table_model)
                     .on_item_left_click(UsersMessage::ItemSelect)
                     .on_category_left_click(UsersMessage::CategorySelect)
+                    .item_context(|item| {
+                        Some(widget::menu::items(
+                            &HashMap::new(),
+                            vec![widget::menu::Item::Button(
+                                format!("Action on {}", item.name),
+                                None,
+                                MyAction::None,
+                            )],
+                        ))
+                    })
+                    .category_context(|category| {
+                        Some(widget::menu::items(
+                            &HashMap::new(),
+                            vec![
+                                widget::menu::Item::Button(
+                                    format!("Action on {} category", category.to_string()),
+                                    None,
+                                    MyAction::None,
+                                ),
+                                widget::menu::Item::Button(
+                                    format!("Other action on {} category", category.to_string()),
+                                    None,
+                                    MyAction::None,
+                                ),
+                            ],
+                        ))
+                    })
                     .apply(Element::from)
             };
-            scrollable(table_wdget).into()
+
+            if self.active_detail {
+                self.screen_detail()
+            } else {
+                scrollable(table_wdget).into()
+            }
         })
         .into()
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum MyAction {
+    None,
+}
+
+impl widget::menu::Action for MyAction {
+    type Message = UsersMessage;
+
+    fn message(&self) -> Self::Message {
+        UsersMessage::NoOp
     }
 }
