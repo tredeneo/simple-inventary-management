@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use cosmic::Action;
 use cosmic::app::Task;
-use cosmic::iced;
+use cosmic::iced::{self, Alignment, Length, Size};
+use cosmic::iced_widget::button;
 use cosmic::prelude::*;
 use cosmic::widget::text;
 use cosmic::widget::{self};
@@ -18,6 +19,11 @@ pub enum Category {
     Email,
 }
 
+enum Page {
+    ListUsers,
+    DetailUsers,
+}
+
 impl std::fmt::Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -31,13 +37,14 @@ impl std::fmt::Display for Category {
 impl table::ItemCategory for Category {
     fn width(&self) -> iced::Length {
         match self {
-            Self::Name => iced::Length::Fixed(300.0),
+            Self::Name => iced::Length::Fixed(400.0),
             Self::Department => iced::Length::Fixed(200.0),
             Self::Email => iced::Length::Fill,
         }
     }
 }
 
+#[derive(Default, Debug, Clone)]
 struct Item {
     name: String,
     department: String,
@@ -155,54 +162,72 @@ impl ListUserTab {
     }
 
     fn screen_detail(&self) -> Element<'_, UsersMessage> {
-        let coluna =
-            cosmic::iced::widget::column![text("teste 1").size(32), text("teste 2").size(30)];
-        coluna.into()
+        use cosmic::iced::widget::{column, row};
+        use cosmic::widget::container;
+        let buttons = row![button("back").on_press(UsersMessage::CloseDetail)];
+        let tmp = self
+            .table_model
+            .item(self.table_model.active())
+            .cloned()
+            .unwrap_or_default();
+        let coluna = column![
+            buttons,
+            text(format!("{}", tmp.name)).size(32),
+            text(tmp.department).size(30),
+            text(tmp.email).size(30)
+        ];
+        container(coluna)
+            .width(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center)
+            .into()
+    }
+    fn screen_list_user(&self, size: Size) -> Element<'_, UsersMessage> {
+        let table_wdget = if size.width < 600.0 {
+            widget::compact_table(&self.table_model)
+                .on_item_left_click(UsersMessage::ItemSelect)
+                .apply(Element::from)
+        } else {
+            widget::table(&self.table_model)
+                .on_item_left_click(UsersMessage::ItemSelect)
+                .on_category_left_click(UsersMessage::CategorySelect)
+                .item_context(|item| {
+                    Some(widget::menu::items(
+                        &HashMap::new(),
+                        vec![widget::menu::Item::Button(
+                            format!("Action on {}", item.name),
+                            None,
+                            MyAction::None,
+                        )],
+                    ))
+                })
+                .category_context(|category| {
+                    Some(widget::menu::items(
+                        &HashMap::new(),
+                        vec![
+                            widget::menu::Item::Button(
+                                format!("Action on {} category", category.to_string()),
+                                None,
+                                MyAction::None,
+                            ),
+                            widget::menu::Item::Button(
+                                format!("Other action on {} category", category.to_string()),
+                                None,
+                                MyAction::None,
+                            ),
+                        ],
+                    ))
+                })
+                .apply(Element::from)
+        };
+        table_wdget
     }
     pub fn view(&self) -> Element<'_, UsersMessage> {
         cosmic::widget::responsive(|size| {
-            let table_wdget = if size.width < 600.0 {
-                widget::compact_table(&self.table_model)
-                    .on_item_left_click(UsersMessage::ItemSelect)
-                    .apply(Element::from)
-            } else {
-                widget::table(&self.table_model)
-                    .on_item_left_click(UsersMessage::ItemSelect)
-                    .on_category_left_click(UsersMessage::CategorySelect)
-                    .item_context(|item| {
-                        Some(widget::menu::items(
-                            &HashMap::new(),
-                            vec![widget::menu::Item::Button(
-                                format!("Action on {}", item.name),
-                                None,
-                                MyAction::None,
-                            )],
-                        ))
-                    })
-                    .category_context(|category| {
-                        Some(widget::menu::items(
-                            &HashMap::new(),
-                            vec![
-                                widget::menu::Item::Button(
-                                    format!("Action on {} category", category.to_string()),
-                                    None,
-                                    MyAction::None,
-                                ),
-                                widget::menu::Item::Button(
-                                    format!("Other action on {} category", category.to_string()),
-                                    None,
-                                    MyAction::None,
-                                ),
-                            ],
-                        ))
-                    })
-                    .apply(Element::from)
-            };
-
             if self.active_detail {
                 self.screen_detail()
             } else {
-                scrollable(table_wdget).into()
+                scrollable(self.screen_list_user(size)).into()
             }
         })
         .into()

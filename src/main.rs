@@ -109,7 +109,7 @@ impl Application for App {
         }
     }
 
-    fn view(&self) -> Element<Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message> {
         let content = match self.nav_model.active_data::<Page>().copied() {
             Some(Page::Counter) => self.counter_tab.view().map(Message::Counter),
             Some(Page::ListUsers) => self
@@ -121,7 +121,6 @@ impl Application for App {
 
         container(content)
             .width(Length::Fill)
-            // .height(Length::Fill)
             .align_x(Alignment::Center)
             .align_y(Alignment::Center)
             .into()
@@ -155,7 +154,7 @@ fn main() -> iced::Result {
         .default_icon_theme("Pop")
         .default_text_size(16.0)
         .scale_factor(1.0)
-        .size(cosmic::iced_core::Size::new(1024.0, 768.0));
+        .size(cosmic::iced_core::Size::new(1366.0, 768.0));
 
     cosmic::app::run::<App>(settings, ())
 }
