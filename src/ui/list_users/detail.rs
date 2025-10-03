@@ -1,59 +1,48 @@
-use iced::theme::Theme;
-use iced::widget::{Container, button, column, text, text_input};
-use iced::{Element, Length};
+use cosmic::Element;
+use cosmic::app::Task;
+use cosmic::iced::widget::button;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::text;
 
-#[derive(Debug, Clone)]
-pub struct UserDetail {
-    pub name: String,
-    pub department: String,
+use crate::database;
+
+pub struct UserDetailPage {
+    name: String,
 }
 
-#[derive(Debug, Clone)]
-pub enum UserDetailMessage {
-    NameChanged(String),
-    DepartmentChanged(String),
+#[derive(Clone)]
+enum UserDetailMessage {
+    Close,
     Save,
-    Cancel,
+    GetUserDetail(Vec<database::model::DbUser>),
 }
 
-impl UserDetail {
-    pub fn new(name: String, department: String) -> Self {
-        Self { name, department }
-    }
+impl UserDetailPage {
+    pub fn init() -> (Self, Task<UserDetailMessage>) {
+        let app = UserDetailPage {
+            name: String::from("nome teste"),
+        };
 
-    pub fn update(&mut self, message: UserDetailMessage) -> Option<UserDetailMessage> {
-        match message {
-            UserDetailMessage::NameChanged(new) => {
-                self.name = new;
-                None
-            }
-            UserDetailMessage::DepartmentChanged(new) => {
-                self.department = new;
-                None
-            }
-            UserDetailMessage::Save => {
-                // Aqui você poderia montar um Task, etc.
-                Some(UserDetailMessage::Save)
-            }
-            UserDetailMessage::Cancel => Some(UserDetailMessage::Cancel),
-        }
+        let command = Task::perform(database::get_users(), |arg| {
+            let tmp = arg.unwrap_or_default();
+            cosmic::Action::App(UserDetailMessage::GetUserDetail(tmp))
+        });
+        (app, command)
     }
-
     pub fn view(&self) -> Element<'_, UserDetailMessage> {
-        column![
-            text("Edit User").size(24),
-            text_input("Name", &self.name)
-                .on_input(UserDetailMessage::NameChanged)
-                .padding(10),
-            text_input("Department", &self.department)
-                .on_input(UserDetailMessage::DepartmentChanged)
-                .padding(10),
-            button("Save").on_press(UserDetailMessage::Save),
-            button("Cancel").on_press(UserDetailMessage::Cancel),
-        ]
-        .spacing(10)
-        .padding(20)
-        .width(Length::Fill)
-        .into()
+        use cosmic::iced::widget::{column, row};
+        use cosmic::widget::container;
+        let buttons = row![button("back").on_press(UserDetailMessage::Close)];
+        let coluna = column![
+            buttons,
+            text(format!("{}", self.name)).size(32),
+            // text(tmp.department).size(30),
+            // text(tmp.email).size(30)
+        ];
+        container(coluna)
+            .width(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center)
+            .into()
     }
 }

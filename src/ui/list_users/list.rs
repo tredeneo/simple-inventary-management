@@ -2,10 +2,8 @@ use std::collections::HashMap;
 
 use cosmic::Action;
 use cosmic::app::Task;
-use cosmic::iced::{self, Alignment, Length, Size};
-use cosmic::iced_widget::button;
+use cosmic::iced::{self, Size};
 use cosmic::prelude::*;
-use cosmic::widget::text;
 use cosmic::widget::{self};
 use cosmic::widget::{nav_bar, scrollable, table};
 
@@ -17,11 +15,6 @@ pub enum Category {
     Name,
     Department,
     Email,
-}
-
-enum Page {
-    ListUsers,
-    DetailUsers,
 }
 
 impl std::fmt::Display for Category {
@@ -161,27 +154,6 @@ impl ListUserTab {
         }
     }
 
-    fn screen_detail(&self) -> Element<'_, UsersMessage> {
-        use cosmic::iced::widget::{column, row};
-        use cosmic::widget::container;
-        let buttons = row![button("back").on_press(UsersMessage::CloseDetail)];
-        let tmp = self
-            .table_model
-            .item(self.table_model.active())
-            .cloned()
-            .unwrap_or_default();
-        let coluna = column![
-            buttons,
-            text(format!("{}", tmp.name)).size(32),
-            text(tmp.department).size(30),
-            text(tmp.email).size(30)
-        ];
-        container(coluna)
-            .width(Length::Fill)
-            .align_x(Alignment::Center)
-            .align_y(Alignment::Center)
-            .into()
-    }
     fn screen_list_user(&self, size: Size) -> Element<'_, UsersMessage> {
         let table_wdget = if size.width < 600.0 {
             widget::compact_table(&self.table_model)
@@ -224,11 +196,11 @@ impl ListUserTab {
     }
     pub fn view(&self) -> Element<'_, UsersMessage> {
         cosmic::widget::responsive(|size| {
-            if self.active_detail {
-                self.screen_detail()
-            } else {
-                scrollable(self.screen_list_user(size)).into()
-            }
+            // if self.active_detail {
+            //     self.screen_detail()
+            // } else {
+            scrollable(self.screen_list_user(size)).into()
+            // }
         })
         .into()
     }
