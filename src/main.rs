@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use simple_inventary::Message;
+use simple_inventary::{Message, ui::list_users::UsersTab};
 
 use cosmic::{
     Action, Application, ApplicationExt, Element,
@@ -14,7 +14,6 @@ use cosmic::{
 };
 
 use simple_inventary::ui::counter::CounterTab;
-use simple_inventary::ui::list_users::list::ListUserTab;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Page {
@@ -35,7 +34,7 @@ pub struct App {
     core: Core,
     nav_model: nav_bar::Model,
     counter_tab: CounterTab,
-    list_users_tab: ListUserTab,
+    users_tab: UsersTab,
 }
 
 impl Application for App {
@@ -65,7 +64,7 @@ impl Application for App {
                 core,
                 nav_model,
                 counter_tab: CounterTab::new().0,
-                list_users_tab: ListUserTab::init().0,
+                users_tab: UsersTab::init().0,
             },
             Task::none(),
         )
@@ -84,11 +83,9 @@ impl Application for App {
                     return Task::none();
                 }
                 Page::ListUsers => {
-                    let (screen, task) = ListUserTab::init();
-
-                    self.list_users_tab = screen;
-
-                    return task.map(|msg| Action::App(Message::ListUsers(msg)));
+                    let (screen, task) = UsersTab::init();
+                    self.users_tab = screen;
+                    return task.map(|msg| Action::App(Message::Users(msg)));
                 }
             }
         };
@@ -102,8 +99,10 @@ impl Application for App {
                 let _ = self.counter_tab.update(msg);
                 Task::none()
             }
-            Message::ListUsers(msg) => {
-                let _ = self.list_users_tab.update(msg);
+            Message::Users(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    self.users_tab.update(inner_msg);
+                }
                 Task::none()
             }
         }
@@ -113,9 +112,9 @@ impl Application for App {
         let content = match self.nav_model.active_data::<Page>().copied() {
             Some(Page::Counter) => self.counter_tab.view().map(Message::Counter),
             Some(Page::ListUsers) => self
-                .list_users_tab
+                .users_tab
                 .view()
-                .map(|arg| Message::ListUsers(Action::App(arg))),
+                .map(|arg| Message::Users(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 

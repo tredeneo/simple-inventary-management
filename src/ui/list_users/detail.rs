@@ -10,8 +10,8 @@ pub struct UserDetailPage {
     name: String,
 }
 
-#[derive(Clone)]
-enum UserDetailMessage {
+#[derive(Debug, Clone)]
+pub enum UserDetailMessage {
     Close,
     Save,
     GetUserDetail(Vec<database::model::DbUser>),

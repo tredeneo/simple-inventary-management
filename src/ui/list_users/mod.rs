@@ -1,62 +1,77 @@
-use cosmic::{
-    Action, Element,
-    iced::{Alignment, Length},
-    widget::text,
-};
+use cosmic::{Action, Element};
 
-// mod detail;
 mod detail;
 pub mod list;
 
-#[derive(Default)]
+use detail::UserDetailPage;
+use list::ListUserTab;
+
 enum View {
-    #[default]
-    ListUsers,
-    DetailUser(detail::UserDetailPage),
+    ListUsers(ListUserTab),
+    DetailUser(UserDetailPage),
 }
 
 #[derive(Debug, Clone)]
-enum UsersTabMessage {
-    ListUsers,
-    DetailUser,
+pub enum UsersTabMessage {
+    ListUsers(Action<list::UsersMessage>),
+    DetailUser(Action<detail::UserDetailMessage>),
+    GoToDetail(String),
+    GoBack,
 }
 
 pub struct UsersTab {
-    // screen: list::ListUsers,
     view: View,
 }
 
 impl UsersTab {
-    fn view(&self) -> Element<'_, UsersTabMessage> {
-        use cosmic::iced::widget::{button, column, row};
-        use cosmic::widget::container;
-        match &self.view {
-            View::ListUsers => {
-                let buttons = row![button("back")]; // .on_press(UsersMessage::CloseDetail)];
-
-                let coluna = column![
-                    buttons,
-                    text("hello world").size(32),
-                    // text(format!("{}", tmp.name)).size(32),
-                    // text(tmp.department).size(30),
-                    // text(tmp.email).size(30)
-                ];
-                container(coluna)
-                    .width(Length::Fill)
-                    .align_x(Alignment::Center)
-                    .align_y(Alignment::Center)
-                    .into()
+    pub fn init() -> (Self, cosmic::app::Task<UsersTabMessage>) {
+        let (list_tab, task) = ListUserTab::init();
+        (
+            Self {
+                view: View::ListUsers(list_tab),
+            },
+            task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg))), // cosmic::app::Task::none(),
+                                                                          // task.map(|msg| (UsersTabMessage::ListUsers(msg))), // cosmic::app::Task::none(),
+                                                                          // task.map(|msg| Action::App(UsersTabMessage::ListUsers(Action::App(msg)))), // cosmic::app::Task::none(),
+                                                                          // task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg))),
+        )
+    }
+    pub fn update(&mut self, message: UsersTabMessage) {
+        match message {
+            UsersTabMessage::GoToDetail(user_name) => {
+                let (page, _) = UserDetailPage::init();
+                self.view = View::DetailUser(page);
             }
+            UsersTabMessage::GoBack => {
+                let (list_tab, _) = ListUserTab::init();
+
+                self.view = View::ListUsers(list_tab);
+            }
+            UsersTabMessage::ListUsers(action) => {
+                if let View::ListUsers(list_tab) = &mut self.view {
+                    match &action {
+                        Action::App(list::UsersMessage::ItemSelect(_entity)) => {
+                            let (page, _) = UserDetailPage::init();
+                            self.view = View::DetailUser(page);
+                        }
+                        _ => {
+                            let _ = list_tab.update(action);
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    pub fn view(&self) -> Element<'_, UsersTabMessage> {
+        match &self.view {
+            View::ListUsers(list_tab) => list_tab
+                .view()
+                .map(|msg| UsersTabMessage::ListUsers(Action::App(msg))),
 
             View::DetailUser(page) => page
                 .view()
-                .map(|arg| UsersTabMessage::DetailUser(Action::App(arg))),
+                .map(|msg| UsersTabMessage::DetailUser(Action::App(msg))),
         }
     }
 }
-
-// #[derive(Debug, Clone)]
-// pub enum UsersMessage {
-//     List(list::ListUser),
-//     // Futuramente: Detail(...)
-// }
