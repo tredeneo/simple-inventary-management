@@ -1,10 +1,12 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use cosmic::Action;
 use cosmic::app::Task;
 use cosmic::iced::{self, Size};
+use cosmic::iced_widget::column;
 use cosmic::prelude::*;
-use cosmic::widget::{self};
+use cosmic::widget::{self, container, text_input};
 use cosmic::widget::{nav_bar, scrollable, table};
 
 use crate::database;
@@ -78,13 +80,15 @@ pub enum UsersMessage {
     ItemSelect(table::Entity),
     CategorySelect(Category),
     GetUsers(Vec<database::model::DbUser>),
-    CloseDetail,
+    FilterUser(String),
+    GoToDetail(String),
     NoOp,
 }
 
 pub struct ListUserTab {
+    users: Vec<Item>,
+    search_field: String,
     table_model: table::SingleSelectModel<Item, Category>,
-    active_detail: bool,
 }
 
 impl ListUserTab {
@@ -98,7 +102,8 @@ impl ListUserTab {
 
         let app = ListUserTab {
             table_model,
-            active_detail: false,
+            users: Vec::new(),
+            search_field: String::new(),
         };
 
         let command = Task::perform(database::get_users(), |arg| {
@@ -112,23 +117,39 @@ impl ListUserTab {
     pub fn update(&mut self, message: Action<UsersMessage>) -> Action<UsersMessage> {
         match message {
             Action::App(message) => match message {
-                UsersMessage::ItemSelect(entity) => {
-                    self.table_model.activate(entity);
-                    self.active_detail = true;
+                UsersMessage::FilterUser(filter_user) => {
+                    let mut table_model = table::Model::new(vec![
+                        Category::Name,
+                        Category::Department,
+                        Category::Email,
+                    ]);
+                    self.users.iter().for_each(|item| {
+                        if item.name.contains(&filter_user) || item.email.contains(&filter_user) {
+                            let _ = table_model.insert(item.clone());
+                        }
+                    });
+                    self.search_field = filter_user;
+                    self.table_model = table_model;
+
                     Action::None
+                }
+                UsersMessage::GoToDetail(user_name) => {
+                    dbg!(user_name);
+                    Action::None
+                }
+                UsersMessage::ItemSelect(entity) => {
+                    let user = self.table_model.item(entity).cloned().unwrap_or_default();
+                    self.table_model.activate(entity);
+                    Action::App(UsersMessage::GoToDetail(user.name))
                 }
                 UsersMessage::CategorySelect(category) => {
                     let mut ascending = true;
-                    if let Some(old_sort) = self.table_model.get_sort() {
-                        if old_sort.0 == category {
-                            ascending = !old_sort.1;
-                        }
+                    if let Some(old_sort) = self.table_model.get_sort()
+                        && old_sort.0 == category
+                    {
+                        ascending = !old_sort.1;
                     }
                     self.table_model.sort(category, ascending);
-                    Action::None
-                }
-                UsersMessage::CloseDetail => {
-                    self.active_detail = false;
                     Action::None
                 }
                 UsersMessage::GetUsers(db_user) => {
@@ -138,11 +159,13 @@ impl ListUserTab {
                         Category::Email,
                     ]);
                     db_user.into_iter().for_each(|i| {
-                        let _ = table_model.insert(Item {
+                        let tmp = Item {
                             name: i.name,
                             department: i.department,
                             email: i.email,
-                        });
+                        };
+                        self.users.push(tmp.clone());
+                        let _ = table_model.insert(tmp);
                     });
                     self.table_model = table_model;
 
@@ -155,7 +178,9 @@ impl ListUserTab {
     }
 
     fn screen_list_user(&self, size: Size) -> Element<'_, UsersMessage> {
-        let table_wdget = if size.width < 600.0 {
+        let search_bar =
+            text_input(&self.search_field, &self.search_field).on_input(UsersMessage::FilterUser);
+        let table_widget = if size.width < 600.0 {
             widget::compact_table(&self.table_model)
                 .on_item_left_click(UsersMessage::ItemSelect)
                 .apply(Element::from)
@@ -176,33 +201,21 @@ impl ListUserTab {
                 .category_context(|category| {
                     Some(widget::menu::items(
                         &HashMap::new(),
-                        vec![
-                            widget::menu::Item::Button(
-                                format!("Action on {} category", category.to_string()),
-                                None,
-                                MyAction::None,
-                            ),
-                            widget::menu::Item::Button(
-                                format!("Other action on {} category", category.to_string()),
-                                None,
-                                MyAction::None,
-                            ),
-                        ],
+                        vec![widget::menu::Item::Button(
+                            format!("Other action on {} category", category.to_string()),
+                            None,
+                            MyAction::None,
+                        )],
                     ))
                 })
                 .apply(Element::from)
         };
-        table_wdget
+        let content = column![search_bar, table_widget];
+
+        container(content).into()
     }
     pub fn view(&self) -> Element<'_, UsersMessage> {
-        cosmic::widget::responsive(|size| {
-            // if self.active_detail {
-            //     self.screen_detail()
-            // } else {
-            scrollable(self.screen_list_user(size)).into()
-            // }
-        })
-        .into()
+        cosmic::widget::responsive(|size| scrollable(self.screen_list_user(size)).into()).into()
     }
 }
 

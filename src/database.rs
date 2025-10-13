@@ -33,11 +33,12 @@ fn get_xdg_database_path() -> String {
     let dir = BaseDirs::new().unwrap();
     let mut dir = dir.config_local_dir().to_path_buf();
     dir.push("simple_inventary");
-    if dir.exists().not() {
-        if let Err(e) = fs::create_dir_all(&dir) {
-            eprintln!("Erro ao criar diretório: {}", e);
-        }
+    if dir.exists().not()
+        && let Err(e) = fs::create_dir_all(&dir)
+    {
+        eprintln!("Erro ao criar diretório: {}", e);
     }
+
     dir.push("database.sqlite3");
     dir.to_string_lossy().to_string()
 }

@@ -101,7 +101,8 @@ impl Application for App {
             }
             Message::Users(msg) => {
                 if let Action::App(inner_msg) = msg {
-                    self.users_tab.update(inner_msg);
+                    let task = self.users_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::Users(msg)));
                 }
                 Task::none()
             }

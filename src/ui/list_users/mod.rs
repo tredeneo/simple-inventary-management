@@ -1,4 +1,4 @@
-use cosmic::{Action, Element};
+use cosmic::{Action, Element, app::Task};
 
 mod detail;
 pub mod list;
@@ -15,7 +15,6 @@ enum View {
 pub enum UsersTabMessage {
     ListUsers(Action<list::UsersMessage>),
     DetailUser(Action<detail::UserDetailMessage>),
-    GoToDetail(String),
     GoBack,
 }
 
@@ -25,42 +24,48 @@ pub struct UsersTab {
 
 impl UsersTab {
     pub fn init() -> (Self, cosmic::app::Task<UsersTabMessage>) {
-        let (list_tab, task) = ListUserTab::init();
+        let (page, task) = ListUserTab::init();
         (
             Self {
-                view: View::ListUsers(list_tab),
+                view: View::ListUsers(page),
             },
-            task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg))), // cosmic::app::Task::none(),
-                                                                          // task.map(|msg| (UsersTabMessage::ListUsers(msg))), // cosmic::app::Task::none(),
-                                                                          // task.map(|msg| Action::App(UsersTabMessage::ListUsers(Action::App(msg)))), // cosmic::app::Task::none(),
-                                                                          // task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg))),
+            task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg))),
         )
     }
-    pub fn update(&mut self, message: UsersTabMessage) {
+    pub fn update(&mut self, message: UsersTabMessage) -> Task<UsersTabMessage> {
         match message {
-            UsersTabMessage::GoToDetail(user_name) => {
-                let (page, _) = UserDetailPage::init();
-                self.view = View::DetailUser(page);
-            }
-            UsersTabMessage::GoBack => {
-                let (list_tab, _) = ListUserTab::init();
-
-                self.view = View::ListUsers(list_tab);
-            }
             UsersTabMessage::ListUsers(action) => {
                 if let View::ListUsers(list_tab) = &mut self.view {
-                    match &action {
-                        Action::App(list::UsersMessage::ItemSelect(_entity)) => {
-                            let (page, _) = UserDetailPage::init();
+                    match list_tab.update(action) {
+                        Action::App(list::UsersMessage::GoToDetail(user)) => {
+                            let (page, task) = UserDetailPage::init(user);
                             self.view = View::DetailUser(page);
+                            task.map(|msg| Action::App(UsersTabMessage::DetailUser(msg)))
                         }
-                        _ => {
-                            let _ = list_tab.update(action);
+                        _ => Task::none(),
+                    }
+                } else {
+                    Task::none()
+                }
+            }
+            UsersTabMessage::DetailUser(action) => {
+                if let View::DetailUser(list_tab) = &mut self.view {
+                    match action {
+                        Action::App(detail::UserDetailMessage::Close) => {
+                            let (page, task) = ListUserTab::init();
+                            self.view = View::ListUsers(page);
+
+                            return task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg)));
+                        }
+                        tmp => {
+                            let _ = list_tab.update(tmp);
                         }
                     }
                 }
+
+                Task::none()
             }
-            _ => {}
+            _ => Task::none(),
         }
     }
     pub fn view(&self) -> Element<'_, UsersTabMessage> {
