@@ -1,20 +1,25 @@
 use cosmic::{Action, Element, app::Task};
 
+mod create;
 mod detail;
 pub mod list;
 
 use detail::UserDetailPage;
 use list::ListUserTab;
 
+use crate::ui::list_users::create::CreateUserPage;
+
 enum View {
     ListUsers(ListUserTab),
     DetailUser(UserDetailPage),
+    CreateUser(create::CreateUserPage),
 }
 
 #[derive(Debug, Clone)]
 pub enum UsersTabMessage {
     ListUsers(Action<list::UsersMessage>),
     DetailUser(Action<detail::UserDetailMessage>),
+    CreateUser(Action<create::CreateUserMessage>),
     GoBack,
 }
 
@@ -42,6 +47,11 @@ impl UsersTab {
                             self.view = View::DetailUser(page);
                             task.map(|msg| Action::App(UsersTabMessage::DetailUser(msg)))
                         }
+                        Action::App(list::UsersMessage::CreateUser) => {
+                            let (page, task) = CreateUserPage::new();
+                            self.view = View::CreateUser(page);
+                            task.map(|msg| Action::App(UsersTabMessage::CreateUser(msg)))
+                        }
                         _ => Task::none(),
                     }
                 } else {
@@ -65,6 +75,17 @@ impl UsersTab {
 
                 Task::none()
             }
+            UsersTabMessage::CreateUser(action) => {
+                if let View::CreateUser(list_tab) = &mut self.view {
+                    match action {
+                        tmp => {
+                            let (_, task) = list_tab.update(tmp);
+                            return task.map(|msg| Action::App(UsersTabMessage::CreateUser(msg)));
+                        }
+                    }
+                }
+                Task::none()
+            }
             _ => Task::none(),
         }
     }
@@ -77,6 +98,9 @@ impl UsersTab {
             View::DetailUser(page) => page
                 .view()
                 .map(|msg| UsersTabMessage::DetailUser(Action::App(msg))),
+            View::CreateUser(page) => page
+                .view()
+                .map(|msg| UsersTabMessage::CreateUser(Action::App(msg))),
         }
     }
 }

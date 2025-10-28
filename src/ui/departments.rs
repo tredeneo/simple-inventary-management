@@ -8,7 +8,7 @@ use cosmic::{
     widget::{container, text},
 };
 
-use crate::{Message, database};
+use crate::database;
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]

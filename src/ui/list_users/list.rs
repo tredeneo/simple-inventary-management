@@ -3,8 +3,9 @@ use std::fmt::Debug;
 
 use cosmic::Action;
 use cosmic::app::Task;
+use cosmic::iced::widget::button;
 use cosmic::iced::{self, Size};
-use cosmic::iced_widget::column;
+use cosmic::iced_widget::{column, row};
 use cosmic::prelude::*;
 use cosmic::widget::{self, container, text_input};
 use cosmic::widget::{nav_bar, scrollable, table};
@@ -82,6 +83,8 @@ pub enum UsersMessage {
     GetUsers(Vec<database::model::DbUser>),
     FilterUser(String),
     GoToDetail(String),
+    CreateUserPressed,
+    CreateUser,
     NoOp,
 }
 
@@ -133,10 +136,7 @@ impl ListUserTab {
 
                     Action::None
                 }
-                UsersMessage::GoToDetail(user_name) => {
-                    dbg!(user_name);
-                    Action::None
-                }
+                UsersMessage::GoToDetail(_user_name) => Action::None,
                 UsersMessage::ItemSelect(entity) => {
                     let user = self.table_model.item(entity).cloned().unwrap_or_default();
                     self.table_model.activate(entity);
@@ -171,6 +171,8 @@ impl ListUserTab {
 
                     Action::None
                 }
+                UsersMessage::CreateUserPressed => Action::App(UsersMessage::CreateUser),
+                UsersMessage::CreateUser => Action::None,
                 UsersMessage::NoOp => Action::None,
             },
             _ => Action::None,
@@ -180,6 +182,7 @@ impl ListUserTab {
     fn screen_list_user(&self, size: Size) -> Element<'_, UsersMessage> {
         let search_bar =
             text_input(&self.search_field, &self.search_field).on_input(UsersMessage::FilterUser);
+        let create_user = button("criar usuario").on_press(UsersMessage::CreateUserPressed);
         let table_widget = if size.width < 600.0 {
             widget::compact_table(&self.table_model)
                 .on_item_left_click(UsersMessage::ItemSelect)
@@ -210,7 +213,8 @@ impl ListUserTab {
                 })
                 .apply(Element::from)
         };
-        let content = column![search_bar, table_widget];
+        let tmp = row![search_bar, create_user];
+        let content = column![tmp, table_widget];
 
         container(content).into()
     }
