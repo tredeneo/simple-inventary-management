@@ -7,6 +7,7 @@ use sqlx::{
 
 mod query;
 use query as query_select;
+use tokio::runtime::Runtime;
 
 pub mod model;
 
@@ -23,7 +24,10 @@ async fn data_base_directory() -> Arc<String> {
         return Arc::new(local_path.to_string_lossy().to_string());
     }
     let xdg_dir = get_xdg_database_path();
-    create_database(xdg_dir.clone()).await.ok();
+    let local_path = Path::new(xdg_dir.as_str());
+    if !local_path.exists() {
+        create_database(xdg_dir.clone()).await.ok();
+    }
     Arc::new(xdg_dir)
 }
 
@@ -45,7 +49,6 @@ fn get_xdg_database_path() -> String {
 // async fn create_database(location: &Path) -> anyhow::Result<()> {
 async fn create_database(location: String) -> anyhow::Result<()> {
     let tmp = SqliteConnectOptions::new()
-        // .filename(location.to_string_lossy().to_string())
         .filename(location)
         .create_if_missing(true);
 
@@ -57,6 +60,7 @@ async fn create_database(location: String) -> anyhow::Result<()> {
         .inspect_err(|e| {
             dbg!(e);
         })?;
+    dbg!("teste pool");
     sqlx::query(
         r#"
         CREATE TABLE "CPU" (
@@ -127,13 +131,6 @@ async fn create_database(location: String) -> anyhow::Result<()> {
         	PRIMARY KEY("id" AUTOINCREMENT)
         );
         
-        CREATE TABLE
-          "phone_number" (
-            "id" INTEGER NOT NULL UNIQUE,
-            "user_id" INT NOT NULL UNIQUE,
-            "number" VARCHAR(255) NOT NULL,
-            PRIMARY KEY ("id" AUTOINCREMENT)
-          );   
         CREATE TABLE type (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, category NOT NULL);
         CREATE TABLE "users" (
         	"id"	INTEGER NOT NULL UNIQUE,
@@ -156,6 +153,17 @@ async fn create_database(location: String) -> anyhow::Result<()> {
 
     println!("Banco de dados criado (se necessário) e conectado com sucesso!");
 
+    Ok(())
+}
+pub fn init_database() -> anyhow::Result<()> {
+    let rt = Runtime::new()?;
+    rt.block_on(async {
+        let _ = SqliteConnection::connect(&data_base_directory().await)
+            .await
+            .inspect_err(|e| {
+                dbg!(&e);
+            });
+    });
     Ok(())
 }
 

@@ -72,11 +72,6 @@ pub const SELECT_BRAND: &str = r#"
     order by name
 "#;
 
-pub const SELECT_PHONE_NUMBER: &str = r#"
-    SELECT id,name
-    FROM phone_numbers
-    "#;
-
 pub const SELECT_DEPARTMENT: &str = r#"
     SELECT id,name
     FROM departments
@@ -243,17 +238,6 @@ pub const INSERT_BRAND: &str = r#"
 
 pub const DELETE_BRAND: &str = r#"
    DELETE from brands
-    where name = ?1 
-"#;
-
-pub const INSERT_PHONE_NUMBER: &str = r#"
-   INSERT INTO phone_numbers(name) 
-
-    VALUES (?1)
-"#;
-
-pub const DELETE_PHONE_NUMBER: &str = r#"
-   DELETE from phone_numbers
     where name = ?1 
 "#;
 

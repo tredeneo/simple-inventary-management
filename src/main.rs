@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use simple_inventary::{Message, ui::list_users::UsersTab};
+use simple_inventary::{Message, database, ui::list_users::UsersTab};
 
 use cosmic::{
     Action, Application, ApplicationExt, Element,
@@ -14,11 +14,13 @@ use cosmic::{
 };
 
 use simple_inventary::ui::counter::CounterTab;
+use simple_inventary::ui::departments::DepartmentsTab;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Page {
     Counter,
     ListUsers,
+    Departments,
 }
 
 impl Page {
@@ -26,6 +28,7 @@ impl Page {
         match self {
             Page::Counter => "Contador",
             Page::ListUsers => "Users",
+            Page::Departments => "Departments",
         }
     }
 }
@@ -35,6 +38,7 @@ pub struct App {
     nav_model: nav_bar::Model,
     counter_tab: CounterTab,
     users_tab: UsersTab,
+    departments_tab: DepartmentsTab,
 }
 
 impl Application for App {
@@ -57,6 +61,10 @@ impl Application for App {
 
         nav_model.insert().text("Contador").data(Page::Counter);
         nav_model.insert().text("Usuários").data(Page::ListUsers);
+        nav_model
+            .insert()
+            .text("Departamentos")
+            .data(Page::Departments);
         nav_model.activate_position(0);
 
         (
@@ -65,6 +73,7 @@ impl Application for App {
                 nav_model,
                 counter_tab: CounterTab::new().0,
                 users_tab: UsersTab::init().0,
+                departments_tab: DepartmentsTab::new().0,
             },
             Task::none(),
         )
@@ -87,6 +96,11 @@ impl Application for App {
                     self.users_tab = screen;
                     return task.map(|msg| Action::App(Message::Users(msg)));
                 }
+                Page::Departments => {
+                    let (screen, task) = DepartmentsTab::new();
+                    self.departments_tab = screen;
+                    return task.map(|msg| Action::App(Message::Departments(msg)));
+                }
             }
         };
 
@@ -106,6 +120,13 @@ impl Application for App {
                 }
                 Task::none()
             }
+            Message::Departments(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    let task = self.departments_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::Departments(msg)));
+                }
+                Task::none()
+            }
         }
     }
 
@@ -116,6 +137,10 @@ impl Application for App {
                 .users_tab
                 .view()
                 .map(|arg| Message::Users(Action::App(arg))),
+            Some(Page::Departments) => self
+                .departments_tab
+                .view()
+                .map(|arg| Message::Departments(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 
@@ -147,6 +172,7 @@ impl App {
 }
 
 fn main() -> iced::Result {
+    let _ = database::init_database();
     let settings = Settings::default()
         .antialiasing(true)
         .client_decorations(true)
