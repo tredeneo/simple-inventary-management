@@ -5,7 +5,7 @@
 
 use simple_inventary::{
     Message, database,
-    ui::{brand::BrandsTab, list_users::UsersTab},
+    ui::{brand::BrandsTab, cpu::CPUsTab, list_users::UsersTab},
 };
 
 use cosmic::{
@@ -25,6 +25,7 @@ pub enum Page {
     ListUsers,
     Departments,
     Brands,
+    Cpu,
 }
 
 impl Page {
@@ -34,6 +35,7 @@ impl Page {
             Page::ListUsers => "Users",
             Page::Departments => "Departments",
             Page::Brands => "Brands",
+            Page::Cpu => "CPUs",
         }
     }
 }
@@ -45,6 +47,7 @@ pub struct App {
     users_tab: UsersTab,
     departments_tab: DepartmentsTab,
     brands_tab: BrandsTab,
+    cpu_tab: CPUsTab,
 }
 
 impl Application for App {
@@ -71,18 +74,21 @@ impl Application for App {
             .text("Departamentos")
             .data(Page::Departments);
         nav_model.insert().text("Marcas").data(Page::Brands);
+        nav_model.insert().text("CPUS").data(Page::Cpu);
         nav_model.activate_position(0);
+        let (users_page, task) = UsersTab::init();
 
         (
             Self {
                 core,
                 nav_model,
                 counter_tab: CounterTab::new().0,
-                users_tab: UsersTab::init().0,
+                users_tab: users_page,
                 departments_tab: DepartmentsTab::new().0,
                 brands_tab: BrandsTab::new().0,
+                cpu_tab: CPUsTab::new().0,
             },
-            Task::none(),
+            task.map(|msg| Action::App(Message::Users(msg))),
         )
     }
 
@@ -112,6 +118,11 @@ impl Application for App {
                     let (screen, task) = BrandsTab::new();
                     self.brands_tab = screen;
                     return task.map(|msg| Action::App(Message::Brands(msg)));
+                }
+                Page::Cpu => {
+                    let (screen, task) = CPUsTab::new();
+                    self.cpu_tab = screen;
+                    return task.map(|msg| Action::App(Message::Cpus(msg)));
                 }
             }
         };
@@ -146,6 +157,13 @@ impl Application for App {
                 }
                 Task::none()
             }
+            Message::Cpus(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    let task = self.cpu_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::Cpus(msg)));
+                }
+                Task::none()
+            }
         }
     }
 
@@ -164,6 +182,10 @@ impl Application for App {
                 .brands_tab
                 .view()
                 .map(|arg| Message::Brands(Action::App(arg))),
+            Some(Page::Cpu) => self
+                .cpu_tab
+                .view()
+                .map(|arg| Message::Cpus(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 

@@ -4,8 +4,8 @@ pub mod ui;
 use cosmic::Action;
 
 use crate::ui::{
-    brand::BrandsMessage, counter::CounterMessage, departments::DepartmentsMessage,
-    list_users::UsersTabMessage,
+    brand::BrandsMessage, counter::CounterMessage, cpu::CPUsMessage,
+    departments::DepartmentsMessage, list_users::UsersTabMessage,
 };
 // use crate::ui::list_users::list::UsersMessage;
 
@@ -15,4 +15,5 @@ pub enum Message {
     Users(Action<UsersTabMessage>),
     Departments(Action<DepartmentsMessage>),
     Brands(Action<BrandsMessage>),
+    Cpus(Action<CPUsMessage>),
 }

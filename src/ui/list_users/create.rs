@@ -10,12 +10,9 @@ use cosmic::{
 use crate::database::{self, model::DbUser};
 use cosmic::app::Task;
 
-fn update_field<T>(
-    target: &mut T,
-    new_value: T,
-) -> (Action<CreateUserMessage>, Task<CreateUserMessage>) {
+fn update_field<T>(target: &mut T, new_value: T) -> Task<CreateUserMessage> {
     *target = new_value;
-    (Action::None, Task::none())
+    Task::none()
 }
 
 #[derive(Debug, Clone)]
@@ -65,10 +62,7 @@ impl CreateUserPage {
         (app, command)
     }
 
-    pub fn update(
-        &mut self,
-        message: Action<CreateUserMessage>,
-    ) -> (Action<CreateUserMessage>, Task<CreateUserMessage>) {
+    pub fn update(&mut self, message: Action<CreateUserMessage>) -> Task<CreateUserMessage> {
         match message {
             Action::App(message) => match message {
                 CreateUserMessage::CreateUser => {
@@ -90,49 +84,49 @@ impl CreateUserPage {
                         };
                         Action::App(CreateUserMessage::CreatedUser(tmp))
                     });
-                    (Action::None, task)
+                    task
                 }
                 CreateUserMessage::GetDepartments(departs) => {
                     let mut tmp = Vec::new();
 
                     departs.iter().for_each(|f| tmp.push(f.name.clone()));
                     self.departments = combo_box::State::new(tmp);
-                    (Action::None, Task::none())
+                    Task::none()
                 }
                 CreateUserMessage::ChangingName(atual) => update_field(&mut self.name, atual),
                 CreateUserMessage::ChangingDepartment(atual) => {
                     self.department = Some(atual);
 
-                    (Action::None, Task::none())
+                    Task::none()
                 }
                 CreateUserMessage::ChangingCelular(atual) => {
                     self.celular = atual;
-                    (Action::None, Task::none())
+                    Task::none()
                 }
                 CreateUserMessage::ChangingRamal(atual) => {
                     self.ramal = atual;
-                    (Action::None, Task::none())
+                    Task::none()
                 }
                 CreateUserMessage::ChangingDocumento(atual) => {
                     self.documento = atual;
-                    (Action::None, Task::none())
+                    Task::none()
                 }
                 CreateUserMessage::ChangingEmail(atual) => {
                     self.email = atual;
-                    (Action::None, Task::none())
+                    Task::none()
                 }
 
                 CreateUserMessage::ChangingLogin(atual) => {
                     self.login = atual;
-                    (Action::None, Task::none())
+                    Task::none()
                 }
                 CreateUserMessage::CreatedUser(result) => {
                     dbg!(result);
 
-                    (Action::None, Task::none())
+                    Task::none()
                 }
             },
-            _ => (Action::None, Task::none()),
+            _ => Task::none(),
         }
     }
 
