@@ -547,7 +547,7 @@ pub async fn create_user(user: model::DbUser) -> anyhow::Result<()> {
         .await
         .inspect_err(|e| {
             dbg!(&e);
-        });
+        })?;
     Ok(())
 }
 

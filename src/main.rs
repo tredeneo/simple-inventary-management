@@ -3,7 +3,10 @@
     windows_subsystem = "windows"
 )]
 
-use simple_inventary::{Message, database, ui::list_users::UsersTab};
+use simple_inventary::{
+    Message, database,
+    ui::{brand::BrandsTab, list_users::UsersTab},
+};
 
 use cosmic::{
     Action, Application, ApplicationExt, Element,
@@ -21,6 +24,7 @@ pub enum Page {
     Counter,
     ListUsers,
     Departments,
+    Brands,
 }
 
 impl Page {
@@ -29,6 +33,7 @@ impl Page {
             Page::Counter => "Contador",
             Page::ListUsers => "Users",
             Page::Departments => "Departments",
+            Page::Brands => "Brands",
         }
     }
 }
@@ -39,6 +44,7 @@ pub struct App {
     counter_tab: CounterTab,
     users_tab: UsersTab,
     departments_tab: DepartmentsTab,
+    brands_tab: BrandsTab,
 }
 
 impl Application for App {
@@ -59,12 +65,12 @@ impl Application for App {
     fn init(core: Core, _flags: Self::Flags) -> (Self, Task<Self::Message>) {
         let mut nav_model = nav_bar::Model::default();
 
-        nav_model.insert().text("Contador").data(Page::Counter);
         nav_model.insert().text("Usuários").data(Page::ListUsers);
         nav_model
             .insert()
             .text("Departamentos")
             .data(Page::Departments);
+        nav_model.insert().text("Marcas").data(Page::Brands);
         nav_model.activate_position(0);
 
         (
@@ -74,6 +80,7 @@ impl Application for App {
                 counter_tab: CounterTab::new().0,
                 users_tab: UsersTab::init().0,
                 departments_tab: DepartmentsTab::new().0,
+                brands_tab: BrandsTab::new().0,
             },
             Task::none(),
         )
@@ -101,6 +108,11 @@ impl Application for App {
                     self.departments_tab = screen;
                     return task.map(|msg| Action::App(Message::Departments(msg)));
                 }
+                Page::Brands => {
+                    let (screen, task) = BrandsTab::new();
+                    self.brands_tab = screen;
+                    return task.map(|msg| Action::App(Message::Brands(msg)));
+                }
             }
         };
 
@@ -127,6 +139,13 @@ impl Application for App {
                 }
                 Task::none()
             }
+            Message::Brands(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    let task = self.brands_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::Brands(msg)));
+                }
+                Task::none()
+            }
         }
     }
 
@@ -141,6 +160,10 @@ impl Application for App {
                 .departments_tab
                 .view()
                 .map(|arg| Message::Departments(Action::App(arg))),
+            Some(Page::Brands) => self
+                .brands_tab
+                .view()
+                .map(|arg| Message::Brands(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 

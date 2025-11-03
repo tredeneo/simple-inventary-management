@@ -60,29 +60,28 @@ impl UsersTab {
             }
             UsersTabMessage::DetailUser(action) => {
                 if let View::DetailUser(list_tab) = &mut self.view {
-                    match action {
-                        Action::App(detail::UserDetailMessage::Close) => {
-                            let (page, task) = ListUserTab::init();
-                            self.view = View::ListUsers(page);
+                    if let Action::App(detail::UserDetailMessage::Close) = &action {
+                        let (page, task) = ListUserTab::init();
+                        self.view = View::ListUsers(page);
 
-                            return task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg)));
-                        }
-                        tmp => {
-                            let _ = list_tab.update(tmp);
-                        }
+                        return task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg)));
                     }
+                    let _ = list_tab.update(action);
                 }
 
                 Task::none()
             }
             UsersTabMessage::CreateUser(action) => {
                 if let View::CreateUser(list_tab) = &mut self.view {
-                    match action {
-                        tmp => {
-                            let (_, task) = list_tab.update(tmp);
-                            return task.map(|msg| Action::App(UsersTabMessage::CreateUser(msg)));
+                    if let Action::App(create::CreateUserMessage::CreatedUser(arg)) = &action {
+                        if *arg {
+                            let (page, task) = ListUserTab::init();
+                            self.view = View::ListUsers(page);
+                            return task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg)));
                         }
                     }
+                    let (_, task) = list_tab.update(action);
+                    return task.map(|msg| Action::App(UsersTabMessage::CreateUser(msg)));
                 }
                 Task::none()
             }
