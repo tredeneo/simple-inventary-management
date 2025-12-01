@@ -5,7 +5,7 @@
 
 use simple_inventary::{
     Message, database,
-    ui::{brand::BrandsTab, cpu::CPUsTab, list_users::UsersTab},
+    ui::{brand::BrandsTab, cpu::CPUsTab, gpu::GPUsTab, list_users::UsersTab},
 };
 
 use cosmic::{
@@ -26,6 +26,7 @@ pub enum Page {
     Departments,
     Brands,
     Cpu,
+    Gpu,
 }
 
 impl Page {
@@ -36,6 +37,7 @@ impl Page {
             Page::Departments => "Departments",
             Page::Brands => "Brands",
             Page::Cpu => "CPUs",
+            Page::Gpu => "GPUs",
         }
     }
 }
@@ -48,6 +50,7 @@ pub struct App {
     departments_tab: DepartmentsTab,
     brands_tab: BrandsTab,
     cpu_tab: CPUsTab,
+    gpu_tab: GPUsTab,
 }
 
 impl Application for App {
@@ -74,7 +77,8 @@ impl Application for App {
             .text("Departamentos")
             .data(Page::Departments);
         nav_model.insert().text("Marcas").data(Page::Brands);
-        nav_model.insert().text("CPUS").data(Page::Cpu);
+        nav_model.insert().text("CPUs").data(Page::Cpu);
+        nav_model.insert().text("GPUs").data(Page::Gpu);
         nav_model.activate_position(0);
         let (users_page, task) = UsersTab::init();
 
@@ -87,6 +91,7 @@ impl Application for App {
                 departments_tab: DepartmentsTab::new().0,
                 brands_tab: BrandsTab::new().0,
                 cpu_tab: CPUsTab::new().0,
+                gpu_tab: GPUsTab::new().0,
             },
             task.map(|msg| Action::App(Message::Users(msg))),
         )
@@ -123,6 +128,11 @@ impl Application for App {
                     let (screen, task) = CPUsTab::new();
                     self.cpu_tab = screen;
                     return task.map(|msg| Action::App(Message::Cpus(msg)));
+                }
+                Page::Gpu => {
+                    let (screen, task) = GPUsTab::new();
+                    self.gpu_tab = screen;
+                    return task.map(|msg| Action::App(Message::Gpus(msg)));
                 }
             }
         };
@@ -164,6 +174,13 @@ impl Application for App {
                 }
                 Task::none()
             }
+            Message::Gpus(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    let task = self.gpu_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::Gpus(msg)));
+                }
+                Task::none()
+            }
         }
     }
 
@@ -186,6 +203,10 @@ impl Application for App {
                 .cpu_tab
                 .view()
                 .map(|arg| Message::Cpus(Action::App(arg))),
+            Some(Page::Gpu) => self
+                .gpu_tab
+                .view()
+                .map(|arg| Message::Gpus(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 
