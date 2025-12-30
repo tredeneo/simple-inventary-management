@@ -248,7 +248,7 @@ pub const INSERT_DEPARTMENT: &str = r#"
 
 pub const DELETE_DEPARTMENT: &str = r#"
    DELETE from departments
-    where name = ?1 
+    where name = ?1
 "#;
 
 pub const INSERT_EQUIPAMENT_MODEL: &str = r#"

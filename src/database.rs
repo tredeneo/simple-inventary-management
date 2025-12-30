@@ -490,6 +490,7 @@ pub async fn get_cpu_by_name(name: String) -> anyhow::Result<model::DbInteger> {
 }
 pub async fn delete_department(name: String) -> anyhow::Result<()> {
     let mut pool = get_sql_connection().await?;
+
     let _ = sqlx::query(query_select::DELETE_DEPARTMENT)
         .bind(name)
         .execute(&mut pool)

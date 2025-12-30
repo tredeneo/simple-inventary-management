@@ -56,12 +56,8 @@ impl table::ItemCategory for Category {
 }
 
 impl table::ItemInterface<Category> for Item {
-    fn get_icon(&self, category: Category) -> Option<cosmic::widget::Icon> {
-        if category == Category::Name {
-            Some(cosmic::widget::icon::from_name("application-x-executable-symbolic").icon())
-        } else {
-            None
-        }
+    fn get_icon(&self, _category: Category) -> Option<cosmic::widget::Icon> {
+        None
     }
 
     fn get_text(&self, category: Category) -> std::borrow::Cow<'static, str> {
@@ -103,12 +99,7 @@ impl DepartmentsTab {
                 Task::none()
             }
             DepartmentsMessage::ItemSelect(entity) => {
-                dbg!(entity);
                 self.departments.activate(entity);
-                let tmp = self.departments.active();
-                dbg!(tmp);
-                let department: Option<&String> = self.departments.data::<String>(tmp);
-                dbg!(department);
                 Task::none()
             }
             DepartmentsMessage::CreateDepartment => {
@@ -125,16 +116,15 @@ impl DepartmentsTab {
                 command
             }
             DepartmentsMessage::DeleteDepartment => {
-                dbg!("delete");
-                let department: Option<&Item> = self.departments.active_data();
-                dbg!(department);
-                if department.is_none() {
-                    return Task::none();
-                }
-                let name = department.unwrap();
-                dbg!(&name);
+                let department = self
+                    .departments
+                    .item(self.departments.active())
+                    .cloned()
+                    .unwrap_or_default()
+                    .name;
+
                 let command =
-                    Task::perform(database::delete_department(name.name.clone()), |arg| {
+                    Task::perform(database::delete_department(department.clone()), |arg| {
                         let result = match arg {
                             Ok(_) => true,
                             Err(_) => false,

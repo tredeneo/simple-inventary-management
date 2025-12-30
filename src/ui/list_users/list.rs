@@ -48,12 +48,8 @@ struct Item {
 }
 
 impl table::ItemInterface<Category> for Item {
-    fn get_icon(&self, category: Category) -> Option<cosmic::widget::Icon> {
-        if category == Category::Name {
-            Some(cosmic::widget::icon::from_name("application-x-executable-symbolic").icon())
-        } else {
-            None
-        }
+    fn get_icon(&self, _category: Category) -> Option<cosmic::widget::Icon> {
+        None
     }
 
     fn get_text(&self, category: Category) -> std::borrow::Cow<'static, str> {
