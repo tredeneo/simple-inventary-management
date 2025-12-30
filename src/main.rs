@@ -5,7 +5,10 @@
 
 use simple_inventary::{
     Message, database,
-    ui::{brand::BrandsTab, cpu::CPUsTab, gpu::GPUsTab, list_users::UsersTab},
+    ui::{
+        brand::BrandsTab, cpu::CPUsTab, equipament_models::EquipamentModelsTab, gpu::GPUsTab,
+        list_users::UsersTab,
+    },
 };
 
 use cosmic::{
@@ -27,6 +30,7 @@ pub enum Page {
     Brands,
     Cpu,
     Gpu,
+    EquipamentModels,
 }
 
 impl Page {
@@ -38,6 +42,7 @@ impl Page {
             Page::Brands => "Brands",
             Page::Cpu => "CPUs",
             Page::Gpu => "GPUs",
+            Page::EquipamentModels => "Equipament Models",
         }
     }
 }
@@ -51,6 +56,7 @@ pub struct App {
     brands_tab: BrandsTab,
     cpu_tab: CPUsTab,
     gpu_tab: GPUsTab,
+    equipament_models_tab: EquipamentModelsTab,
 }
 
 impl Application for App {
@@ -79,6 +85,10 @@ impl Application for App {
         nav_model.insert().text("Marcas").data(Page::Brands);
         nav_model.insert().text("CPUs").data(Page::Cpu);
         nav_model.insert().text("GPUs").data(Page::Gpu);
+        nav_model
+            .insert()
+            .text("Equipament Models")
+            .data(Page::EquipamentModels);
         nav_model.activate_position(0);
         let (users_page, task) = UsersTab::init();
 
@@ -92,6 +102,7 @@ impl Application for App {
                 brands_tab: BrandsTab::new().0,
                 cpu_tab: CPUsTab::new().0,
                 gpu_tab: GPUsTab::new().0,
+                equipament_models_tab: EquipamentModelsTab::new().0,
             },
             task.map(|msg| Action::App(Message::Users(msg))),
         )
@@ -133,6 +144,11 @@ impl Application for App {
                     let (screen, task) = GPUsTab::new();
                     self.gpu_tab = screen;
                     return task.map(|msg| Action::App(Message::Gpus(msg)));
+                }
+                Page::EquipamentModels => {
+                    let (screen, task) = EquipamentModelsTab::new();
+                    self.equipament_models_tab = screen;
+                    return task.map(|msg| Action::App(Message::EquipamentModels(msg)));
                 }
             }
         };
@@ -181,6 +197,13 @@ impl Application for App {
                 }
                 Task::none()
             }
+            Message::EquipamentModels(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    let task = self.equipament_models_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::EquipamentModels(msg)));
+                }
+                Task::none()
+            }
         }
     }
 
@@ -207,6 +230,10 @@ impl Application for App {
                 .gpu_tab
                 .view()
                 .map(|arg| Message::Gpus(Action::App(arg))),
+            Some(Page::EquipamentModels) => self
+                .equipament_models_tab
+                .view()
+                .map(|arg| Message::EquipamentModels(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 

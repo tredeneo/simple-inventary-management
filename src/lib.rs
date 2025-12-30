@@ -5,7 +5,8 @@ use cosmic::Action;
 
 use crate::ui::{
     brand::BrandsMessage, counter::CounterMessage, cpu::CPUsMessage,
-    departments::DepartmentsMessage, gpu::GPUsMessage, list_users::UsersTabMessage,
+    departments::DepartmentsMessage, equipament_models::EquipamentModelsMessage, gpu::GPUsMessage,
+    list_users::UsersTabMessage,
 };
 // use crate::ui::list_users::list::UsersMessage;
 
@@ -17,4 +18,5 @@ pub enum Message {
     Brands(Action<BrandsMessage>),
     Cpus(Action<CPUsMessage>),
     Gpus(Action<GPUsMessage>),
+    EquipamentModels(Action<EquipamentModelsMessage>),
 }

@@ -1,33 +1,32 @@
 use std::collections::HashMap;
 
-use cosmic::{
-    Action, Apply, Element,
-    iced::{
-        self, Alignment, Length,
-        widget::{button, column, row},
-    },
-    iced_widget::text_input,
-    widget::{self, container, scrollable, table},
+use cosmic::iced::{self, Alignment, Background, Color, Length};
+use cosmic::widget::{
+    self as widget, button, column, container, row, scrollable, table, text_input,
 };
+use cosmic::{Action, Apply, Element};
 
 use crate::database;
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
 pub enum DepartmentsMessage {
+    // LoadedDepartments(Vec<database::model::DbDepartment>),
     GetDepartments(Vec<database::model::DbDepartment>),
     CreateDepartment,
     ChangingName(String),
     DepartmentCreated(bool),
     DeleteDepartment,
     DepartmentDeleted(bool),
-    NoOp,
     ItemSelect(table::Entity),
+    OpenCreateModal,
+    CloseCreateModal,
 }
 
 pub struct DepartmentsTab {
     departments: table::SingleSelectModel<Item, Category>,
     department: String,
+    show_create_modal: bool,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
@@ -43,7 +42,9 @@ struct Item {
 
 impl std::fmt::Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("TESTE")
+        f.write_str(match self {
+            Self::Name => "Name",
+        })
     }
 }
 
@@ -72,12 +73,15 @@ impl table::ItemInterface<Category> for Item {
         }
     }
 }
+
 impl DepartmentsTab {
     pub fn new() -> (Self, Task<DepartmentsMessage>) {
         let table_model = table::Model::new(vec![Category::Name]);
         let app = Self {
             departments: table_model,
             department: String::new(),
+
+            show_create_modal: false,
         };
         let command = Task::perform(database::get_department(), |arg| {
             let tmp = arg.unwrap_or_default();
@@ -96,12 +100,9 @@ impl DepartmentsTab {
                     let _ = table_mode.insert(tmp);
                 });
                 self.departments = table_mode;
-                Task::none()
             }
-            DepartmentsMessage::ItemSelect(entity) => {
-                self.departments.activate(entity);
-                Task::none()
-            }
+            DepartmentsMessage::ItemSelect(entity) => self.departments.activate(entity),
+
             DepartmentsMessage::CreateDepartment => {
                 let command = Task::perform(
                     database::insert_department(self.department.clone()),
@@ -113,7 +114,7 @@ impl DepartmentsTab {
                         Action::App(DepartmentsMessage::DepartmentCreated(result))
                     },
                 );
-                command
+                return command;
             }
             DepartmentsMessage::DeleteDepartment => {
                 let department = self
@@ -131,7 +132,7 @@ impl DepartmentsTab {
                         };
                         Action::App(DepartmentsMessage::DepartmentDeleted(result))
                     });
-                command
+                return command;
             }
             DepartmentsMessage::DepartmentDeleted(deleteado) => {
                 if deleteado {
@@ -141,8 +142,6 @@ impl DepartmentsTab {
                     });
                     return command;
                 }
-
-                return Task::none();
             }
             DepartmentsMessage::DepartmentCreated(criado) => {
                 if criado {
@@ -150,65 +149,109 @@ impl DepartmentsTab {
                         let tmp = arg.unwrap_or_default();
                         Action::App(DepartmentsMessage::GetDepartments(tmp))
                     });
+                    self.show_create_modal = false;
                     return command;
                 }
-
-                return Task::none();
             }
             DepartmentsMessage::ChangingName(name) => {
                 self.department = name;
-                Task::none()
             }
-            DepartmentsMessage::NoOp => Task::none(),
-        }
+
+            DepartmentsMessage::OpenCreateModal => {
+                self.show_create_modal = true;
+            }
+            DepartmentsMessage::CloseCreateModal => {
+                self.show_create_modal = false;
+            }
+        };
+        Task::none()
     }
 
     pub fn view(&self) -> Element<'_, DepartmentsMessage> {
-        let department_text = text_input("Novo departamento", &self.department)
-            .on_input(DepartmentsMessage::ChangingName);
-        let department_create =
-            button("criar departmento").on_press(DepartmentsMessage::CreateDepartment);
         let department_delete =
-            button("excluir departmento").on_press(DepartmentsMessage::DeleteDepartment);
-        let create_department: Element<'_, DepartmentsMessage> =
-            row![department_text, department_create, department_delete].into();
+            button::text("criar marca").on_press(DepartmentsMessage::OpenCreateModal);
+
+        let create_department: Element<'_, DepartmentsMessage> = row()
+            .push(department_delete)
+            .align_y(Alignment::Center)
+            .into();
+
         let department_list = widget::compact_table(&self.departments)
             .on_item_left_click(DepartmentsMessage::ItemSelect)
             .item_context(|item| {
                 Some(widget::menu::items(
                     &HashMap::new(),
                     vec![widget::menu::Item::Button(
-                        format!("Action on {}", item.name),
+                        format!("Excluir Department on {}", item.name),
                         None,
-                        MyAction::None,
+                        MyAction::Selecionado,
                     )],
                 ))
             })
+            .on_item_right_click(DepartmentsMessage::ItemSelect)
             .apply(Element::from);
-        let scrol = scrollable(department_list).into();
-        let content = column![create_department]
-            .push(column(vec![scrol]).spacing(8))
+
+        let scrol = scrollable(department_list);
+
+        let content = column()
+            .push(create_department)
+            .push(column().push(scrol).spacing(8))
             .spacing(16)
             .padding(20)
             .max_width(600);
 
-        container(content)
+        let base = container(content)
             .width(Length::Fill)
             .align_x(Alignment::Center)
-            .align_y(Alignment::Center)
-            .into()
+            .align_y(Alignment::Center);
+
+        if self.show_create_modal {
+            let department_input = text_input("Department name", &self.department)
+                .on_input(DepartmentsMessage::ChangingName);
+
+            let actions = row()
+                .push(button::text("Cancel").on_press(DepartmentsMessage::CloseCreateModal))
+                .push(button::text("Create").on_press(DepartmentsMessage::CreateDepartment))
+                .spacing(8);
+
+            let modal_content = container(
+                column()
+                    .push(department_input)
+                    .push(actions)
+                    .spacing(12)
+                    .padding(20)
+                    .width(Length::Fixed(400.0)),
+            )
+            .style(|theme: &cosmic::Theme| {
+                let cosmic = theme.cosmic();
+                iced::widget::container::Style {
+                    background: Some(Background::Color(Color::from(cosmic.primary.base))),
+                    text_color: Some(Color::from(cosmic.primary.on)),
+                    ..Default::default()
+                }
+            });
+
+            let tmp = widget::popover(base)
+                .modal(true)
+                .position(widget::popover::Position::Center)
+                .on_close(DepartmentsMessage::CloseCreateModal);
+
+            return tmp.popup(modal_content).into();
+        }
+
+        base.into()
     }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum MyAction {
-    None,
+    Selecionado,
 }
 
 impl widget::menu::Action for MyAction {
     type Message = DepartmentsMessage;
 
     fn message(&self) -> Self::Message {
-        DepartmentsMessage::NoOp
+        DepartmentsMessage::DeleteDepartment
     }
 }
