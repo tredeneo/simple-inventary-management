@@ -246,7 +246,7 @@ fn main() -> iced::Result {
         .default_icon_theme("Pop")
         .default_text_size(16.0)
         .scale_factor(1.0)
-        .size(cosmic::iced_core::Size::new(1366.0, 768.0));
+        .size(cosmic::iced_core::Size::new(1280.0, 720.0));
 
     cosmic::app::run::<App>(settings, ())
 }

@@ -1,11 +1,11 @@
 use cosmic::{
-    Action, Element,
     iced::{
-        Alignment, Length,
         widget::{column, row},
+        Alignment, Length,
     },
     iced_widget::text_input,
     widget::{combo_box, container, text},
+    Action, Element,
 };
 
 use crate::database;

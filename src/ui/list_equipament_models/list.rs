@@ -186,16 +186,6 @@ impl ListUserTab {
         let table_widget = if size.width < 600.0 {
             widget::compact_table(&self.table_model)
                 .on_item_left_click(UsersMessage::ItemSelect)
-                .item_context(|item| {
-                    Some(widget::menu::items(
-                        &HashMap::new(),
-                        vec![widget::menu::Item::Button(
-                            format!("Action on {}", item.name),
-                            None,
-                            MyAction::None,
-                        )],
-                    ))
-                })
                 .apply(Element::from)
         } else {
             widget::table(&self.table_model)
