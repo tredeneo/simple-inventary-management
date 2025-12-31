@@ -4,22 +4,22 @@ mod create;
 mod detail;
 pub mod list;
 
-use detail::UserDetailPage;
-use list::ListUserTab;
+use detail::EquipamentDetailPage;
+use list::ListEquipamentsTab;
 
 use crate::ui::list_equipaments::create::CreateModelPage;
 
 enum View {
-    ListEquipamentModels(ListUserTab),
-    DetailEquipamentModel(UserDetailPage),
+    ListEquipamentModels(ListEquipamentsTab),
+    DetailEquipamentModel(EquipamentDetailPage),
     CreateEquipamentModel(create::CreateModelPage),
 }
 
 #[derive(Debug, Clone)]
 pub enum EquipamentListMessage {
-    ListUsers(Action<list::UsersMessage>),
-    DetailUser(Action<detail::UserDetailMessage>),
-    CreateUser(Action<create::CreateModelMessage>),
+    ListEquipaments(Action<list::UsersMessage>),
+    DetailEquipament(Action<detail::EquipamentDetailMessage>),
+    CreateEquipament(Action<create::CreateModelMessage>),
     GoBack,
 }
 
@@ -28,29 +28,33 @@ pub struct EquipamentListTab {
 }
 
 impl EquipamentListTab {
-    pub fn init() -> (Self, cosmic::app::Task<EquipamentListMessage>) {
-        let (page, task) = ListUserTab::init();
+    pub fn new() -> (Self, cosmic::app::Task<EquipamentListMessage>) {
+        let (page, task) = ListEquipamentsTab::init();
         (
             Self {
                 view: View::ListEquipamentModels(page),
             },
-            task.map(|msg| Action::App(EquipamentListMessage::ListUsers(msg))),
+            task.map(|msg| Action::App(EquipamentListMessage::ListEquipaments(msg))),
         )
     }
     pub fn update(&mut self, message: EquipamentListMessage) -> Task<EquipamentListMessage> {
         match message {
-            EquipamentListMessage::ListUsers(action) => {
+            EquipamentListMessage::ListEquipaments(action) => {
                 if let View::ListEquipamentModels(list_tab) = &mut self.view {
                     match list_tab.update(action) {
                         Action::App(list::UsersMessage::GoToDetail(user)) => {
-                            let (page, task) = UserDetailPage::init(user);
+                            let (page, task) = EquipamentDetailPage::init(user);
                             self.view = View::DetailEquipamentModel(page);
-                            task.map(|msg| Action::App(EquipamentListMessage::DetailUser(msg)))
+                            task.map(|msg| {
+                                Action::App(EquipamentListMessage::DetailEquipament(msg))
+                            })
                         }
-                        Action::App(list::UsersMessage::CreateUser) => {
+                        Action::App(list::UsersMessage::CreateEquipament) => {
                             let (page, task) = CreateModelPage::new();
                             self.view = View::CreateEquipamentModel(page);
-                            task.map(|msg| Action::App(EquipamentListMessage::CreateUser(msg)))
+                            task.map(|msg| {
+                                Action::App(EquipamentListMessage::CreateEquipament(msg))
+                            })
                         }
                         _ => Task::none(),
                     }
@@ -58,31 +62,34 @@ impl EquipamentListTab {
                     Task::none()
                 }
             }
-            EquipamentListMessage::DetailUser(action) => {
+            EquipamentListMessage::DetailEquipament(action) => {
                 if let View::DetailEquipamentModel(list_tab) = &mut self.view {
-                    if let Action::App(detail::UserDetailMessage::Close) = &action {
-                        let (page, task) = ListUserTab::init();
+                    if let Action::App(detail::EquipamentDetailMessage::Close) = &action {
+                        let (page, task) = ListEquipamentsTab::init();
                         self.view = View::ListEquipamentModels(page);
 
-                        return task.map(|msg| Action::App(EquipamentListMessage::ListUsers(msg)));
+                        return task
+                            .map(|msg| Action::App(EquipamentListMessage::ListEquipaments(msg)));
                     }
                     let _ = list_tab.update(action);
                 }
 
                 Task::none()
             }
-            EquipamentListMessage::CreateUser(action) => {
+            EquipamentListMessage::CreateEquipament(action) => {
                 if let View::CreateEquipamentModel(list_tab) = &mut self.view {
                     if let Action::App(create::CreateModelMessage::CreatedUser(arg)) = &action {
                         if *arg {
-                            let (page, task) = ListUserTab::init();
+                            let (page, task) = ListEquipamentsTab::init();
                             self.view = View::ListEquipamentModels(page);
-                            return task
-                                .map(|msg| Action::App(EquipamentListMessage::ListUsers(msg)));
+                            return task.map(|msg| {
+                                Action::App(EquipamentListMessage::ListEquipaments(msg))
+                            });
                         }
                     }
                     let task = list_tab.update(action);
-                    return task.map(|msg| Action::App(EquipamentListMessage::CreateUser(msg)));
+                    return task
+                        .map(|msg| Action::App(EquipamentListMessage::CreateEquipament(msg)));
                 }
                 Task::none()
             }
@@ -93,14 +100,14 @@ impl EquipamentListTab {
         match &self.view {
             View::ListEquipamentModels(list_tab) => list_tab
                 .view()
-                .map(|msg| EquipamentListMessage::ListUsers(Action::App(msg))),
+                .map(|msg| EquipamentListMessage::ListEquipaments(Action::App(msg))),
 
             View::DetailEquipamentModel(page) => page
                 .view()
-                .map(|msg| EquipamentListMessage::DetailUser(Action::App(msg))),
+                .map(|msg| EquipamentListMessage::DetailEquipament(Action::App(msg))),
             View::CreateEquipamentModel(page) => page
                 .view()
-                .map(|msg| EquipamentListMessage::CreateUser(Action::App(msg))),
+                .map(|msg| EquipamentListMessage::CreateEquipament(Action::App(msg))),
         }
     }
 }

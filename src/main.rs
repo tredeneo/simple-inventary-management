@@ -7,7 +7,7 @@ use simple_inventary::{
     Message, database,
     ui::{
         brand::BrandsTab, cpu::CPUsTab, equipament_models::EquipamentModelsTab, gpu::GPUsTab,
-        list_users::UsersTab,
+        list_equipaments::EquipamentListTab, list_users::UsersTab,
     },
 };
 
@@ -19,30 +19,29 @@ use cosmic::{
     widget::{container, nav_bar, text},
 };
 
-use simple_inventary::ui::counter::CounterTab;
 use simple_inventary::ui::departments::DepartmentsTab;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Page {
-    Counter,
     ListUsers,
     Departments,
     Brands,
     Cpu,
     Gpu,
     EquipamentModels,
+    ListEquipaments,
 }
 
 impl Page {
     fn title(&self) -> &'static str {
         match self {
-            Page::Counter => "Contador",
             Page::ListUsers => "Users",
             Page::Departments => "Departments",
             Page::Brands => "Brands",
             Page::Cpu => "CPUs",
             Page::Gpu => "GPUs",
             Page::EquipamentModels => "Equipament Models",
+            Page::ListEquipaments => "Equipamentos",
         }
     }
 }
@@ -50,13 +49,13 @@ impl Page {
 pub struct App {
     core: Core,
     nav_model: nav_bar::Model,
-    counter_tab: CounterTab,
     users_tab: UsersTab,
     departments_tab: DepartmentsTab,
     brands_tab: BrandsTab,
     cpu_tab: CPUsTab,
     gpu_tab: GPUsTab,
     equipament_models_tab: EquipamentModelsTab,
+    equipaments_tab: EquipamentListTab,
 }
 
 impl Application for App {
@@ -89,6 +88,10 @@ impl Application for App {
             .insert()
             .text("Equipament Models")
             .data(Page::EquipamentModels);
+        nav_model
+            .insert()
+            .text("Equipaments")
+            .data(Page::ListEquipaments);
         nav_model.activate_position(0);
         let (users_page, task) = UsersTab::init();
 
@@ -96,13 +99,13 @@ impl Application for App {
             Self {
                 core,
                 nav_model,
-                counter_tab: CounterTab::new().0,
                 users_tab: users_page,
                 departments_tab: DepartmentsTab::new().0,
                 brands_tab: BrandsTab::new().0,
                 cpu_tab: CPUsTab::new().0,
                 gpu_tab: GPUsTab::new().0,
                 equipament_models_tab: EquipamentModelsTab::new().0,
+                equipaments_tab: EquipamentListTab::new().0,
             },
             task.map(|msg| Action::App(Message::Users(msg))),
         )
@@ -116,10 +119,6 @@ impl Application for App {
         if let Some(page) = self.nav_model.data::<Page>(id).copied() {
             self.nav_model.activate(id);
             match page {
-                Page::Counter => {
-                    self.counter_tab = CounterTab::new().0;
-                    return Task::none();
-                }
                 Page::ListUsers => {
                     let (screen, task) = UsersTab::init();
                     self.users_tab = screen;
@@ -150,6 +149,11 @@ impl Application for App {
                     self.equipament_models_tab = screen;
                     return task.map(|msg| Action::App(Message::EquipamentModels(msg)));
                 }
+                Page::ListEquipaments => {
+                    let (screen, task) = EquipamentListTab::new();
+                    self.equipaments_tab = screen;
+                    return task.map(|msg| Action::App(Message::Equipaments(msg)));
+                }
             }
         };
 
@@ -158,58 +162,54 @@ impl Application for App {
 
     fn update(&mut self, message: Self::Message) -> Task<Self::Message> {
         match message {
-            Message::Counter(msg) => {
-                let _ = self.counter_tab.update(msg);
-                Task::none()
-            }
             Message::Users(msg) => {
                 if let Action::App(inner_msg) = msg {
                     let task = self.users_tab.update(inner_msg);
                     return task.map(|msg| Action::App(Message::Users(msg)));
                 }
-                Task::none()
             }
             Message::Departments(msg) => {
                 if let Action::App(inner_msg) = msg {
                     let task = self.departments_tab.update(inner_msg);
                     return task.map(|msg| Action::App(Message::Departments(msg)));
                 }
-                Task::none()
             }
             Message::Brands(msg) => {
                 if let Action::App(inner_msg) = msg {
                     let task = self.brands_tab.update(inner_msg);
                     return task.map(|msg| Action::App(Message::Brands(msg)));
                 }
-                Task::none()
             }
             Message::Cpus(msg) => {
                 if let Action::App(inner_msg) = msg {
                     let task = self.cpu_tab.update(inner_msg);
                     return task.map(|msg| Action::App(Message::Cpus(msg)));
                 }
-                Task::none()
             }
             Message::Gpus(msg) => {
                 if let Action::App(inner_msg) = msg {
                     let task = self.gpu_tab.update(inner_msg);
                     return task.map(|msg| Action::App(Message::Gpus(msg)));
                 }
-                Task::none()
             }
             Message::EquipamentModels(msg) => {
                 if let Action::App(inner_msg) = msg {
                     let task = self.equipament_models_tab.update(inner_msg);
                     return task.map(|msg| Action::App(Message::EquipamentModels(msg)));
                 }
-                Task::none()
+            }
+            Message::Equipaments(msg) => {
+                if let Action::App(inner_msg) = msg {
+                    let task = self.equipaments_tab.update(inner_msg);
+                    return task.map(|msg| Action::App(Message::Equipaments(msg)));
+                }
             }
         }
+        Task::none()
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
         let content = match self.nav_model.active_data::<Page>().copied() {
-            Some(Page::Counter) => self.counter_tab.view().map(Message::Counter),
             Some(Page::ListUsers) => self
                 .users_tab
                 .view()
@@ -234,6 +234,10 @@ impl Application for App {
                 .equipament_models_tab
                 .view()
                 .map(|arg| Message::EquipamentModels(Action::App(arg))),
+            Some(Page::ListEquipaments) => self
+                .equipaments_tab
+                .view()
+                .map(|arg| Message::Equipaments(Action::App(arg))),
             None => container(text("Nenhuma aba ativa")).into(),
         };
 

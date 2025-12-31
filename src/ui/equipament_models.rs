@@ -295,7 +295,7 @@ impl EquipamentModelsTab {
                 Some(widget::menu::items(
                     &HashMap::new(),
                     vec![widget::menu::Item::Button(
-                        format!("Excluir EquipamentModel on {}", item.name),
+                        format!("Excluir {}", item.name),
                         None,
                         MyAction::Selecionado,
                     )],

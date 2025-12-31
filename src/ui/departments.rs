@@ -11,7 +11,6 @@ use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
 pub enum DepartmentsMessage {
-    // LoadedDepartments(Vec<database::model::DbDepartment>),
     GetDepartments(Vec<database::model::DbDepartment>),
     CreateDepartment,
     ChangingName(String),
@@ -169,7 +168,7 @@ impl DepartmentsTab {
 
     pub fn view(&self) -> Element<'_, DepartmentsMessage> {
         let department_delete =
-            button::text("criar marca").on_press(DepartmentsMessage::OpenCreateModal);
+            button::text("criar departmento").on_press(DepartmentsMessage::OpenCreateModal);
 
         let create_department: Element<'_, DepartmentsMessage> = row()
             .push(department_delete)
@@ -182,7 +181,7 @@ impl DepartmentsTab {
                 Some(widget::menu::items(
                     &HashMap::new(),
                     vec![widget::menu::Item::Button(
-                        format!("Excluir Department on {}", item.name),
+                        format!("Excluir {}", item.name),
                         None,
                         MyAction::Selecionado,
                     )],

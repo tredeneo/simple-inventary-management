@@ -210,7 +210,7 @@ impl CPUsTab {
                 Some(widget::menu::items(
                     &HashMap::new(),
                     vec![widget::menu::Item::Button(
-                        format!("Excluir CPU on {}", item.name),
+                        format!("Excluir {}", item.name),
                         None,
                         MyAction::Selecionado,
                     )],

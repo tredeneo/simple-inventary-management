@@ -15,17 +15,17 @@ use crate::database;
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum Category {
     #[default]
-    Name,
-    Department,
-    Email,
+    SerialNumber,
+    Model,
+    ActualUser,
 }
 
 impl std::fmt::Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Self::Name => "Name",
-            Self::Department => "Department",
-            Self::Email => "Email",
+            Self::SerialNumber => "SerialNumber",
+            Self::Model => "Departamento",
+            Self::ActualUser => "ActualUser",
         })
     }
 }
@@ -33,45 +33,44 @@ impl std::fmt::Display for Category {
 impl table::ItemCategory for Category {
     fn width(&self) -> iced::Length {
         match self {
-            Self::Name => iced::Length::Fixed(400.0),
-            Self::Department => iced::Length::Fixed(200.0),
-            Self::Email => iced::Length::Fill,
+            Self::SerialNumber => iced::Length::Fixed(400.0),
+            Self::Model => iced::Length::Fixed(200.0),
+            Self::ActualUser => iced::Length::Fill,
         }
     }
 }
 
 #[derive(Default, Debug, Clone)]
 struct Item {
-    name: String,
-    department: String,
-    email: String,
+    serial_number: String,
+    model: String,
+    actual_user: String,
 }
 
 impl table::ItemInterface<Category> for Item {
-    fn get_icon(&self, category: Category) -> Option<cosmic::widget::Icon> {
-        if category == Category::Name {
-            Some(cosmic::widget::icon::from_name("application-x-executable-symbolic").icon())
-        } else {
-            None
-        }
+    fn get_icon(&self, _: Category) -> Option<cosmic::widget::Icon> {
+        None
     }
 
     fn get_text(&self, category: Category) -> std::borrow::Cow<'static, str> {
         match category {
-            Category::Name => self.name.clone().into(),
-            Category::Department => self.department.clone().into(),
-            Category::Email => self.email.clone().into(),
+            Category::SerialNumber => self.serial_number.clone().into(),
+            Category::Model => self.model.clone().into(),
+            Category::ActualUser => self.actual_user.clone().into(),
         }
     }
 
     fn compare(&self, other: &Self, category: Category) -> std::cmp::Ordering {
         match category {
-            Category::Name => self.name.to_lowercase().cmp(&other.name.to_lowercase()),
-            Category::Department => self
-                .department
+            Category::SerialNumber => self
+                .serial_number
                 .to_lowercase()
-                .cmp(&other.department.to_lowercase()),
-            Category::Email => self.email.to_lowercase().cmp(&other.email.to_lowercase()),
+                .cmp(&other.serial_number.to_lowercase()),
+            Category::Model => self.model.to_lowercase().cmp(&other.model.to_lowercase()),
+            Category::ActualUser => self
+                .actual_user
+                .to_lowercase()
+                .cmp(&other.actual_user.to_lowercase()),
         }
     }
 }
@@ -80,38 +79,41 @@ impl table::ItemInterface<Category> for Item {
 pub enum UsersMessage {
     ItemSelect(table::Entity),
     CategorySelect(Category),
-    GetUsers(Vec<database::model::DbUser>),
-    FilterUser(String),
+    GetEquipaments(Vec<database::model::DbComputer>),
+    FilterEquipament(String),
     GoToDetail(String),
-    CreateUserPressed,
-    CreateUser,
+    CreateEquipamentPressed,
+    CreateEquipament,
     NoOp,
 }
 
-pub struct ListUserTab {
+pub struct ListEquipamentsTab {
     users: Vec<Item>,
     search_field: String,
     table_model: table::SingleSelectModel<Item, Category>,
 }
 
-impl ListUserTab {
+impl ListEquipamentsTab {
     pub fn init() -> (Self, Task<UsersMessage>) {
         let mut nav_model = nav_bar::Model::default();
 
         nav_model.activate_position(0);
 
-        let table_model =
-            table::Model::new(vec![Category::Name, Category::Department, Category::Email]);
+        let table_model = table::Model::new(vec![
+            Category::SerialNumber,
+            Category::Model,
+            Category::ActualUser,
+        ]);
 
-        let app = ListUserTab {
+        let app = ListEquipamentsTab {
             table_model,
             users: Vec::new(),
             search_field: String::new(),
         };
 
-        let command = Task::perform(database::get_users(), |arg| {
+        let command = Task::perform(database::get_computers(), |arg| {
             let tmp = arg.unwrap_or_default();
-            cosmic::Action::App(UsersMessage::GetUsers(tmp))
+            cosmic::Action::App(UsersMessage::GetEquipaments(tmp))
         });
 
         (app, command)
@@ -120,14 +122,16 @@ impl ListUserTab {
     pub fn update(&mut self, message: Action<UsersMessage>) -> Action<UsersMessage> {
         match message {
             Action::App(message) => match message {
-                UsersMessage::FilterUser(filter_user) => {
+                UsersMessage::FilterEquipament(filter_user) => {
                     let mut table_model = table::Model::new(vec![
-                        Category::Name,
-                        Category::Department,
-                        Category::Email,
+                        Category::SerialNumber,
+                        Category::Model,
+                        Category::ActualUser,
                     ]);
                     self.users.iter().for_each(|item| {
-                        if item.name.contains(&filter_user) || item.email.contains(&filter_user) {
+                        if item.serial_number.contains(&filter_user)
+                            || item.actual_user.contains(&filter_user)
+                        {
                             let _ = table_model.insert(item.clone());
                         }
                     });
@@ -140,7 +144,7 @@ impl ListUserTab {
                 UsersMessage::ItemSelect(entity) => {
                     let user = self.table_model.item(entity).cloned().unwrap_or_default();
                     self.table_model.activate(entity);
-                    Action::App(UsersMessage::GoToDetail(user.name))
+                    Action::App(UsersMessage::GoToDetail(user.serial_number))
                 }
                 UsersMessage::CategorySelect(category) => {
                     let mut ascending = true;
@@ -152,17 +156,17 @@ impl ListUserTab {
                     self.table_model.sort(category, ascending);
                     Action::None
                 }
-                UsersMessage::GetUsers(db_user) => {
+                UsersMessage::GetEquipaments(db_user) => {
                     let mut table_model = table::Model::new(vec![
-                        Category::Name,
-                        Category::Department,
-                        Category::Email,
+                        Category::SerialNumber,
+                        Category::Model,
+                        Category::ActualUser,
                     ]);
                     db_user.into_iter().for_each(|i| {
                         let tmp = Item {
-                            name: i.name,
-                            department: i.department,
-                            email: i.email,
+                            serial_number: i.serialnumber,
+                            model: i.model,
+                            actual_user: i.actual_user,
                         };
                         self.users.push(tmp.clone());
                         let _ = table_model.insert(tmp);
@@ -171,8 +175,10 @@ impl ListUserTab {
 
                     Action::None
                 }
-                UsersMessage::CreateUserPressed => Action::App(UsersMessage::CreateUser),
-                UsersMessage::CreateUser => Action::None,
+                UsersMessage::CreateEquipamentPressed => {
+                    Action::App(UsersMessage::CreateEquipament)
+                }
+                UsersMessage::CreateEquipament => Action::None,
                 UsersMessage::NoOp => Action::None,
             },
             _ => Action::None,
@@ -180,9 +186,9 @@ impl ListUserTab {
     }
 
     fn screen_list_user(&self, size: Size) -> Element<'_, UsersMessage> {
-        let search_bar =
-            text_input(&self.search_field, &self.search_field).on_input(UsersMessage::FilterUser);
-        let create_user = button("criar usuario").on_press(UsersMessage::CreateUserPressed);
+        let search_bar = text_input(&self.search_field, &self.search_field)
+            .on_input(UsersMessage::FilterEquipament);
+        let create_user = button("criar usuario").on_press(UsersMessage::CreateEquipamentPressed);
         let table_widget = if size.width < 600.0 {
             widget::compact_table(&self.table_model)
                 .on_item_left_click(UsersMessage::ItemSelect)
@@ -195,7 +201,7 @@ impl ListUserTab {
                     Some(widget::menu::items(
                         &HashMap::new(),
                         vec![widget::menu::Item::Button(
-                            format!("Action on {}", item.name),
+                            format!("Action on {}", item.serial_number),
                             None,
                             MyAction::None,
                         )],
