@@ -1,7 +1,7 @@
 use std::{fs, ops::Not, path::Path, sync::Arc};
 
 use sqlx::{
-    Connection, SqliteConnection,
+    Connection, Sqlite, SqliteConnection,
     sqlite::{SqliteConnectOptions, SqlitePool},
 };
 
@@ -46,7 +46,6 @@ fn get_xdg_database_path() -> String {
     dir.push("database.sqlite3");
     dir.to_string_lossy().to_string()
 }
-// async fn create_database(location: &Path) -> anyhow::Result<()> {
 async fn create_database(location: String) -> anyhow::Result<()> {
     let tmp = SqliteConnectOptions::new()
         .filename(location)
@@ -174,20 +173,20 @@ async fn get_sql_connection() -> anyhow::Result<SqliteConnection> {
             dbg!(&e);
         })?)
 }
-pub async fn get_equipaments_by_users(
-    user_id: String,
-) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
-    let mut pool = get_sql_connection().await?;
-    let recs =
-        sqlx::query_as::<_, model::DbEquipamentHistoric>(query_select::SELECT_COMPUTERS_BY_USER)
-            .bind(user_id)
-            .fetch_all(&mut pool)
-            .await
-            .inspect_err(|e| {
-                dbg!(&e);
-            })?;
-    Ok(recs)
-}
+// pub async fn get_equipaments_by_users(
+//     user_id: String,
+// ) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
+//     let mut pool = get_sql_connection().await?;
+//     let recs =
+//         sqlx::query_as::<_, model::DbEquipamentHistoric>(query_select::SELECT_COMPUTERS_BY_USER)
+//             .bind(user_id)
+//             .fetch_all(&mut pool)
+//             .await
+//             .inspect_err(|e| {
+//                 dbg!(&e);
+//             })?;
+//     Ok(recs)
+// }
 
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
     let mut pool = get_sql_connection().await?;
@@ -332,6 +331,17 @@ pub async fn get_specific_user_by_name(login: String) -> anyhow::Result<model::D
     let recs =
         sqlx::query_as::<_, model::DbUser>(query_select::SELECT_SPECIFIC_USER_INFOMATION_BY_NAME)
             .bind(&login)
+            .fetch_one(&mut pool)
+            .await;
+    Ok(recs?)
+}
+
+pub async fn get_specific_computer(serial: &str) -> anyhow::Result<model::DbComputer> {
+    let mut pool = get_sql_connection().await?;
+
+    let recs =
+        sqlx::query_as::<Sqlite, model::DbComputer>(query_select::SELECT_EQUIPAMENT_INFORMATION)
+            .bind(&serial)
             .fetch_one(&mut pool)
             .await;
     Ok(recs?)
@@ -576,9 +586,6 @@ pub async fn get_computers() -> anyhow::Result<Vec<model::DbComputer>> {
     )
     .fetch_all(&mut pool)
     .await
-    // .inspect(|s| {
-    //     dbg!(s);
-    // })
     .inspect_err(|e| {
         dbg!(e);
     })
@@ -594,11 +601,9 @@ pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model
         WHERE has.computer_id = (select id from equipaments where equipaments.serialnumber = ?1)
         order by has.date_begin desc                
         ")
-        .bind(serial_number)
-        .fetch_all(&mut pool)
-        .await
-        // .inspect(|ok| {dbg!(ok);})
-        .inspect_err(|err| {dbg!(err);})?;
+        .bind(serial_number).fetch_all(&mut pool).await.inspect_err(|err| {
+        dbg!(err);
+    })?;
     Ok(all)
 }
 pub async fn update_user_equipament(

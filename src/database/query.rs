@@ -27,6 +27,15 @@ pub const SELECT_SPECIFIC_EQUIPAMENT_MODEL_INFOMATION: &str = r#"
         WHERE name=?1
 "#;
 
+pub const SELECT_EQUIPAMENT_INFORMATION: &str = r#"
+    select serialnumber,storage,memory,observation, equipament_model.name as model, users.name as actual_user
+    from equipaments
+    join equipament_model on equipament_model.id == equipaments.model
+    join has on has.computer_id == equipaments.id
+    join users on users.id == has.user_id
+    where serialnumber = ?1
+"#;
+
 pub const SELECT_COMPUTERS_BY_USER: &str = r#"
 select equipaments.serialnumber "serialnumber",
 			equipament_model.name "model", 
