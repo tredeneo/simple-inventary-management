@@ -15,7 +15,10 @@ pub struct EquipamentDetailPage {
     memory: i32,
     storage: i32,
     observation: String,
-    users: table::SingleSelectModel<Item, Category>,
+    users_historic: table::SingleSelectModel<Item, Category>,
+    users: Vec<String>,
+    future_user: String,
+    actual_user: String,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
@@ -95,6 +98,9 @@ pub enum EquipamentDetailMessage {
     ItemSelect(table::Entity),
     CategorySelect(Category),
     NoOp,
+    GetUsers,
+    ChangeUser(Vec<database::model::DbUser>),
+    UserChanged,
 }
 
 impl EquipamentDetailPage {
@@ -106,7 +112,10 @@ impl EquipamentDetailPage {
             memory: 0,
             model: String::new(),
             observation: String::new(),
-            users: tmp,
+            users_historic: tmp,
+            actual_user: String::new(),
+            future_user: String::new(),
+            users: Vec::new(),
         };
 
         let command = Task::perform(
@@ -128,7 +137,7 @@ impl EquipamentDetailPage {
     pub fn update(
         &mut self,
         message: Action<EquipamentDetailMessage>,
-    ) -> Action<EquipamentDetailMessage> {
+    ) -> Task<EquipamentDetailMessage> {
         match message {
             Action::App(message) => match message {
                 EquipamentDetailMessage::InfoUpdated((users, computer)) => {
@@ -150,34 +159,52 @@ impl EquipamentDetailPage {
                     self.memory = computer.memory;
                     self.observation = computer.observation;
                     self.storage = computer.storage;
-                    self.users = table_users;
-                    Action::None
+                    self.users_historic = table_users;
+                    self.actual_user = computer.actual_user;
+                    Task::none()
                 }
-                EquipamentDetailMessage::Close => Action::None,
+                EquipamentDetailMessage::Close => Task::none(),
 
                 EquipamentDetailMessage::ItemSelect(entity) => {
-                    self.users.activate(entity);
-                    Action::None
+                    self.users_historic.activate(entity);
+                    Task::none()
                 }
                 EquipamentDetailMessage::CategorySelect(category) => {
                     let mut ascending = true;
-                    if let Some(old_sort) = self.users.get_sort()
+                    if let Some(old_sort) = self.users_historic.get_sort()
                         && old_sort.0 == category
                     {
                         ascending = !old_sort.1;
                     }
-                    self.users.sort(category, ascending);
-                    Action::None
+                    self.users_historic.sort(category, ascending);
+                    Task::none()
                 }
-                _ => Action::None,
+                EquipamentDetailMessage::GetUsers => {
+                    let command = Task::perform(database::get_users(), |users_list| {
+                        if users_list.is_err() {
+                            return Action::None;
+                        }
+                        dbg!("segundo");
+                        Action::App(EquipamentDetailMessage::ChangeUser(users_list.unwrap()))
+                    });
+                    command
+                }
+                EquipamentDetailMessage::ChangeUser(users) => {
+                    let mut tmp = Vec::new();
+                    users.iter().for_each(|i| tmp.push(i.name.clone()));
+                    self.users = tmp;
+                    dbg!(&self.users);
+                    Task::none()
+                }
+                _ => Task::none(),
             },
 
-            _ => Action::None,
+            _ => Task::none(),
         }
     }
     fn ui_table(&self) -> Element<'_, EquipamentDetailMessage> {
-        let table_widget = widget::table(&self.users)
-            // .on_item_left_click(UsersMessage::ItemSelect)
+        let table_widget = widget::table(&self.users_historic)
+            .on_item_left_click(EquipamentDetailMessage::ItemSelect)
             .on_category_left_click(EquipamentDetailMessage::CategorySelect)
             .item_context(|item| {
                 Some(widget::menu::items(
@@ -206,7 +233,10 @@ impl EquipamentDetailPage {
     pub fn view(&self) -> Element<'_, EquipamentDetailMessage> {
         use cosmic::iced::widget::{column, row};
         use cosmic::widget::container;
-        let buttons = row![button("back").on_press(EquipamentDetailMessage::Close)];
+        let buttons = row![
+            button("back").on_press(EquipamentDetailMessage::Close),
+            button("trocar").on_press(EquipamentDetailMessage::GetUsers)
+        ];
         let coluna = column![
             buttons,
             text(format!(" teste {}", self.model)).size(32),

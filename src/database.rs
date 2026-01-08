@@ -1,7 +1,7 @@
 use std::{fs, ops::Not, path::Path, sync::Arc};
 
 use sqlx::{
-    Connection, Sqlite, SqliteConnection,
+    Connection, SqliteConnection,
     sqlite::{SqliteConnectOptions, SqlitePool},
 };
 
@@ -173,6 +173,7 @@ async fn get_sql_connection() -> anyhow::Result<SqliteConnection> {
             dbg!(&e);
         })?)
 }
+
 // pub async fn get_equipaments_by_users(
 //     user_id: String,
 // ) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
@@ -339,11 +340,10 @@ pub async fn get_specific_user_by_name(login: String) -> anyhow::Result<model::D
 pub async fn get_specific_computer(serial: &str) -> anyhow::Result<model::DbComputer> {
     let mut pool = get_sql_connection().await?;
 
-    let recs =
-        sqlx::query_as::<Sqlite, model::DbComputer>(query_select::SELECT_EQUIPAMENT_INFORMATION)
-            .bind(&serial)
-            .fetch_one(&mut pool)
-            .await;
+    let recs = sqlx::query_as::<_, model::DbComputer>(query_select::SELECT_EQUIPAMENT_INFORMATION)
+        .bind(&serial)
+        .fetch_one(&mut pool)
+        .await;
     Ok(recs?)
 }
 pub async fn get_specific_equipament_model(
@@ -612,6 +612,7 @@ pub async fn update_user_equipament(
     equipament: String,
 ) -> anyhow::Result<()> {
     let mut pool = get_sql_connection().await?;
+    let mut tx = pool.begin().await?;
     dbg!(&actual_user);
     dbg!(&future_user);
     dbg!(&equipament);
@@ -620,7 +621,7 @@ pub async fn update_user_equipament(
         .bind(&today)
         .bind(&actual_user)
         .bind(&equipament)
-        .execute(&mut pool)
+        .execute(&mut *tx)
         .await
         .inspect(|ok| {
             dbg!(ok);
@@ -633,7 +634,7 @@ pub async fn update_user_equipament(
         .bind(&equipament)
         .bind(&future_user)
         .bind(&today)
-        .execute(&mut pool)
+        .execute(&mut *tx)
         .await
         .inspect(|ok| {
             dbg!(ok);
@@ -642,5 +643,6 @@ pub async fn update_user_equipament(
             dbg!(err);
         })
         .ok();
+    tx.commit().await?;
     Ok(())
 }

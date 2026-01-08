@@ -71,7 +71,9 @@ impl EquipamentListTab {
                         return task
                             .map(|msg| Action::App(EquipamentListMessage::ListEquipaments(msg)));
                     }
-                    let _ = list_tab.update(action);
+                    let task = list_tab.update(action);
+                    return task
+                        .map(|msg| Action::App(EquipamentListMessage::DetailEquipament(msg)));
                 }
 
                 Task::none()
