@@ -222,7 +222,7 @@ pub const UPDATE_LAST_USER_COMPUTER: &str = r#"
             where user_id=(    
                         SELECT id 
                     	FROM users u 
-                    	WHERE u.login =?2        
+                    	WHERE u.name = ?2        
                         )
             and computer_id=(
                      	SELECT id 
@@ -235,7 +235,7 @@ pub const INSERT_NEW_USER_COMPUTER: &str = r#"
         INSERT INTO has (computer_id, user_id, date_begin)
         VALUES (
         (SELECT id FROM equipaments WHERE serialnumber = ?1),
-        (SELECT id FROM users WHERE login like ?2),
+        (SELECT id FROM users WHERE users.name like ?2),
         ?3
         )   
         "#;

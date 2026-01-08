@@ -19,3 +19,17 @@ pub enum Message {
     EquipamentModels(Action<EquipamentModelsMessage>),
     Equipaments(Action<EquipamentListMessage>),
 }
+
+pub fn popup_style(theme: &cosmic::Theme) -> cosmic::widget::container::Style {
+    let cosmic = theme.cosmic();
+    cosmic::iced::widget::container::Style {
+        background: Some(cosmic::iced::Background::Color(cosmic.primary.base.into())),
+        border: cosmic::iced::Border {
+            color: cosmic.accent.base.into(),
+            width: 2.0,
+            ..Default::default()
+        },
+
+        ..Default::default()
+    }
+}

@@ -1,13 +1,15 @@
 use cosmic::Apply;
+use cosmic::iced_widget::scrollable;
 use std::collections::HashMap;
 
 use cosmic::app::Task;
 use cosmic::iced::widget::button;
 use cosmic::iced::{self, Alignment, Length};
-use cosmic::widget::{self, table, text};
+use cosmic::widget::{self, combo_box, table, text};
+use cosmic::widget::{column, container, row};
 use cosmic::{Action, Element};
 
-use crate::database;
+use crate::{database, popup_style};
 
 pub struct EquipamentDetailPage {
     serial: String,
@@ -16,9 +18,16 @@ pub struct EquipamentDetailPage {
     storage: i32,
     observation: String,
     users_historic: table::SingleSelectModel<Item, Category>,
-    users: Vec<String>,
-    future_user: String,
+    users: combo_box::State<String>,
+    future_user: Option<String>,
     actual_user: String,
+    page: Page,
+}
+
+#[derive(Debug)]
+enum Page {
+    Detail,
+    ChangeUser,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
@@ -98,9 +107,10 @@ pub enum EquipamentDetailMessage {
     ItemSelect(table::Entity),
     CategorySelect(Category),
     NoOp,
-    GetUsers,
-    ChangeUser(Vec<database::model::DbUser>),
-    UserChanged,
+    OpenCreateModal,
+    ChangeUser(String),
+    GetUsers(Vec<database::model::DbUser>),
+    UserChanged(bool),
 }
 
 impl EquipamentDetailPage {
@@ -114,8 +124,9 @@ impl EquipamentDetailPage {
             observation: String::new(),
             users_historic: tmp,
             actual_user: String::new(),
-            future_user: String::new(),
-            users: Vec::new(),
+            future_user: Some(String::new()),
+            users: combo_box::State::new(Vec::new()),
+            page: Page::Detail,
         };
 
         let command = Task::perform(
@@ -154,6 +165,7 @@ impl EquipamentDetailPage {
                         };
                         let _ = table_users.insert(tmp);
                     });
+
                     self.serial = computer.serialnumber;
                     self.model = computer.model;
                     self.memory = computer.memory;
@@ -161,13 +173,10 @@ impl EquipamentDetailPage {
                     self.storage = computer.storage;
                     self.users_historic = table_users;
                     self.actual_user = computer.actual_user;
-                    Task::none()
                 }
-                EquipamentDetailMessage::Close => Task::none(),
 
                 EquipamentDetailMessage::ItemSelect(entity) => {
                     self.users_historic.activate(entity);
-                    Task::none()
                 }
                 EquipamentDetailMessage::CategorySelect(category) => {
                     let mut ascending = true;
@@ -177,30 +186,56 @@ impl EquipamentDetailPage {
                         ascending = !old_sort.1;
                     }
                     self.users_historic.sort(category, ascending);
-                    Task::none()
                 }
-                EquipamentDetailMessage::GetUsers => {
+                EquipamentDetailMessage::OpenCreateModal => {
                     let command = Task::perform(database::get_users(), |users_list| {
                         if users_list.is_err() {
                             return Action::None;
                         }
-                        dbg!("segundo");
-                        Action::App(EquipamentDetailMessage::ChangeUser(users_list.unwrap()))
+                        Action::App(EquipamentDetailMessage::GetUsers(users_list.unwrap()))
                     });
-                    command
+                    self.page = Page::ChangeUser;
+                    return command;
                 }
-                EquipamentDetailMessage::ChangeUser(users) => {
+                EquipamentDetailMessage::GetUsers(users) => {
                     let mut tmp = Vec::new();
                     users.iter().for_each(|i| tmp.push(i.name.clone()));
-                    self.users = tmp;
-                    dbg!(&self.users);
-                    Task::none()
+                    self.users = combo_box::State::new(tmp);
                 }
-                _ => Task::none(),
+                EquipamentDetailMessage::ChangeUser(actual) => self.future_user = Some(actual),
+                EquipamentDetailMessage::Close => {
+                    self.page = Page::Detail;
+                }
+                EquipamentDetailMessage::Save => {
+                    let command = Task::perform(
+                        database::update_user_equipament(
+                            self.actual_user.clone(),
+                            self.future_user.clone().unwrap_or_default(),
+                            self.serial.clone(),
+                        ),
+                        |arg| {
+                            let tmp = match arg {
+                                Ok(_) => true,
+                                Err(_) => false,
+                            };
+                            Action::App(EquipamentDetailMessage::UserChanged(tmp))
+                        },
+                    );
+                    return command;
+                }
+                EquipamentDetailMessage::UserChanged(changed) => {
+                    if changed {
+                        self.page = Page::Detail;
+                    }
+                }
+                EquipamentDetailMessage::NoOp => {
+                    dbg!("NoOp");
+                }
             },
 
-            _ => Task::none(),
-        }
+            _ => return Task::none(),
+        };
+        Task::none()
     }
     fn ui_table(&self) -> Element<'_, EquipamentDetailMessage> {
         let table_widget = widget::table(&self.users_historic)
@@ -227,27 +262,51 @@ impl EquipamentDetailPage {
                 ))
             })
             .apply(Element::from);
-        table_widget
+        scrollable(table_widget).into()
     }
 
-    pub fn view(&self) -> Element<'_, EquipamentDetailMessage> {
-        use cosmic::iced::widget::{column, row};
-        use cosmic::widget::container;
-        let buttons = row![
-            button("back").on_press(EquipamentDetailMessage::Close),
-            button("trocar").on_press(EquipamentDetailMessage::GetUsers)
-        ];
-        let coluna = column![
-            buttons,
-            text(format!(" teste {}", self.model)).size(32),
-            self.ui_table()
-        ];
+    pub fn ui_detail(&self) -> Element<'_, EquipamentDetailMessage> {
+        let buttons = row()
+            .push(button("back").on_press(EquipamentDetailMessage::Close))
+            .push(button("trocar").on_press(EquipamentDetailMessage::OpenCreateModal));
+        let coluna = column()
+            .push(buttons)
+            .push(text(format!(" teste {}", self.model)).size(32))
+            .push(self.ui_table());
 
         container(coluna)
             .width(Length::Fill)
             .align_x(Alignment::Center)
             .align_y(Alignment::Center)
             .into()
+    }
+
+    pub fn ui_change_user(&self) -> Element<'_, EquipamentDetailMessage> {
+        let buttons = row()
+            .push(button("back").on_press(EquipamentDetailMessage::Close))
+            .push(button("save").on_press(EquipamentDetailMessage::Save));
+
+        let user = combo_box(
+            &self.users,
+            "Select users",
+            self.future_user.as_ref(),
+            EquipamentDetailMessage::ChangeUser,
+        );
+
+        let content =
+            container(column().push(user).push(buttons).padding(20).width(400)).style(popup_style);
+        widget::popover(self.ui_detail())
+            .modal(true)
+            .position(widget::popover::Position::Center)
+            .popup(content)
+            .into()
+    }
+
+    pub fn view(&self) -> Element<'_, EquipamentDetailMessage> {
+        match self.page {
+            Page::Detail => self.ui_detail(),
+            Page::ChangeUser => self.ui_change_user(),
+        }
     }
 }
 

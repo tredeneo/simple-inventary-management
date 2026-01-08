@@ -619,8 +619,8 @@ pub async fn update_user_equipament(
     let today = chrono::Local::now().date_naive().to_string();
     sqlx::query(query_select::UPDATE_LAST_USER_COMPUTER)
         .bind(&today)
-        .bind(&actual_user)
-        .bind(&equipament)
+        .bind(&actual_user.trim())
+        .bind(&equipament.trim())
         .execute(&mut *tx)
         .await
         .inspect(|ok| {
@@ -630,9 +630,10 @@ pub async fn update_user_equipament(
             dbg!(err);
         })
         .ok();
+
     sqlx::query(query_select::INSERT_NEW_USER_COMPUTER)
-        .bind(&equipament)
-        .bind(&future_user)
+        .bind(&equipament.trim())
+        .bind(&future_user.trim())
         .bind(&today)
         .execute(&mut *tx)
         .await

@@ -6,8 +6,8 @@ use cosmic::widget::{
 };
 use cosmic::{Action, Apply, Element};
 
-use crate::database;
 use crate::database::model::DbEquipamentModel;
+use crate::{database, popup_style};
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
@@ -44,7 +44,12 @@ pub struct EquipamentModelsTab {
     cpus: combo_box::State<String>,
     gpu: Option<String>,
     gpus: combo_box::State<String>,
-    show_create_modal: bool,
+    page: Page,
+}
+
+enum Page {
+    List,
+    Create,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
@@ -131,7 +136,7 @@ impl EquipamentModelsTab {
             cpus: combo_box::State::new(Vec::new()),
             gpu: Some(String::new()),
             gpus: combo_box::State::new(Vec::new()),
-            show_create_modal: false,
+            page: Page::List,
         };
         let command = Task::perform(database::get_equipament_model(), |arg| {
             let tmp = arg.unwrap_or_default();
@@ -222,7 +227,7 @@ impl EquipamentModelsTab {
                         let tmp = arg.unwrap_or_default();
                         Action::App(EquipamentModelsMessage::GetEquipamentModels(tmp))
                     });
-                    self.show_create_modal = false;
+                    self.page = Page::List;
                     return command;
                 }
             }
@@ -273,22 +278,91 @@ impl EquipamentModelsTab {
             EquipamentModelsMessage::ChagingGPU(actual) => self.gpu = Some(actual),
 
             EquipamentModelsMessage::OpenCreateModal => {
-                self.show_create_modal = true;
+                self.page = Page::Create;
             }
             EquipamentModelsMessage::CloseCreateModal => {
-                self.show_create_modal = false;
+                self.page = Page::List;
             }
         };
         Task::none()
     }
 
-    pub fn view(&self) -> Element<'_, EquipamentModelsMessage> {
+    pub fn ui_detail(&self) -> Element<'_, EquipamentModelsMessage> {
+        let equipament_model_input = text_input("EquipamentModel name", &self.equipament_model)
+            .on_input(EquipamentModelsMessage::ChangingName);
+
+        let brand_input = combo_box(
+            &self.brands,
+            "Select brand",
+            self.brand.as_ref(),
+            EquipamentModelsMessage::ChagingBrands,
+        )
+        .on_open(EquipamentModelsMessage::GetBrands);
+
+        let cpu_input = combo_box(
+            &self.cpus,
+            "Select cpu",
+            self.cpu.as_ref(),
+            EquipamentModelsMessage::ChagingCPU,
+        )
+        .on_open(EquipamentModelsMessage::GetCPUs);
+
+        let gpu_input = combo_box(
+            &self.gpus,
+            "Select brand",
+            self.gpu.as_ref(),
+            EquipamentModelsMessage::ChagingGPU,
+        )
+        .on_open(EquipamentModelsMessage::GetGPUs);
+
+        let actions = row()
+            .push(button::text("Cancel").on_press(EquipamentModelsMessage::CloseCreateModal))
+            .push(button::text("Create").on_press(EquipamentModelsMessage::CreateEquipamentModel))
+            .spacing(8);
+
+        let modal_content = container(
+            column()
+                .push(equipament_model_input)
+                .push(cpu_input)
+                .push(gpu_input)
+                .push(brand_input)
+                .push(actions)
+                .spacing(12)
+                .padding(20)
+                // .width(Length::Fixed(400.0)),
+                .width(400),
+        )
+        .style(popup_style);
+
+        let tmp = widget::popover(self.ui_list())
+            .modal(true)
+            .position(widget::popover::Position::Center)
+            .on_close(EquipamentModelsMessage::CloseCreateModal);
+
+        tmp.popup(modal_content).into()
+    }
+
+    pub fn ui_list(&self) -> Element<'_, EquipamentModelsMessage> {
         let equipament_model_delete = button::text("criar equipament model")
             .on_press(EquipamentModelsMessage::OpenCreateModal);
 
         let create_equipament_model: Element<'_, EquipamentModelsMessage> =
             row().push(equipament_model_delete).into();
+        let content = column()
+            .push(create_equipament_model)
+            .push(column().push(self.ui_table()).spacing(8))
+            .spacing(16)
+            .padding(20)
+            .max_width(900);
 
+        container(content)
+            .width(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center)
+            .into()
+    }
+
+    pub fn ui_table(&self) -> Element<'_, EquipamentModelsMessage> {
         let equipament_model_list = widget::table(&self.equipament_models)
             .on_item_left_click(EquipamentModelsMessage::ItemSelect)
             .item_context(|item| {
@@ -314,84 +388,13 @@ impl EquipamentModelsTab {
             })
             .apply(Element::from);
 
-        let scrol = scrollable(equipament_model_list);
-
-        let content = column()
-            .push(create_equipament_model)
-            .push(column().push(scrol).spacing(8))
-            .spacing(16)
-            .padding(20)
-            .max_width(900);
-
-        let base = container(content)
-            .width(Length::Fill)
-            .align_x(Alignment::Center)
-            .align_y(Alignment::Center);
-
-        if self.show_create_modal {
-            let equipament_model_input = text_input("EquipamentModel name", &self.equipament_model)
-                .on_input(EquipamentModelsMessage::ChangingName);
-
-            let brand_input = combo_box(
-                &self.brands,
-                "Select brand",
-                self.brand.as_ref(),
-                EquipamentModelsMessage::ChagingBrands,
-            )
-            .on_open(EquipamentModelsMessage::GetBrands);
-
-            let cpu_input = combo_box(
-                &self.cpus,
-                "Select cpu",
-                self.cpu.as_ref(),
-                EquipamentModelsMessage::ChagingCPU,
-            )
-            .on_open(EquipamentModelsMessage::GetCPUs);
-
-            let gpu_input = combo_box(
-                &self.gpus,
-                "Select brand",
-                self.gpu.as_ref(),
-                EquipamentModelsMessage::ChagingGPU,
-            )
-            .on_open(EquipamentModelsMessage::GetGPUs);
-
-            let actions = row()
-                .push(button::text("Cancel").on_press(EquipamentModelsMessage::CloseCreateModal))
-                .push(
-                    button::text("Create").on_press(EquipamentModelsMessage::CreateEquipamentModel),
-                )
-                .spacing(8);
-
-            let modal_content = container(
-                column()
-                    .push(equipament_model_input)
-                    .push(cpu_input)
-                    .push(gpu_input)
-                    .push(brand_input)
-                    .push(actions)
-                    .spacing(12)
-                    .padding(20)
-                    .width(Length::Fixed(400.0)),
-            )
-            .style(|theme: &cosmic::Theme| {
-                let cosmic = theme.cosmic();
-                iced::widget::container::Style {
-                    background: Some(Background::Color(Color::from(cosmic.primary.base))),
-                    text_color: Some(Color::from(cosmic.primary.on)),
-                    ..Default::default()
-                }
-            });
-
-            let tmp = widget::popover(base)
-                .modal(true)
-                .position(widget::popover::Position::Center)
-                .on_close(EquipamentModelsMessage::CloseCreateModal);
-
-            return tmp.popup(modal_content).into();
+        scrollable(equipament_model_list).into()
+    }
+    pub fn view(&self) -> Element<'_, EquipamentModelsMessage> {
+        match self.page {
+            Page::List => self.ui_list(),
+            Page::Create => self.ui_detail(),
         }
-
-        base.into()
     }
 }
 
