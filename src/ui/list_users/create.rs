@@ -137,25 +137,25 @@ impl CreateUserPage {
             self.department.as_ref(),
             CreateUserMessage::ChangingDepartment,
         );
-        let department = row![text("departamento"), tmp];
+        let text_width = 110;
+        let department = row![container(text("departamento")).width(text_width), tmp];
         let tmp = text_input("", &self.name).on_input(CreateUserMessage::ChangingName);
-        let name = row![text("name"), tmp];
+        let name = row![container(text("name")).width(text_width), tmp];
 
         let tmp = text_input("", &self.email).on_input(CreateUserMessage::ChangingEmail);
-        let email = row![text("email"), tmp];
+        let email = row![container(text("email")).width(text_width), tmp];
 
         let tmp = text_input("", &self.documento).on_input(CreateUserMessage::ChangingDocumento);
-        let documento = row![text("documento"), tmp];
+        let documento = row![text("documento").width(text_width), tmp];
 
         let tmp = text_input("", &self.ramal).on_input(CreateUserMessage::ChangingRamal);
-        let ramal = row![text("ramal"), tmp];
+        let ramal = row![container(text("ramal")).width(text_width), tmp];
 
         let tmp = text_input("", &self.login).on_input(CreateUserMessage::ChangingLogin);
-        let login = row![text("login"), tmp];
+        let login = row![container(text("login")).width(text_width), tmp];
 
-        let tmp = text_input("escreva o celular ", &self.celular)
-            .on_input(CreateUserMessage::ChangingCelular);
-        let celular = row![text("celular"), tmp];
+        let tmp = text_input("", &self.celular).on_input(CreateUserMessage::ChangingCelular);
+        let celular = row![container(text("celular")).width(text_width), tmp];
         let create = button("criar").on_press(CreateUserMessage::CreateUser);
         let content = column![
             department, login, name, documento, email, ramal, celular, create

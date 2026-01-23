@@ -34,6 +34,7 @@ pub const SELECT_EQUIPAMENT_INFORMATION: &str = r#"
     join has on has.computer_id == equipaments.id
     join users on users.id == has.user_id
     where serialnumber = ?1
+    order by has.id desc
 "#;
 
 pub const SELECT_COMPUTERS_BY_USER: &str = r#"
@@ -47,7 +48,7 @@ join has on users.id = has.user_id
 join equipaments on equipaments.id = has.computer_id
 join equipament_model on equipament_model.id = equipaments.model
 join brands on brands.id = equipament_model.brand    
-where users.login like ?1
+where users.name like ?1
 "#;
 
 pub const SELECT_COMPUTER_INFORMATION_WITH_LAST_USER: &str = r#"

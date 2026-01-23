@@ -7,7 +7,7 @@ use cosmic::{
     widget::{combo_box, container, text, text_input},
 };
 
-use crate::database::{self, model::DbUser};
+use crate::database::{self, model::DbComputer};
 use cosmic::app::Task;
 
 fn update_field<T>(target: &mut T, new_value: T) -> Task<CreateModelMessage> {
@@ -17,46 +17,41 @@ fn update_field<T>(target: &mut T, new_value: T) -> Task<CreateModelMessage> {
 
 #[derive(Debug, Clone)]
 pub enum CreateModelMessage {
-    GetDepartments(Vec<database::model::DbDepartment>),
-    ChangingName(String),
-    ChangingDepartment(String),
-    ChangingCelular(String),
-    ChangingRamal(String),
-    ChangingDocumento(String),
-    ChangingEmail(String),
-    ChangingLogin(String),
+    GetInformation(Vec<database::model::DbEquipamentModel>),
+    ChangingSerialNumber(String),
+    ChangingMemory(String),
+    ChangingObservation(String),
+    ChangingStorage(String),
+    ChangingComputer(String),
     CreateUser,
     CreatedUser(bool),
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct CreateModelPage {
-    departments: combo_box::State<String>,
-    name: String,
-    department: Option<String>,
-    email: String,
-    ramal: String,
-    celular: String,
-    documento: String,
-    login: String,
+    serialnumber: String,
+    computers: combo_box::State<String>,
+    computer: Option<String>,
+    storage: String,
+    memory: String,
+    observation: String,
 }
 
 impl CreateModelPage {
     pub fn new() -> (Self, Task<CreateModelMessage>) {
         let app = Self {
-            departments: combo_box::State::new(Vec::new()),
-            name: String::new(),
-            email: String::new(),
-            ramal: String::new(),
-            celular: String::new(),
-            documento: String::new(),
-            login: String::new(),
-            department: Some(String::new()),
+            serialnumber: String::new(),
+            computers: combo_box::State::new(Vec::new()),
+            computer: Some(String::new()),
+            storage: String::new(),
+            memory: String::new(),
+            observation: String::new(),
         };
 
-        let command = Task::perform(database::get_department(), |arg| {
-            let tmp = arg.unwrap_or_default();
-            Action::App(CreateModelMessage::GetDepartments(tmp))
+        let command = Task::perform(database::get_equipament_model(), |computers| {
+            Action::App(CreateModelMessage::GetInformation(
+                computers.unwrap_or_default(),
+            ))
         });
 
         (app, command)
@@ -66,18 +61,16 @@ impl CreateModelPage {
         match message {
             Action::App(message) => match message {
                 CreateModelMessage::CreateUser => {
-                    let tmp = DbUser {
-                        login: self.login.clone(),
-                        name: self.name.clone(),
-                        email: self.email.clone(),
-                        department: self.department.clone().unwrap_or_default(),
-                        document: self.documento.clone(),
-                        id: 0,
-                        extension: self.ramal.clone(),
-                        phone_number: self.celular.clone(),
+                    let tmp = DbComputer {
+                        serialnumber: self.serialnumber.clone(),
+                        memory: 0,
+                        storage: 0,
+                        model: self.computer.clone().unwrap_or_default(),
+                        observation: String::new(),
+                        actual_user: String::new(),
                     };
                     dbg!(&tmp);
-                    let task = Task::perform(database::create_user(tmp), |arg| {
+                    let task = Task::perform(database::create_computer(tmp), |arg| {
                         let tmp = match arg {
                             Ok(_) => true,
                             Err(_) => false,
@@ -86,38 +79,33 @@ impl CreateModelPage {
                     });
                     task
                 }
-                CreateModelMessage::GetDepartments(departs) => {
-                    let mut tmp = Vec::new();
+                CreateModelMessage::GetInformation(computer) => {
+                    let mut tmp = Vec::with_capacity(computer.len());
 
-                    departs.iter().for_each(|f| tmp.push(f.name.clone()));
-                    self.departments = combo_box::State::new(tmp);
-                    Task::none()
-                }
-                CreateModelMessage::ChangingName(atual) => update_field(&mut self.name, atual),
-                CreateModelMessage::ChangingDepartment(atual) => {
-                    self.department = Some(atual);
+                    computer.into_iter().for_each(|f| tmp.push(f.name));
+                    self.computers = combo_box::State::new(tmp);
 
                     Task::none()
                 }
-                CreateModelMessage::ChangingCelular(atual) => {
-                    self.celular = atual;
+                CreateModelMessage::ChangingSerialNumber(atual) => {
+                    update_field(&mut self.serialnumber, atual)
+                }
+                CreateModelMessage::ChangingMemory(atual) => {
+                    self.memory = atual;
+
                     Task::none()
                 }
-                CreateModelMessage::ChangingRamal(atual) => {
-                    self.ramal = atual;
+                CreateModelMessage::ChangingStorage(atual) => {
+                    self.storage = atual;
                     Task::none()
                 }
-                CreateModelMessage::ChangingDocumento(atual) => {
-                    self.documento = atual;
-                    Task::none()
-                }
-                CreateModelMessage::ChangingEmail(atual) => {
-                    self.email = atual;
+                CreateModelMessage::ChangingComputer(atual) => {
+                    self.computer = Some(atual);
                     Task::none()
                 }
 
-                CreateModelMessage::ChangingLogin(atual) => {
-                    self.login = atual;
+                CreateModelMessage::ChangingObservation(atual) => {
+                    self.observation = atual;
                     Task::none()
                 }
                 CreateModelMessage::CreatedUser(result) => {
@@ -131,34 +119,38 @@ impl CreateModelPage {
     }
 
     pub fn view(&self) -> Element<'_, CreateModelMessage> {
+        let size = 120;
         let tmp = combo_box(
-            &self.departments,
-            "Selecione um departamento",
-            self.department.as_ref(),
-            CreateModelMessage::ChangingDepartment,
+            &self.computers,
+            "Selecione a marca",
+            self.computer.as_ref(),
+            CreateModelMessage::ChangingComputer,
         );
-        let department = row![text("departamento"), tmp];
-        let tmp = text_input("", &self.name).on_input(CreateModelMessage::ChangingName);
-        let name = row![text("name"), tmp];
+        let computers = row![container(text("computers")).width(size), tmp];
 
-        let tmp = text_input("", &self.email).on_input(CreateModelMessage::ChangingEmail);
-        let email = row![text("email"), tmp];
+        let tmp =
+            text_input("", &self.serialnumber).on_input(CreateModelMessage::ChangingSerialNumber);
+        let serial_number = row![container(text("serial number")).width(size), tmp];
 
-        let tmp = text_input("", &self.documento).on_input(CreateModelMessage::ChangingDocumento);
-        let documento = row![text("documento"), tmp];
+        let tmp = text_input("", self.memory.clone()).on_input(CreateModelMessage::ChangingMemory);
+        let memory = row![container(text("memory")).width(size), tmp];
 
-        let tmp = text_input("", &self.ramal).on_input(CreateModelMessage::ChangingRamal);
-        let ramal = row![text("ramal"), tmp];
+        let tmp = text_input("", self.observation.clone())
+            .on_input(CreateModelMessage::ChangingObservation);
+        let observation = row![container(text("observação")).width(size), tmp];
 
-        let tmp = text_input("", &self.login).on_input(CreateModelMessage::ChangingLogin);
-        let login = row![text("login"), tmp];
+        let tmp =
+            text_input("", self.storage.clone()).on_input(CreateModelMessage::ChangingStorage);
+        let storage = row![container(text("storage")).width(size), tmp];
 
-        let tmp = text_input("escreva o celular ", &self.celular)
-            .on_input(CreateModelMessage::ChangingCelular);
-        let celular = row![text("celular"), tmp];
         let create = button("criar").on_press(CreateModelMessage::CreateUser);
         let content = column![
-            department, login, name, documento, email, ramal, celular, create
+            serial_number,
+            computers,
+            storage,
+            memory,
+            observation,
+            create
         ]
         .spacing(16)
         .padding(20)

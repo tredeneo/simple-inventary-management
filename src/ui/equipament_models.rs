@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use cosmic::iced::{self, Alignment, Background, Color, Length};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{
     self as widget, button, column, combo_box, container, row, scrollable, table, text_input,
 };

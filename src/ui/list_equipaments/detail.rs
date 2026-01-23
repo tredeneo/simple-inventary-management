@@ -157,11 +157,11 @@ impl EquipamentDetailPage {
                         Category::DataBegin,
                         Category::DataEnd,
                     ]);
-                    users.iter().for_each(|i| {
+                    users.into_iter().for_each(|i| {
                         let tmp = Item {
-                            name: i.usuario.clone(),
-                            data_begin: i.date_begin.clone(),
-                            data_end: i.date_end.clone().unwrap_or_default(),
+                            name: i.usuario,
+                            data_begin: i.date_begin,
+                            data_end: i.date_end.unwrap_or_default(),
                         };
                         let _ = table_users.insert(tmp);
                     });

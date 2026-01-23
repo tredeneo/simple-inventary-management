@@ -129,8 +129,9 @@ impl ListEquipamentsTab {
                         Category::ActualUser,
                     ]);
                     self.users.iter().for_each(|item| {
-                        if item.serial_number.contains(&filter_user)
+                        if item.serial_number.contains(&filter_user.to_uppercase())
                             || item.actual_user.contains(&filter_user)
+                            || item.model.contains(&filter_user.to_uppercase())
                         {
                             let _ = table_model.insert(item.clone());
                         }

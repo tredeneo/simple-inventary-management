@@ -174,20 +174,21 @@ async fn get_sql_connection() -> anyhow::Result<SqliteConnection> {
         })?)
 }
 
-// pub async fn get_equipaments_by_users(
-//     user_id: String,
-// ) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
-//     let mut pool = get_sql_connection().await?;
-//     let recs =
-//         sqlx::query_as::<_, model::DbEquipamentHistoric>(query_select::SELECT_COMPUTERS_BY_USER)
-//             .bind(user_id)
-//             .fetch_all(&mut pool)
-//             .await
-//             .inspect_err(|e| {
-//                 dbg!(&e);
-//             })?;
-//     Ok(recs)
-// }
+pub async fn get_equipaments_by_users(
+    user_id: String,
+) -> anyhow::Result<Vec<model::DbEquipamentHistoric>> {
+    dbg!(&user_id);
+    let mut pool = get_sql_connection().await?;
+    let recs =
+        sqlx::query_as::<_, model::DbEquipamentHistoric>(query_select::SELECT_COMPUTERS_BY_USER)
+            .bind(user_id)
+            .fetch_all(&mut pool)
+            .await
+            .inspect_err(|e| {
+                dbg!(&e);
+            })?;
+    Ok(recs)
+}
 
 pub async fn get_brands() -> anyhow::Result<Vec<model::DbBrand>> {
     let mut pool = get_sql_connection().await?;
