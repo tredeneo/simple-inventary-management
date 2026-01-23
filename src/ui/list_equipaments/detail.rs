@@ -117,7 +117,7 @@ impl EquipamentDetailPage {
     pub fn init(equipament: String) -> (Self, Task<EquipamentDetailMessage>) {
         let tmp = table::Model::new(vec![Category::Name, Category::DataBegin, Category::DataEnd]);
         let app = EquipamentDetailPage {
-            serial: String::new(),
+            serial: equipament.clone(),
             storage: 0,
             memory: 0,
             model: String::new(),
@@ -166,7 +166,6 @@ impl EquipamentDetailPage {
                         let _ = table_users.insert(tmp);
                     });
 
-                    self.serial = computer.serialnumber;
                     self.model = computer.model;
                     self.memory = computer.memory;
                     self.observation = computer.observation;
