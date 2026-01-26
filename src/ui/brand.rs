@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 
-use cosmic::iced::{self, Alignment, Background, Color, Length};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{
     self as widget, button, column, container, row, scrollable, table, text_input,
 };
 use cosmic::{Action, Apply, Element};
 
-use crate::database;
+use crate::{database, popup_style};
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
 pub enum BrandsMessage {
-    // LoadedBrands(Vec<database::model::DbBrand>),
     GetBrands(Vec<database::model::DbBrand>),
     CreateBrand,
     ChangingName(String),
@@ -164,7 +163,8 @@ impl BrandsTab {
     }
 
     pub fn view(&self) -> Element<'_, BrandsMessage> {
-        let brand_delete = button::text("criar marca").on_press(BrandsMessage::OpenCreateModal);
+        let brand_delete =
+            button::suggested("criar marca").on_press(BrandsMessage::OpenCreateModal);
 
         let create_brand: Element<'_, BrandsMessage> =
             row().push(brand_delete).align_y(Alignment::Center).into();
@@ -203,8 +203,8 @@ impl BrandsTab {
                 text_input("Brand name", &self.brand).on_input(BrandsMessage::ChangingName);
 
             let actions = row()
-                .push(button::text("Cancel").on_press(BrandsMessage::CloseCreateModal))
-                .push(button::text("Create").on_press(BrandsMessage::CreateBrand))
+                .push(button::suggested("Cancel").on_press(BrandsMessage::CloseCreateModal))
+                .push(button::suggested("Create").on_press(BrandsMessage::CreateBrand))
                 .spacing(8);
 
             let modal_content = container(
@@ -215,14 +215,7 @@ impl BrandsTab {
                     .padding(20)
                     .width(Length::Fixed(400.0)),
             )
-            .style(|theme: &cosmic::Theme| {
-                let cosmic = theme.cosmic();
-                iced::widget::container::Style {
-                    background: Some(Background::Color(Color::from(cosmic.primary.base))),
-                    text_color: Some(Color::from(cosmic.primary.on)),
-                    ..Default::default()
-                }
-            });
+            .style(popup_style);
 
             let tmp = widget::popover(base)
                 .modal(true)

@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use cosmic::iced::{self, Alignment, Background, Color, Length};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{
     self as widget, button, column, combo_box, container, row, scrollable, table, text_input,
 };
 use cosmic::{Action, Apply, Element};
 
-use crate::database;
+use crate::{database, popup_style};
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
@@ -200,7 +200,7 @@ impl CPUsTab {
     }
 
     pub fn view(&self) -> Element<'_, CPUsMessage> {
-        let cpu_delete = button::text("criar cpu").on_press(CPUsMessage::OpenCreateModal);
+        let cpu_delete = button::suggested("criar cpu").on_press(CPUsMessage::OpenCreateModal);
 
         let create_cpu: Element<'_, CPUsMessage> = row().push(cpu_delete).into();
 
@@ -255,8 +255,8 @@ impl CPUsTab {
             .on_open(CPUsMessage::GetBrands);
 
             let actions = row()
-                .push(button::text("Cancel").on_press(CPUsMessage::CloseCreateModal))
-                .push(button::text("Create").on_press(CPUsMessage::CreateCPU))
+                .push(button::suggested("Cancel").on_press(CPUsMessage::CloseCreateModal))
+                .push(button::suggested("Create").on_press(CPUsMessage::CreateCPU))
                 .spacing(8);
 
             let modal_content = container(
@@ -268,14 +268,7 @@ impl CPUsTab {
                     .padding(20)
                     .width(Length::Fixed(400.0)),
             )
-            .style(|theme: &cosmic::Theme| {
-                let cosmic = theme.cosmic();
-                iced::widget::container::Style {
-                    background: Some(Background::Color(Color::from(cosmic.primary.base))),
-                    text_color: Some(Color::from(cosmic.primary.on)),
-                    ..Default::default()
-                }
-            });
+            .style(popup_style);
 
             let tmp = widget::popover(base)
                 .modal(true)

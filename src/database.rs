@@ -7,7 +7,7 @@ use sqlx::{
 
 mod query;
 use query as query_select;
-use tokio::runtime::Runtime;
+use futures::executor::block_on;
 
 pub mod model;
 
@@ -155,8 +155,9 @@ async fn create_database(location: String) -> anyhow::Result<()> {
     Ok(())
 }
 pub fn init_database() -> anyhow::Result<()> {
-    let rt = Runtime::new()?;
-    rt.block_on(async {
+    
+    // let rt = tokio::runtime::Runtime::new()?;
+    block_on(async {
         let _ = SqliteConnection::connect(&data_base_directory().await)
             .await
             .inspect_err(|e| {

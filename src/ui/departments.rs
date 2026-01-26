@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use cosmic::iced::{self, Alignment, Background, Color, Length};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{
     self as widget, button, column, container, row, scrollable, table, text_input,
 };
 use cosmic::{Action, Apply, Element};
 
-use crate::database;
+use crate::{database, popup_style};
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
@@ -168,7 +168,7 @@ impl DepartmentsTab {
 
     pub fn view(&self) -> Element<'_, DepartmentsMessage> {
         let department_delete =
-            button::text("criar departmento").on_press(DepartmentsMessage::OpenCreateModal);
+            button::suggested("criar departmento").on_press(DepartmentsMessage::OpenCreateModal);
 
         let create_department: Element<'_, DepartmentsMessage> = row()
             .push(department_delete)
@@ -209,8 +209,8 @@ impl DepartmentsTab {
                 .on_input(DepartmentsMessage::ChangingName);
 
             let actions = row()
-                .push(button::text("Cancel").on_press(DepartmentsMessage::CloseCreateModal))
-                .push(button::text("Create").on_press(DepartmentsMessage::CreateDepartment))
+                .push(button::suggested("Cancel").on_press(DepartmentsMessage::CloseCreateModal))
+                .push(button::suggested("Create").on_press(DepartmentsMessage::CreateDepartment))
                 .spacing(8);
 
             let modal_content = container(
@@ -221,14 +221,7 @@ impl DepartmentsTab {
                     .padding(20)
                     .width(Length::Fixed(400.0)),
             )
-            .style(|theme: &cosmic::Theme| {
-                let cosmic = theme.cosmic();
-                iced::widget::container::Style {
-                    background: Some(Background::Color(Color::from(cosmic.primary.base))),
-                    text_color: Some(Color::from(cosmic.primary.on)),
-                    ..Default::default()
-                }
-            });
+            .style(popup_style);
 
             let tmp = widget::popover(base)
                 .modal(true)

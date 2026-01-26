@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use cosmic::iced::{self, Alignment, Background, Color, Length};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{
     self as widget, button, column, combo_box, container, row, scrollable, table, text_input,
 };
 use cosmic::{Action, Apply, Element};
 
-use crate::database;
+use crate::{database, popup_style};
 use cosmic::app::Task;
 
 #[derive(Debug, Clone)]
@@ -200,7 +200,7 @@ impl GPUsTab {
     }
 
     pub fn view(&self) -> Element<'_, GPUsMessage> {
-        let gpu_delete = button::text("criar gpu").on_press(GPUsMessage::OpenCreateModal);
+        let gpu_delete = button::suggested("criar gpu").on_press(GPUsMessage::OpenCreateModal);
 
         let create_gpu: Element<'_, GPUsMessage> = row().push(gpu_delete).into();
 
@@ -255,8 +255,8 @@ impl GPUsTab {
             .on_open(GPUsMessage::GetBrands);
 
             let actions = row()
-                .push(button::text("Cancel").on_press(GPUsMessage::CloseCreateModal))
-                .push(button::text("Create").on_press(GPUsMessage::CreateGPU))
+                .push(button::suggested("Cancel").on_press(GPUsMessage::CloseCreateModal))
+                .push(button::suggested("Create").on_press(GPUsMessage::CreateGPU))
                 .spacing(8);
 
             let modal_content = container(
@@ -268,14 +268,7 @@ impl GPUsTab {
                     .padding(20)
                     .width(Length::Fixed(400.0)),
             )
-            .style(|theme: &cosmic::Theme| {
-                let cosmic = theme.cosmic();
-                iced::widget::container::Style {
-                    background: Some(Background::Color(Color::from(cosmic.primary.base))),
-                    text_color: Some(Color::from(cosmic.primary.on)),
-                    ..Default::default()
-                }
-            });
+            .style(popup_style);
 
             let tmp = widget::popover(base)
                 .modal(true)

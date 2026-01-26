@@ -316,8 +316,11 @@ impl EquipamentModelsTab {
         .on_open(EquipamentModelsMessage::GetGPUs);
 
         let actions = row()
-            .push(button::text("Cancel").on_press(EquipamentModelsMessage::CloseCreateModal))
-            .push(button::text("Create").on_press(EquipamentModelsMessage::CreateEquipamentModel))
+            .push(button::suggested("Cancel").on_press(EquipamentModelsMessage::CloseCreateModal))
+            .push(
+                button::suggested("Create")
+                    .on_press(EquipamentModelsMessage::CreateEquipamentModel),
+            )
             .spacing(8);
 
         let modal_content = container(
@@ -343,7 +346,7 @@ impl EquipamentModelsTab {
     }
 
     pub fn ui_list(&self) -> Element<'_, EquipamentModelsMessage> {
-        let equipament_model_delete = button::text("criar equipament model")
+        let equipament_model_delete = button::suggested("criar equipament model")
             .on_press(EquipamentModelsMessage::OpenCreateModal);
 
         let create_equipament_model: Element<'_, EquipamentModelsMessage> =
