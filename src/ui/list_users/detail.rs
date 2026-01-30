@@ -4,13 +4,20 @@ use std::collections::HashMap;
 use cosmic::app::Task;
 use cosmic::iced::widget::button;
 use cosmic::iced::{self, Alignment, Length};
-use cosmic::widget::{self, column, row, scrollable, table, text};
+use cosmic::widget::{self, column, combo_box, row, scrollable, table, text, text_input};
 use cosmic::{Action, Element};
 
 use crate::database;
 
 pub struct UserDetailPage {
     name: String,
+    departments: combo_box::State<String>,
+    department: Option<String>,
+    email: String,
+    ramal: String,
+    celular: String,
+    documento: String,
+    login: String,
     equipaments: table::SingleSelectModel<Item, Category>,
 }
 
@@ -90,10 +97,19 @@ pub enum UserDetailMessage {
         (
             database::model::DbUser,
             Vec<database::model::DbEquipamentHistoric>,
+            Vec<database::model::DbDepartment>,
         ),
     ),
     ItemSelect(table::Entity),
     CategorySelect(Category),
+
+    ChangingName(String),
+    ChangingDepartment(String),
+    ChangingCelular(String),
+    ChangingRamal(String),
+    ChangingDocumento(String),
+    ChangingEmail(String),
+    ChangingLogin(String),
     NoOp,
 }
 
@@ -101,6 +117,13 @@ impl UserDetailPage {
     pub fn init(user: String) -> (Self, Task<UserDetailMessage>) {
         let tmp = table::Model::new(vec![Category::Name, Category::DataBegin, Category::DataEnd]);
         let app = UserDetailPage {
+            email: String::new(),
+            ramal: String::new(),
+            login: String::new(),
+            department: Some(String::new()),
+            documento: String::new(),
+            celular: String::new(),
+            departments: combo_box::State::new(Vec::new()),
             name: String::from("nome teste"),
             equipaments: tmp,
         };
@@ -110,13 +133,15 @@ impl UserDetailPage {
                 (
                     database::get_specific_user_by_name(user.clone()).await,
                     database::get_equipaments_by_users(user.clone()).await,
+                    database::get_department().await,
                 )
             },
-            |(user, equipament)| {
+            |(user, equipament, departments)| {
                 dbg!(&user, &equipament);
                 let tmp = user.unwrap_or_default();
                 let equip = equipament.unwrap_or_default();
-                cosmic::Action::App(UserDetailMessage::GetUserDetail((tmp, equip)))
+                let departments = departments.unwrap_or_default();
+                cosmic::Action::App(UserDetailMessage::GetUserDetail((tmp, equip, departments)))
             },
         );
         (app, command)
@@ -125,8 +150,7 @@ impl UserDetailPage {
     pub fn update(&mut self, message: Action<UserDetailMessage>) -> Action<UserDetailMessage> {
         match message {
             Action::App(message) => match message {
-                UserDetailMessage::GetUserDetail((user, equipaments)) => {
-                    self.name = user.name;
+                UserDetailMessage::GetUserDetail((user, equipaments, departments)) => {
                     let mut table_equipaments = table::Model::new(vec![
                         Category::Name,
                         Category::Serial,
@@ -142,7 +166,14 @@ impl UserDetailPage {
                         };
                         let _ = table_equipaments.insert(tmp);
                     });
+                    self.name = user.name;
+                    self.documento = user.document;
+                    self.email = user.email;
+                    self.login = user.login;
+                    self.department = Some(user.department);
                     self.equipaments = table_equipaments;
+                    self.departments =
+                        combo_box::State::new(departments.into_iter().map(|f| f.name).collect());
                     Action::None
                 }
                 UserDetailMessage::ItemSelect(entinty) => {
@@ -157,6 +188,37 @@ impl UserDetailPage {
                         ascending = !old_sort.1;
                     }
                     self.equipaments.sort(category, ascending);
+                    Action::None
+                }
+
+                UserDetailMessage::ChangingName(atual) => {
+                    self.name = atual;
+                    Action::None
+                }
+                UserDetailMessage::ChangingDepartment(atual) => {
+                    self.department = Some(atual);
+
+                    Action::None
+                }
+                UserDetailMessage::ChangingCelular(atual) => {
+                    self.celular = atual;
+                    Action::None
+                }
+                UserDetailMessage::ChangingRamal(atual) => {
+                    self.ramal = atual;
+                    Action::None
+                }
+                UserDetailMessage::ChangingDocumento(atual) => {
+                    self.documento = atual;
+                    Action::None
+                }
+                UserDetailMessage::ChangingEmail(atual) => {
+                    self.email = atual;
+                    Action::None
+                }
+
+                UserDetailMessage::ChangingLogin(atual) => {
+                    self.login = atual;
                     Action::None
                 }
                 _ => Action::None,
@@ -195,9 +257,47 @@ impl UserDetailPage {
     pub fn view(&self) -> Element<'_, UserDetailMessage> {
         use cosmic::widget::container;
         let buttons = row().push(button("back").on_press(UserDetailMessage::Close));
+
+        let text_width = 110;
+
+        let tmp = combo_box(
+            &self.departments,
+            "Selecione um departamento",
+            self.department.as_ref(),
+            UserDetailMessage::ChangingDepartment,
+        );
+        let department = row()
+            .push(container(text("departamento")).width(text_width))
+            .push(tmp);
+
+        let tmp = text_input("", &self.name).on_input(UserDetailMessage::ChangingName);
+        let name = row()
+            .push(container(text("name")).width(text_width))
+            .push(tmp);
+
+        let tmp = text_input("", &self.email).on_input(UserDetailMessage::ChangingName);
+        let email = row()
+            .push(container(text("eamil")).width(text_width))
+            .push(tmp);
+
+        let tmp = text_input("", &self.documento).on_input(UserDetailMessage::ChangingName);
+        let documento = row()
+            .push(container(text("documento")).width(text_width))
+            .push(tmp);
+
+        let tmp = text_input("", &self.login).on_input(UserDetailMessage::ChangingName);
+        let login = row()
+            .push(container(text("login")).width(text_width))
+            .push(tmp);
+
         let coluna = column()
             .push(buttons)
             .push(text(format!("{}", self.name)).size(32))
+            .push(name)
+            .push(login)
+            .push(email)
+            .push(documento)
+            .push(department)
             .push(self.ui_table());
         container(coluna)
             .width(Length::Fill)

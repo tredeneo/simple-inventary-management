@@ -87,10 +87,8 @@ impl CreateUserPage {
                     task
                 }
                 CreateUserMessage::GetDepartments(departs) => {
-                    let mut tmp = Vec::new();
-
-                    departs.iter().for_each(|f| tmp.push(f.name.clone()));
-                    self.departments = combo_box::State::new(tmp);
+                    self.departments =
+                        combo_box::State::new(departs.into_iter().map(|f| f.name).collect());
                     Task::none()
                 }
                 CreateUserMessage::ChangingName(atual) => update_field(&mut self.name, atual),

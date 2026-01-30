@@ -12,7 +12,7 @@ pub const SELECT_SPECIFIC_USER_INFOMATION_BY_LOGIN: &str = r#"
         "#;
 
 pub const SELECT_SPECIFIC_USER_INFOMATION_BY_NAME: &str = r#"
-            SELECT name,login,email,id,document,department,phone_number,extension
+            SELECT name,login,email,id,document,(select name from departments where users.department = departments.id) department,phone_number,extension
             FROM users
             where name =?1
         "#;
