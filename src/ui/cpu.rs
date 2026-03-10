@@ -163,6 +163,7 @@ impl CPUsTab {
                         let tmp = arg.unwrap_or_default();
                         Action::App(CPUsMessage::GetCPUs(tmp))
                     });
+                    self.cpu = String::new();
                     self.show_create_modal = false;
                     return command;
                 }

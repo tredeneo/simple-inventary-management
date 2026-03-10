@@ -144,6 +144,7 @@ impl BrandsTab {
                         let tmp = arg.unwrap_or_default();
                         Action::App(BrandsMessage::GetBrands(tmp))
                     });
+                    self.brand = String::new();
                     self.show_create_modal = false;
                     return command;
                 }

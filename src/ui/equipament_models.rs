@@ -176,8 +176,8 @@ impl EquipamentModelsTab {
                         let tmp = DbEquipamentModel {
                             name: self.equipament_model.clone(),
                             brand: self.brand.clone().unwrap_or_default(),
-                            cpu: self.equipament_model.clone(),
-                            gpu: self.equipament_model.clone(),
+                            cpu: self.cpu.clone().unwrap_or_default(),
+                            gpu: self.gpu.clone().unwrap_or_default(),
                             smartphone: 1,
                         };
                         database::insert_equipament_model(tmp)
@@ -288,7 +288,7 @@ impl EquipamentModelsTab {
     }
 
     pub fn ui_detail(&self) -> Element<'_, EquipamentModelsMessage> {
-        let equipament_model_input = text_input("EquipamentModel name", &self.equipament_model)
+        let equipament_model_input = text_input("name", &self.equipament_model)
             .on_input(EquipamentModelsMessage::ChangingName);
 
         let brand_input = combo_box(
@@ -301,7 +301,7 @@ impl EquipamentModelsTab {
 
         let cpu_input = combo_box(
             &self.cpus,
-            "Select cpu",
+            "Select CPU",
             self.cpu.as_ref(),
             EquipamentModelsMessage::ChagingCPU,
         )
@@ -309,7 +309,7 @@ impl EquipamentModelsTab {
 
         let gpu_input = combo_box(
             &self.gpus,
-            "Select brand",
+            "Select GPU",
             self.gpu.as_ref(),
             EquipamentModelsMessage::ChagingGPU,
         )

@@ -270,7 +270,11 @@ impl EquipamentDetailPage {
             .push(button("trocar").on_press(EquipamentDetailMessage::OpenCreateModal));
         let coluna = column()
             .push(buttons)
-            .push(text(format!(" teste {}", self.model)).size(32))
+            .push(text(format!("modelo {}", self.model)))
+            .push(text(format!("serial {}", self.serial)))
+            .push(text(format!("memory {}", self.memory)))
+            .push(text(format!("storage {}", self.storage)))
+            .push(text(format!("observation {}", self.observation)))
             .push(self.ui_table());
 
         container(coluna)

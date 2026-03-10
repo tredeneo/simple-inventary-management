@@ -53,9 +53,9 @@ impl table::ItemCategory for Category {
     fn width(&self) -> iced::Length {
         match self {
             Self::Name => iced::Length::Fixed(200.0),
-            Self::Serial => iced::Length::Fixed(200.),
-            Self::DataBegin => iced::Length::Fixed(200.0),
-            Self::DataEnd => iced::Length::Fill,
+            Self::Serial => iced::Length::Fill,
+            Self::DataBegin => iced::Length::Fixed(150.),
+            Self::DataEnd => iced::Length::Fixed(150.),
         }
     }
 }
@@ -110,6 +110,7 @@ pub enum UserDetailMessage {
     ChangingDocumento(String),
     ChangingEmail(String),
     ChangingLogin(String),
+    UserSaved(bool),
     NoOp,
 }
 
@@ -147,15 +148,15 @@ impl UserDetailPage {
         (app, command)
     }
 
-    pub fn update(&mut self, message: Action<UserDetailMessage>) -> Action<UserDetailMessage> {
+    pub fn update(&mut self, message: Action<UserDetailMessage>) -> Task<UserDetailMessage> {
         match message {
             Action::App(message) => match message {
                 UserDetailMessage::GetUserDetail((user, equipaments, departments)) => {
                     let mut table_equipaments = table::Model::new(vec![
                         Category::Name,
-                        Category::Serial,
                         Category::DataBegin,
                         Category::DataEnd,
+                        Category::Serial,
                     ]);
                     equipaments.into_iter().for_each(|i| {
                         let tmp = Item {
@@ -174,11 +175,12 @@ impl UserDetailPage {
                     self.equipaments = table_equipaments;
                     self.departments =
                         combo_box::State::new(departments.into_iter().map(|f| f.name).collect());
-                    Action::None
+                    self.celular = user.phone_number;
+                    Task::none()
                 }
                 UserDetailMessage::ItemSelect(entinty) => {
                     self.equipaments.activate(entinty);
-                    Action::None
+                    Task::none()
                 }
                 UserDetailMessage::CategorySelect(category) => {
                     let mut ascending = true;
@@ -188,42 +190,67 @@ impl UserDetailPage {
                         ascending = !old_sort.1;
                     }
                     self.equipaments.sort(category, ascending);
-                    Action::None
+                    Task::none()
                 }
 
                 UserDetailMessage::ChangingName(atual) => {
                     self.name = atual;
-                    Action::None
+                    Task::none()
                 }
+
                 UserDetailMessage::ChangingDepartment(atual) => {
                     self.department = Some(atual);
 
-                    Action::None
+                    Task::none()
                 }
                 UserDetailMessage::ChangingCelular(atual) => {
                     self.celular = atual;
-                    Action::None
+                    Task::none()
                 }
                 UserDetailMessage::ChangingRamal(atual) => {
                     self.ramal = atual;
-                    Action::None
+                    Task::none()
                 }
                 UserDetailMessage::ChangingDocumento(atual) => {
                     self.documento = atual;
-                    Action::None
+                    Task::none()
                 }
                 UserDetailMessage::ChangingEmail(atual) => {
                     self.email = atual;
-                    Action::None
+                    Task::none()
                 }
 
                 UserDetailMessage::ChangingLogin(atual) => {
                     self.login = atual;
-                    Action::None
+                    Task::none()
                 }
-                _ => Action::None,
+                UserDetailMessage::Close => Task::none(),
+                UserDetailMessage::Save => {
+                    let tmp = database::model::DbUser {
+                        name: self.name.clone(),
+                        login: self.login.clone(),
+                        email: self.email.clone(),
+                        department: self.department.clone().unwrap_or_default(),
+                        document: self.documento.clone(),
+                        extension: self.ramal.clone(),
+                        phone_number: self.celular.clone(),
+                        ..Default::default()
+                    };
+                    let task = Task::perform(database::update_user(tmp), |tmp| {
+                        let saved: bool;
+                        if tmp.is_ok() {
+                            saved = true;
+                        } else {
+                            saved = false;
+                        }
+                        cosmic::Action::App(UserDetailMessage::UserSaved(saved))
+                    });
+                    task
+                }
+                UserDetailMessage::UserSaved(_) => Task::none(),
+                UserDetailMessage::NoOp => Task::none(),
             },
-            _ => Action::None,
+            _ => Task::none(),
         }
     }
 
@@ -256,7 +283,9 @@ impl UserDetailPage {
     }
     pub fn view(&self) -> Element<'_, UserDetailMessage> {
         use cosmic::widget::container;
-        let buttons = row().push(button("back").on_press(UserDetailMessage::Close));
+        let buttons = row()
+            .push(button("back").on_press(UserDetailMessage::Close))
+            .push(button("save").on_press(UserDetailMessage::Save));
 
         let text_width = 110;
 
@@ -275,17 +304,22 @@ impl UserDetailPage {
             .push(container(text("name")).width(text_width))
             .push(tmp);
 
-        let tmp = text_input("", &self.email).on_input(UserDetailMessage::ChangingName);
+        let tmp = text_input("", &self.email).on_input(UserDetailMessage::ChangingEmail);
         let email = row()
-            .push(container(text("eamil")).width(text_width))
+            .push(container(text("email")).width(text_width))
             .push(tmp);
 
-        let tmp = text_input("", &self.documento).on_input(UserDetailMessage::ChangingName);
+        let tmp = text_input("", &self.documento).on_input(UserDetailMessage::ChangingDocumento);
         let documento = row()
             .push(container(text("documento")).width(text_width))
             .push(tmp);
 
-        let tmp = text_input("", &self.login).on_input(UserDetailMessage::ChangingName);
+        let tmp = text_input("", &self.celular).on_input(UserDetailMessage::ChangingCelular);
+        let celular = row()
+            .push(container(text("celular")).width(text_width))
+            .push(tmp);
+
+        let tmp = text_input("", &self.login).on_input(UserDetailMessage::ChangingLogin);
         let login = row()
             .push(container(text("login")).width(text_width))
             .push(tmp);
@@ -297,6 +331,7 @@ impl UserDetailPage {
             .push(login)
             .push(email)
             .push(documento)
+            .push(celular)
             .push(department)
             .push(self.ui_table());
         container(coluna)

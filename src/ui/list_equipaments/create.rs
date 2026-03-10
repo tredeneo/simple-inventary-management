@@ -62,10 +62,10 @@ impl CreateModelPage {
             Action::App(message) => match message {
                 CreateModelMessage::CreateUser => {
                     let tmp = DbComputer {
-                        serialnumber: self.serialnumber.clone(),
+                        serialnumber: self.serialnumber.trim().to_string(),
                         memory: 0,
                         storage: 0,
-                        model: self.computer.clone().unwrap_or_default(),
+                        model: self.computer.clone().unwrap_or_default().trim().to_string(),
                         observation: String::new(),
                         actual_user: String::new(),
                     };

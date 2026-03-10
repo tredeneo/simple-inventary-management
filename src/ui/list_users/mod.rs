@@ -66,7 +66,8 @@ impl UsersTab {
 
                         return task.map(|msg| Action::App(UsersTabMessage::ListUsers(msg)));
                     }
-                    let _ = list_tab.update(action);
+                    let task = list_tab.update(action);
+                    return task.map(|msg| Action::App(UsersTabMessage::DetailUser(msg)));
                 }
 
                 Task::none()

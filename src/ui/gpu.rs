@@ -163,6 +163,7 @@ impl GPUsTab {
                         let tmp = arg.unwrap_or_default();
                         Action::App(GPUsMessage::GetGPUs(tmp))
                     });
+                    self.gpu = String::new();
                     self.show_create_modal = false;
                     return command;
                 }
