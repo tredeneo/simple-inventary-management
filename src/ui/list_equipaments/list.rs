@@ -189,7 +189,8 @@ impl ListEquipamentsTab {
     fn screen_list_user(&self, size: Size) -> Element<'_, UsersMessage> {
         let search_bar = text_input(&self.search_field, &self.search_field)
             .on_input(UsersMessage::FilterEquipament);
-        let create_user = button("criar usuario").on_press(UsersMessage::CreateEquipamentPressed);
+        let create_user =
+            button("criar equipamento").on_press(UsersMessage::CreateEquipamentPressed);
         let table_widget = if size.width < 600.0 {
             widget::compact_table(&self.table_model)
                 .on_item_left_click(UsersMessage::ItemSelect)

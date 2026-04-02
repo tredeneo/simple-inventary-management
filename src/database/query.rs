@@ -174,6 +174,16 @@ pub const UPDADE_USER_INFORMATION: &str = r#"
         document=?7
     WHERE login=?3
 "#;
+
+pub const UPDATE_EQUIPAMENT: &str = r#"
+
+    UPDATE EQUIPAMENTS
+    SET memory = ?2,
+        storage = ?3,
+        observation = ?4
+    WHERE serialnumber = ?1
+"#;
+
 pub const UPDADE_EQUIPAMENT_MODEL_INFORMATION: &str = r#"
     UPDATE equipament_model
     SET name=?1, 

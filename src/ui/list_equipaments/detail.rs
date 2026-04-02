@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use cosmic::app::Task;
 use cosmic::iced::widget::button;
 use cosmic::iced::{self, Alignment, Length};
-use cosmic::widget::{self, combo_box, table, text};
+use cosmic::widget::{self, combo_box, table, text, text_input};
 use cosmic::widget::{column, container, row};
 use cosmic::{Action, Element};
 
@@ -103,12 +103,16 @@ pub enum EquipamentDetailMessage {
             database::model::DbComputer,
         ),
     ),
-
+    Update,
+    EquipamentUpdated(bool),
     ItemSelect(table::Entity),
     CategorySelect(Category),
     NoOp,
     OpenCreateModal,
     ChangeUser(String),
+    ChangeMemory(String),
+    ChangeStorage(String),
+    ChangeObservation(String),
     GetUsers(Vec<database::model::DbUser>),
     UserChanged(bool),
 }
@@ -138,7 +142,9 @@ impl EquipamentDetailPage {
             },
             |(user, computer)| {
                 let user = user.unwrap_or_default();
+                dbg!(&user);
                 let computer = computer.unwrap_or_default();
+                dbg!(&computer);
                 cosmic::Action::App(EquipamentDetailMessage::InfoUpdated((user, computer)))
             },
         );
@@ -173,7 +179,6 @@ impl EquipamentDetailPage {
                     self.users_historic = table_users;
                     self.actual_user = computer.actual_user;
                 }
-
                 EquipamentDetailMessage::ItemSelect(entity) => {
                     self.users_historic.activate(entity);
                 }
@@ -222,6 +227,25 @@ impl EquipamentDetailPage {
                     );
                     return command;
                 }
+                EquipamentDetailMessage::Update => {
+                    let tmp = database::model::DbComputer {
+                        serialnumber: self.serial.clone(),
+                        storage: self.storage,
+                        memory: self.memory,
+                        model: self.model.clone(),
+
+                        observation: self.observation.clone(),
+                        ..Default::default()
+                    };
+                    let command = Task::perform(database::update_equipament(tmp), |arg| {
+                        let tmp = match arg {
+                            Ok(_) => true,
+                            Err(_) => false,
+                        };
+                        Action::App(EquipamentDetailMessage::EquipamentUpdated(tmp))
+                    });
+                    return command;
+                }
                 EquipamentDetailMessage::UserChanged(changed) => {
                     if changed {
                         self.page = Page::Detail;
@@ -230,6 +254,18 @@ impl EquipamentDetailPage {
                 EquipamentDetailMessage::NoOp => {
                     dbg!("NoOp");
                 }
+                EquipamentDetailMessage::ChangeMemory(actual) => {
+                    if let Ok(o) = actual.parse::<i32>() {
+                        self.memory = o;
+                    };
+                }
+                EquipamentDetailMessage::ChangeStorage(actual) => {
+                    if let Ok(o) = actual.parse::<i32>() {
+                        self.storage = o;
+                    }
+                }
+                EquipamentDetailMessage::ChangeObservation(actual) => self.observation = actual,
+                EquipamentDetailMessage::EquipamentUpdated(_) => {}
             },
 
             _ => return Task::none(),
@@ -265,16 +301,49 @@ impl EquipamentDetailPage {
     }
 
     pub fn ui_detail(&self) -> Element<'_, EquipamentDetailMessage> {
+        let text_width = 110;
         let buttons = row()
             .push(button("back").on_press(EquipamentDetailMessage::Close))
-            .push(button("trocar").on_press(EquipamentDetailMessage::OpenCreateModal));
+            .push(button("trocar").on_press(EquipamentDetailMessage::OpenCreateModal))
+            .push(button("save").on_press(EquipamentDetailMessage::Update));
         let coluna = column()
             .push(buttons)
-            .push(text(format!("modelo {}", self.model)))
-            .push(text(format!("serial {}", self.serial)))
-            .push(text(format!("memory {}", self.memory)))
-            .push(text(format!("storage {}", self.storage)))
-            .push(text(format!("observation {}", self.observation)))
+            .push(
+                row()
+                    .push(container(text("serial")).width(text_width))
+                    .push(text_input("", self.serial.clone()))
+                    .align_y(Alignment::Center),
+            )
+            .push(
+                row()
+                    .push(container(text("modelo")).width(text_width))
+                    .push(text_input("", self.model.clone()))
+                    .align_y(Alignment::Center),
+            )
+            .push(
+                row()
+                    .push(container(text("memory")).width(text_width))
+                    .push(
+                        text_input("", self.memory.to_string())
+                            .on_input(EquipamentDetailMessage::ChangeMemory),
+                    )
+                    .align_y(Alignment::Center),
+            )
+            .push(
+                row()
+                    .push(container(text("storage")).width(text_width))
+                    .push(
+                        text_input("", self.storage.to_string())
+                            .on_input(EquipamentDetailMessage::ChangeStorage),
+                    )
+                    .align_y(Alignment::Center),
+            )
+            .push(
+                row()
+                    .push(container(text("observação")).width(text_width))
+                    .push(text_input("", self.observation.clone()))
+                    .align_y(Alignment::Center),
+            )
             .push(self.ui_table());
 
         container(coluna)

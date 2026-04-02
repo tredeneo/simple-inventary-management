@@ -6,8 +6,8 @@ use sqlx::{
 };
 
 mod query;
-use query as query_select;
 use futures::executor::block_on;
+use query as query_select;
 
 pub mod model;
 
@@ -155,7 +155,6 @@ async fn create_database(location: String) -> anyhow::Result<()> {
     Ok(())
 }
 pub fn init_database() -> anyhow::Result<()> {
-    
     // let rt = tokio::runtime::Runtime::new()?;
     block_on(async {
         let _ = SqliteConnection::connect(&data_base_directory().await)
@@ -608,6 +607,24 @@ pub async fn get_user_computers(serial_number: &str) -> anyhow::Result<Vec<model
     })?;
     Ok(all)
 }
+
+pub async fn update_equipament(equipament: model::DbComputer) -> anyhow::Result<()> {
+    let mut pool = get_sql_connection().await?;
+    let _ = sqlx::query(query_select::UPDATE_EQUIPAMENT)
+        .bind(equipament.serialnumber)
+        .bind(equipament.memory)
+        .bind(equipament.storage)
+        .bind(equipament.observation)
+        .execute(&mut pool)
+        .await
+        .inspect_err(|e| {
+            dbg!(&e);
+        })?
+        .rows_affected();
+
+    Ok(())
+}
+
 pub async fn update_user_equipament(
     actual_user: String,
     future_user: String,
